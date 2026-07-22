@@ -122,10 +122,19 @@ function syncBalanceToUI(n){
     if(priceUsd>0) tokenDetails.BOT.price = '$'+priceStr;
   }
   if(typeof window.cxS!=='undefined') window.cxS.wdFee = 0.001;
+  if(typeof updateWalletPocket==='function') updateWalletPocket();
+  if(typeof renderDashboardBalance==='function') renderDashboardBalance();
 }
+var lastKnownBalance = '0';
 async function fetchAllBalances(){
   var botBal = await fetchBOTBalance();
   var n = parseFloat(botBal) || 0;
+  var prev = parseFloat(lastKnownBalance) || 0;
+  if(prev > 0 && n > prev && (n - prev) > 0.0001){
+    var diff = (n - prev).toFixed(4);
+    if(typeof showDepositNotif==='function') showDepositNotif(diff, walletData?walletData.address:null);
+  }
+  lastKnownBalance = botBal;
   syncBalanceToUI(n);
   renderDashboardBalance();
   return botBal;
@@ -138,17 +147,7 @@ function renderDashboardBalance(){
   }
   var priceUsd = BOT_PRICE_USD;
   var usdVal = (n * priceUsd).toFixed(2);
-  var balEl = document.querySelector('.flip-card-front .text-3xl');
-  if(balEl) balEl.textContent = '$'+usdVal;
-  var chartBot = document.querySelector('.card-charts p:first-child');
-  if(chartBot) chartBot.textContent = 'BOT '+n.toFixed(2);
-  var nameEls = document.querySelectorAll('.flip-card-front .font-extrabold.text-sm');
-  var profile = getProfile();
-  var name = profile ? profile.name : 'User';
-  for(var i=0;i<nameEls.length;i++){
-    if(nameEls[i].textContent.indexOf('Hi,')===0 || nameEls[i].textContent.indexOf('Hi ')===0)
-      nameEls[i].textContent = 'Hi, '+name.split(' ')[0];
-  }
+  if(typeof updateWalletPocket==='function') updateWalletPocket();
 }
 
 /* ── 3. REAL GAS ESTIMATION ── */
@@ -228,15 +227,22 @@ function generateRealQR(containerId, address){
 async function realSend(toAddress, amountEth){
   if(!wallet) throw new Error('Wallet not connected');
   if(!ethers.isAddress(toAddress)) throw new Error('Invalid address');
+  if(typeof showTxOverlay==='function') showTxOverlay('Sending BOT', 'Preparing your transaction...');
+  if(typeof updateTxStep==='function') updateTxStep(1, 'active');
   var amountWei = ethers.parseEther(amountEth.toString());
   var bal = await provider.getBalance(wallet.address);
+  if(typeof updateTxStep==='function'){ updateTxStep(1, 'done'); updateTxStep(2, 'active'); }
   if(bal < amountWei) throw new Error('Insufficient balance');
   var feeData = await provider.getFeeData();
   var gasEstimate = await provider.estimateGas({ from:wallet.address, to:toAddress, value:amountWei });
   var gasCost = gasEstimate * (feeData.gasPrice || ethers.parseUnits('1','gwei'));
   if(bal < amountWei + gasCost) throw new Error('Insufficient balance for gas');
+  if(typeof updateTxStep==='function'){ updateTxStep(2, 'done'); updateTxStep(3, 'active'); }
   var tx = await wallet.sendTransaction({ to: toAddress, value: amountWei });
+  if(typeof updateTxStep==='function'){ updateTxStep(3, 'done'); updateTxStep(4, 'active'); }
   var receipt = await tx.wait();
+  if(typeof updateTxStep==='function') updateTxStep(4, 'done');
+  if(typeof hideTxOverlay==='function') setTimeout(hideTxOverlay, 800);
   addTx({
     type: 'send',
     amount: parseFloat(amountEth),
@@ -254,10 +260,16 @@ async function realSend(toAddress, amountEth){
 async function realGiftSend(recipient, amountEth, message, tokenURI){
   if(!sbtContract) throw new Error('Contract not connected');
   if(!ethers.isAddress(recipient)) throw new Error('Invalid recipient');
+  if(typeof showTxOverlay==='function') showTxOverlay('Sending Gift', 'Minting your gift on-chain...');
+  if(typeof updateTxStep==='function') updateTxStep(1, 'active');
   var amountWei = ethers.parseEther(amountEth.toString());
   var uri = tokenURI || 'ipfs://QmDefaultGiftMetadata';
+  if(typeof updateTxStep==='function'){ updateTxStep(1, 'done'); updateTxStep(3, 'active'); }
   var tx = await sbtContract.mintSoulboundGift(recipient, uri, message, { value: amountWei });
+  if(typeof updateTxStep==='function'){ updateTxStep(3, 'done'); updateTxStep(4, 'active'); }
   var receipt = await tx.wait();
+  if(typeof updateTxStep==='function') updateTxStep(4, 'done');
+  if(typeof hideTxOverlay==='function') setTimeout(hideTxOverlay, 800);
   var tokenId = null;
   if(receipt.logs){
     for(var i=0;i<receipt.logs.length;i++){
@@ -481,19 +493,11 @@ function updateWalletUI(){
   var addr = walletData.address;
   var short = shortAddr(addr);
 
-  var nameEls = document.querySelectorAll('.flip-card-front .font-extrabold.text-sm');
-  for(var i=0;i<nameEls.length;i++){ if(nameEls[i].textContent.indexOf('Hi,')===0||nameEls[i].textContent.indexOf('Hi ')===0) nameEls[i].textContent='Hi, '+name.split(' ')[0]; }
-
-  var backAddr = document.querySelector('.flip-card-back .font-mono');
-  if(backAddr) backAddr.textContent = short;
-
-  var walletAddrPage = document.querySelector('#page-wallet-address .font-mono');
-  if(walletAddrPage) walletAddrPage.textContent = addr;
-
   var depAddrText = $('cxDepAddrText'); if(depAddrText) depAddrText.textContent = addr;
   var depAddr = $('cxDepAddr'); if(depAddr) depAddr.textContent = addr;
 
   generateRealQR('cxDepQr', addr);
+  if(typeof updateWalletPocket==='function') updateWalletPocket();
 }
 
 /* ── 18. GLOBAL REFRESH ── */
@@ -502,6 +506,7 @@ function globalRefresh(){
     if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
     updateWalletUI();
     renderTxHistory();
+    if(typeof updateWalletPocket==='function') updateWalletPocket();
   });
 }
 
@@ -634,7 +639,7 @@ window.WalletEngine = {
   realSend:realSend, realGiftSend:realGiftSend, realGiftClaim:realGiftClaim, readGiftData:readGiftData,
   redeemGiftCode:redeemGiftCode,
   generateRealQR:generateRealQR, addBotToMetaMask:addBotToMetaMask,
-  updateWalletUI:updateWalletUI, globalRefresh:globalRefresh,
+  updateWalletUI:updateWalletUI, globalRefresh:globalRefresh, updateWalletPocket:updateWalletPocket,
   getTxHistory:getTxHistory, addTx:addTx, renderTxHistory:renderTxHistory,
   getGiftCodes:getGiftCodes, saveGiftCode:saveGiftCode, lookupGiftCode:lookupGiftCode,
   isInitialized:function(){return !!walletData;},

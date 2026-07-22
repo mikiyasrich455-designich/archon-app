@@ -1201,7 +1201,104 @@
 .cx-contact:hover{border-color:#d8ccfa}
 .cx-contact:active{transform:scale(.95)}
 
-    </style>
+/* ═══ WALLET POCKET DESIGN ═══ */
+.cres-wallet{position:relative;width:300px;height:260px;cursor:pointer;perspective:1000px;display:flex;justify-content:center;align-items:flex-end;margin:0 auto;transition:transform .4s ease}
+.cres-wallet::after{content:"Hover to see Balance";position:absolute;bottom:-26px;font-style:italic;color:#7c3aed;font-size:11px;font-weight:600;text-decoration:underline;opacity:.7}
+@keyframes slideIntoPocket{0%{transform:translateY(-100px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.cres-wallet-back{position:absolute;bottom:0;width:300px;height:210px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:22px 22px 60px 60px;z-index:5;box-shadow:inset 0 25px 35px rgba(0,0,0,.4),inset 0 5px 15px rgba(0,0,0,.5)}
+.cres-card{position:absolute;width:280px;height:130px;left:10px;border-radius:16px;padding:16px;color:white;box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 -4px 15px rgba(0,0,0,.1);transition:transform .6s cubic-bezier(.34,1.56,.64,1),z-index 0s;animation:slideIntoPocket .8s cubic-bezier(.2,.8,.2,1) backwards;display:flex;flex-direction:column;justify-content:space-between}
+.cres-card-inner{display:flex;flex-direction:column;justify-content:space-between;height:100%}
+.cres-card-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.cres-chip{width:30px;height:22px;background:rgba(255,255,255,.2);border-radius:4px;border:1px solid rgba(255,255,255,.1)}
+.cres-card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
+.cres-card-label{font-size:8px;opacity:.7;text-transform:uppercase;margin-bottom:2px;display:block}
+.cres-card-value{font-size:10px;font-weight:600}
+.cres-card-addr{text-align:right}
+.cres-card-addr .stars{font-size:14px;letter-spacing:2px}
+.cres-card-addr .full{display:none;font-size:11px;letter-spacing:1px;font-family:monospace}
+.cres-card-bot{background:linear-gradient(135deg,#7c3aed,#6d28d9);bottom:100px;z-index:10;animation-delay:.1s}
+.cres-card-eth{background:linear-gradient(135deg,#627eea,#4361c4);bottom:75px;z-index:20;animation-delay:.2s}
+.cres-card-sol{background:linear-gradient(135deg,#9945ff,#7c3aed);bottom:50px;z-index:30;animation-delay:.3s}
+.cres-pocket{position:absolute;bottom:0;width:300px;height:170px;z-index:40;filter:drop-shadow(0 15px 25px rgba(26,26,46,.4))}
+.cres-pocket-content{position:absolute;top:42px;width:100%;text-align:center;z-index:50;display:flex;flex-direction:column;align-items:center;gap:6px}
+.cres-bal-stars{color:#6b7280;font-size:22px;letter-spacing:4px;transition:.3s}
+.cres-bal-real{color:#a3e635;font-size:20px;font-weight:700;opacity:0;position:absolute;top:0;left:50%;transform:translate(-50%,10px);transition:.3s}
+.cres-eye{margin-top:6px;height:18px;width:18px;position:relative;opacity:.3;transition:.3s;cursor:pointer}
+.cres-eye svg{position:absolute;top:0;left:0;stroke:#7c3aed;transition:.3s;width:18px;height:18px}
+.cres-eye .eye-slash{opacity:1}
+.cres-eye .eye-open{opacity:0}
+.cres-wallet:hover{transform:translateY(-5px)}
+.cres-wallet:hover .cres-eye{opacity:1}
+.cres-wallet:hover .cres-card-bot{transform:translateY(-75px) rotate(-3deg)}
+.cres-wallet:hover .cres-card-eth{transform:translateY(-45px) rotate(2deg)}
+.cres-wallet:hover .cres-card-sol{transform:translateY(-10px)}
+.cres-card:hover{z-index:100!important;transition-delay:0s!important}
+.cres-wallet:hover .cres-card-bot:hover{transform:translateY(-60px) scale(1.05) rotate(0)}
+.cres-wallet:hover .cres-card-eth:hover{transform:translateY(-70px) scale(1.05) rotate(0)}
+.cres-wallet:hover .cres-card-sol:hover{transform:translateY(-60px) scale(1.05) rotate(0)}
+.cres-card:hover .stars{display:none}
+.cres-card:hover .full{display:block}
+.cres-wallet:hover .cres-bal-stars{opacity:0}
+.cres-wallet:hover .cres-bal-real{opacity:1;transform:translate(-50%,0)}
+.cres-wallet:hover .cres-eye .eye-slash{opacity:0;transform:scale(.5)}
+.cres-wallet:hover .cres-eye .eye-open{opacity:1;transform:scale(1.1)}
+.cres-card .copy-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);border-radius:16px;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.2s}
+.cres-card:hover .copy-overlay{opacity:1;pointer-events:auto}
+.cres-card .copy-overlay span{color:#fff;font-size:12px;font-weight:700;background:rgba(255,255,255,.15);padding:8px 16px;border-radius:10px;backdrop-filter:blur(4px)}
+
+/* ═══ THEME TOGGLE ═══ */
+.bc-switch{display:inline-flex;align-items:center;cursor:pointer;user-select:none}
+.bc-switch input{position:absolute;opacity:0;width:0;height:0;margin:0}
+.bc-switch-track{position:relative;display:inline-flex;align-items:center;justify-content:space-between;width:56px;height:28px;padding:0 6px;background:var(--app-bg);border:1.5px solid #d1d5db;border-radius:999px;transition:background .22s ease}
+.bc-switch-thumb{position:absolute;z-index:1;top:50%;left:2px;width:22px;height:22px;background:#a3e635;border:1.5px solid #1a1a1a;border-radius:999px;transform:translateY(-50%);transition:left .26s ease,background .22s ease}
+.bc-switch-icon{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;color:#1a1a1a;transition:color .2s,opacity .2s}
+.bc-switch-icon svg{width:14px;height:14px;display:block}
+.bc-switch-icon--moon{opacity:.45}
+.bc-switch input:checked~.bc-switch-track{background:#1a1a1a;border-color:#1a1a1a}
+.bc-switch input:checked~.bc-switch-track .bc-switch-thumb{left:28px;background:#f5f5f5}
+.bc-switch input:checked~.bc-switch-track .bc-switch-icon--sun{color:#f5f5f5;opacity:.45}
+.bc-switch input:checked~.bc-switch-track .bc-switch-icon--moon{color:#1a1a1a;opacity:1}
+
+/* ═══ TYPEWRITER LOADER ═══ */
+.typewriter-loader{--tw-blue:#7c3aed;--tw-blue-dark:#6d28d9;--tw-key:#fff;--tw-paper:#f3f0ff;--tw-text:#d4ccfa;--tw-tool:#a3e635;--tw-duration:3s;position:relative;animation:tw-bounce var(--tw-duration) linear infinite}
+.typewriter-loader .tw-slide{width:80px;height:16px;border-radius:3px;margin-left:12px;transform:translateX(12px);background:linear-gradient(var(--tw-blue),var(--tw-blue-dark));animation:tw-slide var(--tw-duration) ease infinite}
+.typewriter-loader .tw-slide:before,.typewriter-loader .tw-slide:after,.typewriter-loader .tw-slide i:before{content:"";position:absolute;background:var(--tw-tool)}
+.typewriter-loader .tw-slide:before{width:2px;height:6px;top:5px;left:100%}
+.typewriter-loader .tw-slide:after{left:82px;top:2px;height:12px;width:5px;border-radius:3px}
+.typewriter-loader .tw-slide i{display:block;position:absolute;right:100%;width:5px;height:3px;top:3px;background:var(--tw-tool)}
+.typewriter-loader .tw-slide i:before{right:100%;top:-2px;width:3px;border-radius:2px;height:12px}
+.typewriter-loader .tw-paper{position:absolute;left:20px;top:-22px;width:34px;height:40px;border-radius:5px;background:var(--tw-paper);transform:translateY(40px);animation:tw-paper var(--tw-duration) linear infinite}
+.typewriter-loader .tw-paper:before{content:"";position:absolute;left:5px;right:5px;top:6px;border-radius:2px;height:3px;transform:scaleY(.8);background:var(--tw-text);box-shadow:0 10px 0 var(--tw-text),0 20px 0 var(--tw-text),0 30px 0 var(--tw-text)}
+.typewriter-loader .tw-keyboard{width:104px;height:48px;margin-top:-8px;z-index:1;position:relative}
+.typewriter-loader .tw-keyboard:before,.typewriter-loader .tw-keyboard:after{content:"";position:absolute}
+.typewriter-loader .tw-keyboard:before{top:0;left:0;right:0;bottom:0;border-radius:6px;background:linear-gradient(135deg,var(--tw-blue),var(--tw-blue-dark));transform:perspective(10px) rotateX(2deg);transform-origin:50% 100%}
+.typewriter-loader .tw-keyboard:after{left:2px;top:22px;width:9px;height:3px;border-radius:2px;box-shadow:13px 0 0 var(--tw-key),26px 0 0 var(--tw-key),39px 0 0 var(--tw-key),52px 0 0 var(--tw-key),65px 0 0 var(--tw-key),78px 0 0 var(--tw-key),19px 8px 0 var(--tw-key),32px 8px 0 var(--tw-key),45px 8px 0 var(--tw-key),52px 8px 0 var(--tw-key),59px 8px 0 var(--tw-key),72px 8px 0 var(--tw-key);animation:tw-keyboard var(--tw-duration) linear infinite}
+@keyframes tw-bounce{85%,92%,100%{transform:translateY(0)}89%{transform:translateY(-3px)}95%{transform:translateY(2px)}}
+@keyframes tw-slide{5%{transform:translateX(12px)}15%,30%{transform:translateX(5px)}40%,55%{transform:translateX(0)}65%,70%{transform:translateX(-3px)}80%,89%{transform:translateX(-10px)}100%{transform:translateX(12px)}}
+@keyframes tw-paper{5%{transform:translateY(40px)}20%,30%{transform:translateY(30px)}40%,55%{transform:translateY(20px)}65%,70%{transform:translateY(8px)}80%,85%{transform:translateY(0)}92%,100%{transform:translateY(40px)}}
+@keyframes tw-keyboard{5%,12%,21%,30%,39%,48%,57%,66%,75%,84%{box-shadow:13px 0 0 var(--tw-key),26px 0 0 var(--tw-key),39px 0 0 var(--tw-key),52px 0 0 var(--tw-key),65px 0 0 var(--tw-key),78px 0 0 var(--tw-key),19px 8px 0 var(--tw-key),32px 8px 0 var(--tw-key),45px 8px 0 var(--tw-key),52px 8px 0 var(--tw-key),59px 8px 0 var(--tw-key),72px 8px 0 var(--tw-key)}}
+
+/* ═══ TX PROCESSING OVERLAY ═══ */
+.tx-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:.3s}
+.tx-overlay.show{opacity:1;pointer-events:auto}
+.tx-overlay-card{background:#fff;border-radius:24px;padding:40px 30px;text-align:center;max-width:300px;width:90%;box-shadow:0 24px 50px rgba(0,0,0,.2)}
+.tx-overlay-card h3{font-size:16px;font-weight:800;color:#1a1a1a;margin:16px 0 4px}
+.tx-overlay-card p{font-size:12px;color:#9ca3af;font-weight:500}
+.tx-steps{margin-top:16px;text-align:left}
+.tx-step{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:12px;font-weight:600;color:#9ca3af}
+.tx-step.active{color:#7c3aed}
+.tx-step.done{color:#22c55e}
+.tx-step-dot{width:8px;height:8px;border-radius:50%;background:#e5e7eb;flex-shrink:0}
+.tx-step.active .tx-step-dot{background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.4)}
+.tx-step.done .tx-step-dot{background:#22c55e}
+
+/* ═══ DEPOSIT NOTIFICATION ═══ */
+.deposit-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:#22c55e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;animation:deposit-pulse 2s infinite;z-index:10;border:2px solid #fff}
+@keyframes deposit-pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.deposit-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:14px;padding:12px 20px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:10000;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#1a1a1a;border-left:4px solid #22c55e;animation:slideInDown .4s ease;max-width:340px}
+@keyframes slideInDown{from{transform:translateX(-50%) translateY(-100%);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
+</style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
 <style id="gv-css">
 
@@ -2269,7 +2366,15 @@
             </div>
             <span class="font-black tracking-tighter text-lg">HUB</span>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
+            <label class="bc-switch" title="Toggle Theme">
+                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                <div class="bc-switch-track">
+                    <div class="bc-switch-thumb"></div>
+                    <div class="bc-switch-icon bc-switch-icon--sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
+                    <div class="bc-switch-icon bc-switch-icon--moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+                </div>
+            </label>
             <button onclick="navigateTo('page-tx-history')" class="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm press" title="Transaction History">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </button>
@@ -2279,44 +2384,57 @@
         <div class="w-full flex justify-between items-center px-1">
             <h1 class="text-2xl font-extrabold tracking-tight">Botchain Testnet</h1>
         </div>
-        <div class="flip-card cursor-pointer shrink-0" id="interactiveCard" onclick="flipCard()">
-            <div class="flip-card-inner" id="cardInner">
-                <div class="flip-card-front">
-                    <span class="absolute top-6 right-6 font-black text-[10px] tracking-widest text-stone-500 uppercase">BOTCHAIN TESTNET</span>
-                    <div class="absolute top-5 left-6 flex items-center gap-3">
-                        <div class="avatar-container">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar" class="avatar-img" />
+        <div class="w-full shrink-0 flex flex-col items-center" style="padding-top:8px">
+            <div class="cres-wallet" id="cresWallet">
+                <div class="cres-wallet-back"></div>
+                <div class="cres-card cres-card-bot" onclick="event.stopPropagation()">
+                    <div class="cres-card-inner">
+                        <div class="cres-card-top"><span>BOT</span><div class="cres-chip"></div></div>
+                        <div class="cres-card-bottom">
+                            <div><span class="cres-card-label">Balance</span><span class="cres-card-value" id="wpcBotBal">0.00 BOT</span></div>
+                            <div class="cres-card-addr"><span class="stars">**** ****</span><span class="full" id="wpcBotAddr">Loading...</span></div>
                         </div>
-                        <span class="font-extrabold text-sm text-stone-700 tracking-tight">Hi, Alex</span>
                     </div>
-                    <div class="absolute bottom-6 left-8 text-left">
-                        <span class="text-xs text-stone-600 font-bold block mb-0.5">Total Assets Balance</span>
-                        <span class="text-3xl font-black text-black tracking-tight block">$0.00</span>
-                    </div>
-                    <div class="absolute bottom-0 left-0 right-0 h-2 bg-purple-600"></div>
+                    <div class="copy-overlay" onclick="event.stopPropagation();copyWalletAddress()"><span>Click to Copy Address</span></div>
                 </div>
-                <div class="flip-card-back">
-                    <div class="strip"></div>
-                    <div class="text-left px-8 w-full my-auto">
-                        <span class="text-[10px] font-black text-slate-400 tracking-wider uppercase block mb-1">Wallet Address</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg font-black text-white tracking-tight font-mono">bot1x...m9k4</span>
-                            <button class="copy-btn" onclick="event.stopPropagation(); copyCardAddress()">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                            </button>
+                <div class="cres-card cres-card-eth" onclick="event.stopPropagation()">
+                    <div class="cres-card-inner">
+                        <div class="cres-card-top"><span>ETH</span><div class="cres-chip"></div></div>
+                        <div class="cres-card-bottom">
+                            <div><span class="cres-card-label">Balance</span><span class="cres-card-value" id="wpcEthBal">0.00 ETH</span></div>
+                            <div class="cres-card-addr"><span class="stars">**** ****</span><span class="full" id="wpcEthAddr">Testnet</span></div>
                         </div>
-                        <span id="copyFeedbackCard" class="text-[10px] font-bold text-lime-400 mt-1 block opacity-0 transition-opacity">Copied!</span>
                     </div>
-                    <div class="absolute bottom-6 left-8 right-8">
-                        <div class="w-full h-px bg-gradient-to-r from-transparent via-stone-600 to-transparent"></div>
+                </div>
+                <div class="cres-card cres-card-sol" onclick="event.stopPropagation()">
+                    <div class="cres-card-inner">
+                        <div class="cres-card-top"><span>SOL</span><div class="cres-chip"></div></div>
+                        <div class="cres-card-bottom">
+                            <div><span class="cres-card-label">Balance</span><span class="cres-card-value" id="wpcSolBal">0.00 SOL</span></div>
+                            <div class="cres-card-addr"><span class="stars">**** ****</span><span class="full" id="wpcSolAddr">Testnet</span></div>
+                        </div>
                     </div>
-                    <div class="absolute bottom-8 right-8 w-20 h-6 bg-lime-400 rounded flex items-center justify-center border border-black">
-                        <span class="text-[10px] font-black text-black tracking-wide">SECURE</span>
+                </div>
+                <div class="cres-pocket">
+                    <svg class="pocket-svg" viewBox="0 0 300 170" fill="none" style="width:100%;height:100%">
+                        <path d="M 0 20 C 0 10, 5 10, 10 10 C 20 10, 25 25, 40 25 L 260 25 C 275 25, 280 10, 290 10 C 295 10, 300 10, 300 20 L 300 130 C 300 165, 280 170, 260 170 L 40 170 C 20 170, 0 165, 0 130 Z" fill="#1a1a2e"></path>
+                        <path d="M 8 22 C 8 16, 12 16, 15 16 C 23 16, 27 29, 40 29 L 260 29 C 273 29, 277 16, 285 16 C 288 16, 292 16, 292 22 L 292 130 C 292 160, 275 162, 260 162 L 40 162 C 25 162, 8 162, 8 130 Z" stroke="#374151" stroke-width="1.5" stroke-dasharray="6 4"></path>
+                    </svg>
+                    <div class="cres-pocket-content">
+                        <div style="position:relative;height:28px;width:100%">
+                            <div class="cres-bal-stars">******</div>
+                            <div class="cres-bal-real" id="wpcTotalUsd">$0.00</div>
+                        </div>
+                        <div style="color:#6b7280;font-size:11px;font-weight:600">Total Balance</div>
+                        <div class="cres-eye" onclick="event.stopPropagation();toggleBalanceVisibility()">
+                            <svg class="eye-slash" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="3" y1="3" x2="21" y2="21"></line></svg>
+                            <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="w-full shrink-0 flex flex-col">
+        <div class="w-full shrink-0 flex flex-col" style="margin-top:32px">
             <span class="text-[10px] font-black text-stone-400 uppercase tracking-wider text-center block mb-1.5">Switch Chain Network</span>
             <div class="doodle-container">
                 <div class="doodle-icon-content toggle-doodle-node active-chain" data-chain="bot">
@@ -2362,19 +2480,22 @@
             <div class="container-card-charts">
                 <div class="card-charts">
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;">
-                        <label style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;border-radius:10px;color:#a7a7a7;font-size:7px;font-weight:600;cursor:pointer;"><input type="radio" name="radio" style="display:none;"/><span style="width:100%;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:10px;z-index:1;">1H</span></label>
-                        <label style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;border-radius:10px;color:#a7a7a7;font-size:7px;font-weight:600;cursor:pointer;"><input type="radio" name="radio" style="display:none;"/><span style="width:100%;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:10px;z-index:1;">1D</span></label>
-                        <label style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;border-radius:10px;color:#a7a7a7;font-size:7px;font-weight:600;cursor:pointer;"><input type="radio" name="radio" checked style="display:none;"/><span style="width:100%;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:10px;z-index:1;color:#fff;background:linear-gradient(15deg,#898989,#181818,#000);transform:scale(1.05);">1W</span></label>
-                        <label style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;border-radius:10px;color:#a7a7a7;font-size:7px;font-weight:600;cursor:pointer;"><input type="radio" name="radio" style="display:none;"/><span style="width:100%;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:10px;z-index:1;">1M</span></label>
-                        <label style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;border-radius:10px;color:#a7a7a7;font-size:7px;font-weight:600;cursor:pointer;"><input type="radio" name="radio" style="display:none;"/><span style="width:100%;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:10px;z-index:1;">ALL</span></label>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg" alt="BOT" style="width:20px;height:20px;border-radius:50%" />
+                            <span style="font-size:11px;font-weight:800;color:#1a1a1a">BOT / USD</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:4px">
+                            <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;animation:deposit-pulse 2s infinite"></span>
+                            <span style="font-size:9px;font-weight:700;color:#22c55e">LIVE</span>
+                        </div>
                     </div>
-                    <div style="display:flex;flex-direction:column;padding:0 14px;font-weight:500;">
-                        <p style="background-image:linear-gradient(to top left,#92400e,#f9d86d,#a6a6a6);background-clip:text;-webkit-background-clip:text;color:transparent;font-size:14px;font-weight:700;">BOT 0.00</p>
-                        <p style="background-image:linear-gradient(to right,#8e1414,#fff,#fff);background-clip:text;-webkit-background-clip:text;color:transparent;font-size:9px;">0.00%</p>
+                    <div style="display:flex;flex-direction:column;padding:0 14px 10px;font-weight:500;">
+                        <p style="font-size:18px;font-weight:900;color:#1a1a1a" id="chartPriceLabel">$0.00</p>
+                        <p style="font-size:11px;font-weight:700;margin-top:2px" id="chartChangeLabel"><span style="color:#9ca3af">24h:</span> —</p>
                     </div>
                     <div style="position:relative;width:100%;height:100%;">
                         <svg viewBox="0 0 469 262" fill="none" style="width:100%;height:auto;">
-                            <path d="M2.5 261L6.42112 216.887C6.4726 216.308 6.69121 215.757 7.05039 215.3L11.359 209.816C11.7743 209.287 12 208.635 12 207.962V202.987C12 202.346 12.2055 201.722 12.5863 201.206L27.2479 181.342C27.4151 181.115 27.5496 180.866 27.6474 180.602L31.7748 169.458C32.2107 168.281 33.333 167.5 34.588 167.5H35.5756C37.8226 167.5 39.292 169.89 38.4086 171.956C36.1137 177.322 34.0615 183.976 36.5 185.5C39.338 187.274 43.1722 202.55 45.2823 212.494C45.6701 214.321 47.5992 215.378 49.3403 214.701L53.6761 213.015C54.5141 212.689 55.1618 212.004 55.4407 211.15L78.3519 140.954C78.45 140.653 78.5 140.339 78.5 140.023V114.385C78.5 114.129 78.5327 113.875 78.5974 113.627L95.9026 47.3728C95.9673 47.1253 96 46.8705 96 46.6147V27L102.483 117.259C102.494 117.42 102.519 117.578 102.555 117.735L108.878 144.485C108.959 144.826 109.098 145.15 109.291 145.442L117.591 158.073C118.871 160.022 121.788 159.829 122.8 157.729L131.594 139.49C132.629 137.343 135.632 137.202 136.864 139.241L147.401 156.681C148.059 157.771 149.334 158.326 150.581 158.067L170.757 153.863C171.832 153.639 172.942 154.02 173.654 154.856L187.803 171.481C189.536 173.517 192.865 172.441 193.078 169.776L199.81 85.6203C200.037 82.7832 203.718 81.8273 205.297 84.1955L227.5 117.5L230.279 122.299C231.461 124.342 234.43 124.282 235.53 122.194L237.842 117.801C237.947 117.601 238.074 117.414 238.222 117.242L261.286 90.4123C262.029 89.5473 263.199 89.1789 264.304 89.4616L280.695 93.6546C282.448 94.1029 284.196 92.9099 284.416 91.1144L294.882 6.02633C295.16 3.76377 297.761 2.62601 299.611 3.95714L322.945 20.7414C323.618 21.2254 324.061 21.9662 324.168 22.7881L335.097 106.419C335.317 108.103 336.89 109.268 338.565 108.989L365.007 104.582C366.835 104.277 368.5 105.688 368.5 107.541V116.792C368.5 117.258 368.608 117.717 368.817 118.133L385.671 151.842C386.179 152.858 387.218 153.5 388.354 153.5H393.231C393.736 153.5 394.232 153.373 394.674 153.13L406.191 146.814C407.884 145.886 409.999 146.775 410.522 148.633L418.132 175.692C418.366 176.523 418.23 177.415 417.76 178.139L412.903 185.611C412.341 186.476 412.262 187.568 412.694 188.504L426.196 217.757C426.686 218.82 427.749 219.5 428.919 219.5H439.146C440.282 219.5 441.321 220.142 441.829 221.158L454.169 245.839C454.387 246.273 454.706 246.648 455.1 246.932L467 255.5" stroke="url(#paint0_linear_230_5)" stroke-width="5" stroke-dasharray="1500" style="animation:draw 8s ease infinite;"/>
+                            <path d="M2.5 261L6.42112 216.887C6.4726 216.308 6.69121 215.757 7.05039 215.3L11.359 209.816C11.7743 209.287 12 208.635 12 207.962V202.987C12 202.346 12.2055 201.722 12.5863 201.206L27.2479 181.342C27.4151 181.115 27.5496 180.866 27.6474 180.602L31.7748 169.458C32.2107 168.281 33.333 167.5 34.588 167.5H35.5756C37.8226 167.5 39.292 169.89 38.4086 171.956C36.1137 177.322 34.0615 183.976 36.5 185.5C39.338 187.274 43.1722 202.55 45.2823 212.494C45.6701 214.321 47.5992 215.378 49.3403 214.701L53.6761 213.015C54.5141 212.689 55.1618 212.004 55.4407 211.15L78.3519 140.954C78.45 140.653 78.5 140.339 78.5 140.023V114.385C78.5 114.129 78.5327 113.875 78.5974 113.627L95.9026 47.3728C95.9673 47.1253 96 46.8705 96 46.6147V27L102.483 117.259C102.494 117.42 102.519 117.578 102.555 117.735L108.878 144.485C108.959 144.826 109.098 145.15 109.291 145.442L117.591 158.073C118.871 160.022 121.788 159.829 122.8 157.729L131.594 139.49C132.629 137.343 135.632 137.202 136.864 139.241L147.401 156.681C148.059 157.771 149.334 158.326 150.581 158.067L170.757 153.863C171.832 153.639 172.942 154.02 173.654 154.856L187.803 171.481C189.536 173.517 192.865 172.441 193.078 169.776L199.81 85.6203C200.037 82.7832 203.718 81.8273 205.297 84.1955L227.5 117.5L230.279 122.299C231.461 124.342 234.43 124.282 235.53 122.194L237.842 117.801C237.947 117.601 238.074 117.414 238.222 117.242L261.286 90.4123C262.029 89.5473 263.199 89.1789 264.304 89.4616L280.695 93.6546C282.448 94.1029 284.196 92.9099 284.416 91.1144L294.882 6.02633C295.16 3.76377 297.761 2.62601 299.611 3.95714L322.945 20.7414C323.618 21.2254 324.061 21.9662 324.168 22.7881L335.097 106.419C335.317 108.103 336.89 109.268 338.565 108.989L365.007 104.582C366.835 104.277 368.5 105.688 368.5 107.541V116.792C368.5 117.258 368.608 117.717 368.817 118.133L385.671 151.842C386.179 152.858 387.218 153.5 388.354 153.5H393.231C393.736 153.5 394.232 153.373 394.674 153.13L406.191 146.814C407.884 145.886 409.999 146.775 410.522 148.639L418.5 176L419.76 180.341C420.419 182.585 418.699 185 416.347 185H409.724C409.126 185 408.549 185.235 408.115 185.654L394.915 198.48C394.377 199.002 394.08 199.726 394.08 200.482V213.465C394.08 214.038 394.288 214.594 394.672 215.04L407.379 229.977C408.135 230.859 407.519 232.15 406.38 232.15H368.5" stroke="url(#paint0_linear_230_5)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                             <defs><linearGradient id="paint0_linear_230_5" x1="3" y1="176" x2="463" y2="189" gradientUnits="userSpaceOnUse"><stop stop-color="#89FB73" stop-opacity="0.05"/><stop offset="0.5" stop-color="white"/><stop offset="1" stop-color="#A62727" stop-opacity="0.1"/></linearGradient></defs>
                         </svg>
                         <div style="position:absolute;inset:0;display:flex;justify-content:space-between;padding:0 12px;">
@@ -4841,6 +4962,25 @@
 <div class="cx-toast-wrap" id="cxToastWrap"></div>
 <div class="cx-confetti" id="cxConfetti"></div>
 
+<!-- TX Processing Overlay -->
+<div class="tx-overlay" id="txOverlay">
+    <div class="tx-overlay-card">
+        <div class="typewriter-loader" style="margin:0 auto">
+            <div class="tw-slide"><i></i></div>
+            <div class="tw-paper"></div>
+            <div class="tw-keyboard"></div>
+        </div>
+        <h3 id="txOverlayTitle">Processing Transaction</h3>
+        <p id="txOverlaySubtitle">Please wait while we process your transaction</p>
+        <div class="tx-steps" id="txOverlaySteps">
+            <div class="tx-step" id="txStep1"><div class="tx-step-dot"></div><span>Initializing wallet...</span></div>
+            <div class="tx-step" id="txStep2"><div class="tx-step-dot"></div><span>Estimating gas...</span></div>
+            <div class="tx-step" id="txStep3"><div class="tx-step-dot"></div><span>Broadcasting transaction...</span></div>
+            <div class="tx-step" id="txStep4"><div class="tx-step-dot"></div><span>Confirming on-chain...</span></div>
+        </div>
+    </div>
+</div>
+
 </div><!-- /app-frame -->
 
 <script>
@@ -4931,15 +5071,19 @@ generateQR();
 
 // ─── WALLET FUNCTIONS ───
 function flipCard() {
-    document.getElementById('cardInner').classList.toggle('is-flipped');
+    /* wallet pocket replaces flip card */
 }
 function copyCardAddress() {
-    const fb = document.getElementById('copyFeedbackCard');
-    fb.style.opacity = '1';
-    setTimeout(() => fb.style.opacity = '0', 1500);
+    copyWalletAddress();
 }
 function copyWalletAddress() {
-    alert('Address copied to clipboard!');
+    if(window.WalletEngine && window.WalletEngine.isInitialized()){
+        var addr = window.WalletEngine.getAddress();
+        if(navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText(addr).then(function(){ if(window.cxToast) window.cxToast('Address copied!','ok'); });
+        }
+    }
+}
 }
 function selectNetwork(name) {
     alert(name + ' network selected');
@@ -5740,7 +5884,7 @@ function pickItem(id){
  closePicker();}
 window.cxOpenPicker=openPicker;window.cxClosePicker=closePicker;window.cxRenderPicker=renderPicker;window.cxPickItem=pickItem;
 /* permanent bottom nav (hidden only on onboarding/login) + picker can never get stuck */
-(function(){var orig=window.showPage;if(typeof orig==='function'){window.showPage=function(){closePicker();var r=orig.apply(this,arguments);var nav=document.getElementById('bottomNav');if(nav){var id=arguments[0];if(id==='page-onboarding'||id==='page-login'){nav.classList.add('hidden');}else{nav.classList.remove('hidden');}}return r;};}})();
+(function(){var orig=window.showPage;if(typeof orig==='function'){window.showPage=function(){closePicker();var r=orig.apply(this,arguments);var nav=document.getElementById('bottomNav');if(nav){var id=arguments[0];var hideNav=['page-onboarding','page-login','page-tx-history','page-tx-detail'];if(hideNav.indexOf(id)>-1){nav.classList.add('hidden');}else{nav.classList.remove('hidden');}}return r;};}})();
 
 /* ── WITHDRAW ── */
 function renderWdToken(){var t=tok(S.wdToken);$('cxWdTokenIco').innerHTML=ico(t,40);$('cxWdTokenSym').textContent=t.id;
@@ -6952,7 +7096,7 @@ if(document.readyState === 'loading'){
 
 })();
 </script>
-<script src="wallet-engine.js?v=8"></script>
+<script src="wallet-engine.js?v=9"></script>
 <script>
 function doCreateWallet(){
   var name = document.getElementById('createUserName').value.trim();
@@ -6988,6 +7132,109 @@ function doLogout(){
   historyStack.length = 0;
   showPage('page-onboarding');
 }
+
+/* ═══ THEME TOGGLE ═══ */
+function toggleTheme(){
+  var isDark = document.getElementById('themeToggle').checked;
+  document.documentElement.classList.toggle('dark-theme', isDark);
+  localStorage.setItem('creso_theme', isDark ? 'dark' : 'light');
+}
+(function(){
+  var saved = localStorage.getItem('creso_theme');
+  if(saved === 'dark'){
+    document.documentElement.classList.add('dark-theme');
+    var t = document.getElementById('themeToggle');
+    if(t) t.checked = true;
+  }
+})();
+
+/* ═══ BALANCE VISIBILITY ═══ */
+var balanceHidden = true;
+function toggleBalanceVisibility(){
+  balanceHidden = !balanceHidden;
+  var starsEl = document.querySelector('.cres-bal-stars');
+  var realEl = document.querySelector('.cres-bal-real');
+  if(starsEl) starsEl.style.opacity = balanceHidden ? '1' : '0';
+  if(realEl){ realEl.style.opacity = balanceHidden ? '0' : '1'; realEl.style.transform = balanceHidden ? 'translate(-50%,10px)' : 'translate(-50%,0)'; }
+  var eyeSlash = document.querySelector('.cres-eye .eye-slash');
+  var eyeOpen = document.querySelector('.cres-eye .eye-open');
+  if(eyeSlash){ eyeSlash.style.opacity = balanceHidden ? '1' : '0'; eyeSlash.style.transform = balanceHidden ? 'scale(1)' : 'scale(.5)'; }
+  if(eyeOpen){ eyeOpen.style.opacity = balanceHidden ? '0' : '1'; eyeOpen.style.transform = balanceHidden ? 'scale(.5)' : 'scale(1.1)'; }
+}
+
+/* ═══ WALLET POCKET UPDATE ═══ */
+function updateWalletPocket(){
+  if(!window.WalletEngine || !window.WalletEngine.isInitialized()) return;
+  var addr = window.WalletEngine.getAddress();
+  var short = addr ? addr.slice(0,6)+'...'+addr.slice(-4) : 'Loading...';
+  var botBal = 0, ethBal = 0, solBal = 0;
+  var priceBot = window.WalletEngine.getBOTPrice() || 0;
+  if(typeof chainDatabase !== 'undefined'){
+    botBal = parseFloat(chainDatabase.bot ? chainDatabase.bot.balance : 0) || 0;
+    ethBal = parseFloat(chainDatabase.eth ? chainDatabase.eth.balance : 0) || 0;
+    solBal = parseFloat(chainDatabase.sol ? chainDatabase.sol.balance : 0) || 0;
+  }
+  var totalUsd = (botBal * priceBot).toFixed(2);
+  var el;
+  el = document.getElementById('wpcBotBal'); if(el) el.textContent = botBal.toFixed(4) + ' BOT';
+  el = document.getElementById('wpcEthBal'); if(el) el.textContent = ethBal.toFixed(4) + ' ETH';
+  el = document.getElementById('wpcSolBal'); if(el) el.textContent = solBal.toFixed(4) + ' SOL';
+  el = document.getElementById('wpcBotAddr'); if(el) el.textContent = short;
+  el = document.getElementById('wpcEthAddr'); if(el) el.textContent = 'Sepolia Testnet';
+  el = document.getElementById('wpcSolAddr'); if(el) el.textContent = 'Devnet';
+  el = document.getElementById('wpcTotalUsd'); if(el) el.textContent = '$' + totalUsd;
+  /* chart price */
+  el = document.getElementById('chartPriceLabel'); if(el) el.textContent = '$' + (priceBot > 0 ? priceBot.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '0.00');
+  var ch = typeof chainDatabase !== 'undefined' && chainDatabase.bot ? chainDatabase.bot.change24h : null;
+  var dir = typeof chainDatabase !== 'undefined' && chainDatabase.bot ? chainDatabase.bot.changeDir : null;
+  el = document.getElementById('chartChangeLabel');
+  if(el){
+    if(ch && ch !== '—'){
+      var color = dir === 'up' ? '#22c55e' : (dir === 'down' ? '#ef4444' : '#9ca3af');
+      el.innerHTML = '<span style="color:#9ca3af">24h:</span> <span style="color:'+color+'">'+ch+'</span>';
+    } else {
+      el.innerHTML = '<span style="color:#9ca3af">24h:</span> —';
+    }
+  }
+}
+setInterval(updateWalletPocket, 3000);
+
+/* ═══ TX OVERLAY ═══ */
+function showTxOverlay(title, subtitle){
+  var o = document.getElementById('txOverlay');
+  if(!o) return;
+  document.getElementById('txOverlayTitle').textContent = title || 'Processing Transaction';
+  document.getElementById('txOverlaySubtitle').textContent = subtitle || 'Please wait...';
+  ['txStep1','txStep2','txStep3','txStep4'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el){ el.className = 'tx-step'; }
+  });
+  o.classList.add('show');
+}
+function updateTxStep(step, status){
+  var el = document.getElementById('txStep'+step);
+  if(el){
+    if(status === 'active') el.className = 'tx-step active';
+    else if(status === 'done') el.className = 'tx-step done';
+    else el.className = 'tx-step';
+  }
+}
+function hideTxOverlay(){
+  var o = document.getElementById('txOverlay');
+  if(o) o.classList.remove('show');
+}
+
+/* ═══ DEPOSIT NOTIFICATION ═══ */
+function showDepositNotif(amount, from){
+  var existing = document.querySelector('.deposit-toast');
+  if(existing) existing.remove();
+  var el = document.createElement('div');
+  el.className = 'deposit-toast';
+  el.innerHTML = '<div style="width:36px;height:36px;border-radius:10px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div><div><div style="font-size:13px;font-weight:800;color:#1a1a1a">Deposit Received</div><div style="font-size:11px;color:#9ca3af;font-weight:500">'+amount+' BOT from '+(from ? from.slice(0,6)+'...'+from.slice(-4) : 'Unknown')+'</div></div>';
+  document.body.appendChild(el);
+  setTimeout(function(){ el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(function(){ el.remove(); },300); }, 5000);
+}
+
 (function(){
   var ex = localStorage.getItem('creso_wallet_v1');
   var b = document.getElementById('existingWalletBtn');
