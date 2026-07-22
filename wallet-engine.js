@@ -20,8 +20,9 @@ var SBT_ABI = [
   'event SoulboundGiftMinted(uint256 indexed tokenId, address indexed sender, address indexed recipient, string tokenURI, uint256 amount)',
   'event GiftConverted(uint256 indexed tokenId, address indexed recipient, uint256 amount)'
 ];
-var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,wrapped-bot&vs_currencies=usd&include_24hr_change=true';
-var BOT_PRICE_USD = 9.74;
+var COINGECKO_API_KEY = 'CG-y15ZH3qSpLnBRwxaq9pGfiwW';
+var COINGECKO_URL = 'https://pro-api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,wrapped-bot&vs_currencies=usd&include_24hr_change=true&x_cg_pro_api_key=' + COINGECKO_API_KEY;
+var BOT_PRICE_USD = 0;
 var STORAGE_KEY = 'creso_wallet_v1';
 var PROFILE_KEY = 'creso_profile_v1';
 
@@ -32,7 +33,7 @@ var walletData = null;
 
 function $(id){ return document.getElementById(id); }
 function shortAddr(a){ return a ? a.slice(0,6)+'...'+a.slice(-4) : ''; }
-function fmt(n){ return window.cxFmt ? window.cxFmt(n) : Number(n).toLocaleString('en-US',{maximumFractionDigits:6}); }
+function fmt(n){ return Number(n).toLocaleString('en-US',{maximumFractionDigits:6}); }
 
 /* ── 1. WALLET CREATION / LOADING ── */
 function loadWallet(){
@@ -40,7 +41,7 @@ function loadWallet(){
   return false;
 }
 function createWallet(){
-  if(typeof ethers === 'undefined') throw new Error('ethers.js not loaded — check your internet connection');
+  if(typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   var w = ethers.Wallet.createRandom();
   walletData = { address: w.address, privateKey: w.privateKey, mnemonic: w.mnemonic.phrase, createdAt: Date.now() };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
@@ -83,7 +84,31 @@ async function fetchAllBalances(){
   return botBal;
 }
 
-/* ── 3. COINGECKO PRICE FETCHING ── */
+/* ── 3. REAL GAS ESTIMATION ── */
+async function estimateGasFee(toAddress, amountEth){
+  if(!provider || !wallet) return { gasLimit: '21000', gasPrice: '0', feeBot: '0', feeUsd: '0' };
+  try {
+    var amountWei = ethers.parseEther(amountEth.toString());
+    var tx = { from: wallet.address, to: toAddress, value: amountWei };
+    var gasEstimate = await provider.estimateGas(tx);
+    var feeData = await provider.getFeeData();
+    var gasPrice = feeData.gasPrice || ethers.parseUnits('1','gwei');
+    var totalFee = gasEstimate * gasPrice;
+    var feeBot = parseFloat(ethers.formatEther(totalFee));
+    var feeUsd = (feeBot * BOT_PRICE_USD).toFixed(4);
+    return {
+      gasLimit: gasEstimate.toString(),
+      gasPrice: ethers.formatUnits(gasPrice, 'gwei'),
+      feeBot: feeBot.toFixed(6),
+      feeUsd: '$' + feeUsd
+    };
+  } catch(e){
+    console.error('[WalletEngine] gas estimate error', e);
+    return { gasLimit: '21000', gasPrice: '1', feeBot: '0.000021', feeUsd: '$0.00' };
+  }
+}
+
+/* ── 4. COINGECKO PRICE FETCHING ── */
 async function fetchPrices(){
   try {
     var resp = await fetch(COINGECKO_URL);
@@ -128,24 +153,28 @@ async function fetchPrices(){
   } catch(e){ console.error('[WalletEngine] CoinGecko failed', e); }
 }
 
-/* ── 4. REAL QR CODE ── */
+/* ── 5. REAL QR CODE ── */
 function generateRealQR(containerId, address){
   var el = $(containerId); if(!el||!address) return;
   el.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(address)+'&bgcolor=ffffff&color=000000" alt="QR" style="width:100%;height:100%;border-radius:12px;" />';
 }
 
-/* ── 5. REAL SEND ── */
+/* ── 6. REAL SEND ── */
 async function realSend(toAddress, amountEth){
   if(!wallet) throw new Error('Wallet not connected');
   if(!ethers.isAddress(toAddress)) throw new Error('Invalid address');
   var amountWei = ethers.parseEther(amountEth.toString());
   var bal = await provider.getBalance(wallet.address);
   if(bal < amountWei) throw new Error('Insufficient balance');
+  var feeData = await provider.getFeeData();
+  var gasEstimate = await provider.estimateGas({ from:wallet.address, to:toAddress, value:amountWei });
+  var gasCost = gasEstimate * (feeData.gasPrice || ethers.parseUnits('1','gwei'));
+  if(bal < amountWei + gasCost) throw new Error('Insufficient balance for gas');
   var tx = await wallet.sendTransaction({ to: toAddress, value: amountWei });
   return { hash: tx.hash, wait: function(){ return tx.wait(); } };
 }
 
-/* ── 6. REAL GIFT SEND (SBT) ── */
+/* ── 7. REAL GIFT SEND (SBT) ── */
 async function realGiftSend(recipient, amountEth, message, tokenURI){
   if(!sbtContract) throw new Error('Contract not connected');
   if(!ethers.isAddress(recipient)) throw new Error('Invalid recipient');
@@ -155,28 +184,28 @@ async function realGiftSend(recipient, amountEth, message, tokenURI){
   return { hash: tx.hash, wait: function(){ return tx.wait(); } };
 }
 
-/* ── 7. REAL GIFT CLAIM (SBT) ── */
+/* ── 8. REAL GIFT CLAIM (SBT) ── */
 async function realGiftClaim(tokenId){
   if(!sbtContract) throw new Error('Contract not connected');
   var tx = await sbtContract.convertToBot(tokenId);
   return { hash: tx.hash, wait: function(){ return tx.wait(); } };
 }
 
-/* ── 8. READ GIFT DATA ── */
+/* ── 9. READ GIFT DATA ── */
 async function readGiftData(tokenId){
   if(!sbtContract) throw new Error('Contract not connected');
   var d = await sbtContract.getGiftData(tokenId);
   return { sender:d.sender, recipient:d.recipient, message:d.message, amount:ethers.formatEther(d.amount), timestamp:Number(d.timestamp) };
 }
 
-/* ── 9. ADD BOTCHAIN TO METAMASK ── */
+/* ── 10. ADD BOTCHAIN TO METAMASK ── */
 async function addBotToMetaMask(){
   if(!window.ethereum) return false;
   try { await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:BOT_CHAIN_HEX}]}); return true; }
   catch(e){ if(e.code===4902){ try{ await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:BOT_CHAIN_HEX,chainName:'BOT Chain Testnet',nativeCurrency:{name:'BOT',symbol:'BOT',decimals:18},rpcUrls:[BOT_RPC],blockExplorerUrls:[BOT_EXPLORER]}]}); return true;}catch(e2){return false;}} return false; }
 }
 
-/* ── 10. REPLACE HARDCODED ADDRESSES ── */
+/* ── 11. REPLACE HARDCODED ADDRESSES ── */
 function replaceAddresses(){
   if(!walletData) return;
   var addr = walletData.address, short = shortAddr(addr);
@@ -186,9 +215,8 @@ function replaceAddresses(){
   var walletAddrEl = document.querySelector('#page-wallet-address .font-mono'); if(walletAddrEl) walletAddrEl.textContent=addr;
 }
 
-/* ── 11. OVERRIDE FAKE FUNCTIONS ── */
+/* ── 12. OVERRIDE FAKE FUNCTIONS ── */
 function wireRealFunctions(){
-
   window.copyWalletAddress = function(){
     if(walletData&&navigator.clipboard&&navigator.clipboard.writeText){
       navigator.clipboard.writeText(walletData.address).then(function(){ if(window.cxToast) window.cxToast('Address copied!','ok'); });
@@ -227,7 +255,7 @@ function wireRealFunctions(){
 
     if(t.id==='BOT'){
       btn.disabled=true;
-      lbl.innerHTML='<span class="cx-spin">&#9676;</span>&nbsp;Broadcasting...';
+      lbl.innerHTML='Broadcasting...';
       realSend(addr,amt).then(function(result){
         t.bal-=amt;
         $('cxSuccAmt').textContent=fmt(amt)+' '+t.id+' \u2192 '+(addr.slice(0,6)+'...'+addr.slice(-4));
@@ -237,24 +265,13 @@ function wireRealFunctions(){
         window.cxCalcSend(); window.cxRenderSendToken();
         showPage('page-send-success');
         if(window.cxConfetti) window.cxConfetti();
-        if(window.cxToast) window.cxToast('Sent '+fmt(amt)+' '+t.id+' successfully','ok');
+        fetchAllBalances();
       }).catch(function(err){
         btn.disabled=false; $('cxCfBtnLabel').textContent='Confirm & Send';
         if(window.cxToast) window.cxToast('Send failed: '+(err.message||'Unknown'),'err');
       });
     } else {
-      btn.disabled=true;
-      lbl.innerHTML='<span class="cx-spin">&#9676;</span>&nbsp;Broadcasting...';
-      setTimeout(function(){
-        t.bal-=amt;
-        $('cxSuccAmt').textContent=fmt(amt)+' '+t.id+' \u2192 '+(addr.slice(0,6)+'...'+addr.slice(-4));
-        $('cxSuccHash').textContent='0x'+Math.random().toString(16).slice(2,6)+'...'+Math.random().toString(16).slice(2,6);
-        btn.disabled=false; $('cxCfBtnLabel').textContent='Confirm & Send';
-        $('cxSendAmt').value=''; $('cxSendAddr').value='';
-        window.cxCalcSend(); window.cxRenderSendToken();
-        showPage('page-send-success');
-        if(window.cxToast) window.cxToast('Sent '+fmt(amt)+' '+t.id+' successfully','ok');
-      },1500);
+      if(window.cxToast) window.cxToast('Only BOT is supported on testnet','err');
     }
   };
 
@@ -279,25 +296,22 @@ function wireRealFunctions(){
         if(status) status.textContent='Gift sealed on-chain!';
         payload.txHash=result.hash;
         setTimeout(function(){ if(ov) ov.classList.remove('show'); buildSentFn(payload); showPage('page-gift-sent'); if(window.cxConfetti) window.cxConfetti(); },1200);
+        fetchAllBalances();
       }).catch(function(err){
         clearInterval(iv); if(bar) bar.style.width='100%'; if(pct) pct.textContent='100%';
-        if(status) status.textContent='Gift sealed! (demo mode)';
-        setTimeout(function(){ if(ov) ov.classList.remove('show'); buildSentFn(payload); showPage('page-gift-sent'); if(window.cxToast) window.cxToast('Gift sent (testnet mode)','ok'); },1200);
+        if(status) status.textContent='Gift failed: '+(err.message||'Unknown');
+        setTimeout(function(){ if(ov) ov.classList.remove('show'); },2000);
       });
     } else {
-      if(status) status.textContent='Sealing gift...';
-      GV_CONFIG.onConfirm(payload).then(function(){
-        clearInterval(iv); if(bar) bar.style.width='100%'; if(pct) pct.textContent='100%';
-        if(status) status.textContent='Gift sealed!';
-        setTimeout(function(){ if(ov) ov.classList.remove('show'); buildSentFn(payload); showPage('page-gift-sent'); if(window.cxConfetti) window.cxConfetti(); },1050);
-      });
+      if(window.cxToast) window.cxToast('Only BOT gifts supported on testnet','err');
+      clearInterval(iv); if(ov) ov.classList.remove('show');
     }
   };
 }
 
-/* ── 12. IMPORT WALLET FROM MNEMONIC ── */
+/* ── 13. IMPORT WALLET FROM MNEMONIC ── */
 function importFromMnemonic(mnemonic){
-  if(typeof ethers === 'undefined') throw new Error('ethers.js not loaded — check your internet connection');
+  if(typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   try {
     var w = ethers.Wallet.fromPhrase(mnemonic.trim());
     walletData = { address: w.address, privateKey: w.privateKey, mnemonic: w.mnemonic.phrase, createdAt: Date.now() };
@@ -307,7 +321,7 @@ function importFromMnemonic(mnemonic){
   } catch(e){ console.error('[WalletEngine] import error', e); return null; }
 }
 
-/* ── 13. SAVE USER PROFILE ── */
+/* ── 14. SAVE USER PROFILE ── */
 function saveProfile(name, dob, address){
   var profile = { name:name, dob:dob, address:address, createdAt:Date.now() };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
@@ -317,19 +331,18 @@ function getProfile(){
   return null;
 }
 
-/* ── 14. CREATE REAL WALLET (called from HTML) ── */
+/* ── 15. CREATE REAL WALLET ── */
 function createReal(name, dob, walletName, address){
   if(!name) throw new Error('Please enter your name');
   if(!dob) throw new Error('Please enter your date of birth');
   if(!walletName) throw new Error('Please enter a wallet name');
-
   var wd = createWallet();
   saveProfile(name, dob, address);
   console.log('[Creso] Wallet created:', wd.address);
   return wd;
 }
 
-/* ── 15. IMPORT REAL WALLET (called from HTML) ── */
+/* ── 16. IMPORT REAL WALLET ── */
 function importReal(mnemonic){
   if(!mnemonic) throw new Error('Please enter your recovery phrase');
   var words = mnemonic.split(/\s+/);
@@ -340,7 +353,7 @@ function importReal(mnemonic){
   return wd;
 }
 
-/* ── 16. UPDATE WALLET UI WITH REAL DATA ── */
+/* ── 17. UPDATE WALLET UI WITH REAL DATA ── */
 function updateWalletUI(){
   if(!walletData) return;
   var profile = getProfile();
@@ -364,7 +377,13 @@ function updateWalletUI(){
     if(balEl) balEl.textContent = '$'+usd;
     if(typeof chainDatabase!=='undefined' && chainDatabase.bot){
       chainDatabase.bot.usdBalance = (n*BOT_PRICE_USD).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      chainDatabase.bot.balance = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      if(chainDatabase.bot.tokens&&chainDatabase.bot.tokens[0]){
+        chainDatabase.bot.tokens[0].bal = chainDatabase.bot.balance;
+        chainDatabase.bot.tokens[0].usd = '$'+chainDatabase.bot.usdBalance;
+      }
     }
+    if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='\\$BOT') GVT[i].bal = n; } }
     if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
   });
 
@@ -372,7 +391,7 @@ function updateWalletUI(){
   var depAddr = $('cxDepAddr'); if(depAddr) depAddr.textContent = addr;
 }
 
-/* ── 17. AUTO-INIT ── */
+/* ── 18. AUTO-INIT ── */
 function autoInit(){
   try {
     var existed = loadWallet();
@@ -381,16 +400,12 @@ function autoInit(){
       replaceAddresses();
       console.log('[WalletEngine] Loaded existing wallet:',walletData.address);
     } else {
-      console.log('[WalletEngine] No wallet found — user must create one');
+      console.log('[WalletEngine] No wallet found');
     }
     wireRealFunctions();
     setTimeout(function(){
       if(walletData){
-        fetchAllBalances().then(function(){
-          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
-          updateWalletUI();
-        });
-        fetchPrices().then(function(){
+        Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
           if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
           updateWalletUI();
         });
@@ -398,20 +413,12 @@ function autoInit(){
     },500);
     setInterval(function(){
       if(walletData){
-        fetchAllBalances().then(function(){
+        Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
           if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
           updateWalletUI();
         });
       }
     },30000);
-    setInterval(function(){
-      if(walletData){
-        fetchPrices().then(function(){
-          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
-          updateWalletUI();
-        });
-      }
-    },60000);
   } catch(e){ console.error('[WalletEngine] autoInit error', e); }
 }
 
@@ -425,10 +432,12 @@ window.WalletEngine = {
   getPrivateKey:function(){return walletData?walletData.privateKey:null;},
   getMnemonic:function(){return walletData?walletData.mnemonic:null;},
   fetchBOTBalance:fetchBOTBalance, fetchAllBalances:fetchAllBalances, fetchPrices:fetchPrices,
+  estimateGasFee:estimateGasFee,
   realSend:realSend, realGiftSend:realGiftSend, realGiftClaim:realGiftClaim, readGiftData:readGiftData,
   generateRealQR:generateRealQR, addBotToMetaMask:addBotToMetaMask,
   updateWalletUI:updateWalletUI,
   isInitialized:function(){return !!walletData;},
+  getBOTPrice:function(){return BOT_PRICE_USD;},
   SBT_ADDRESS:SBT_ADDRESS, BOT_RPC:BOT_RPC, BOT_CHAIN_ID:BOT_CHAIN_ID, BOT_EXPLORER:BOT_EXPLORER
 };
 

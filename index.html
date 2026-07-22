@@ -1694,7 +1694,7 @@
     <div class="flex-1 flex flex-col items-center px-6 pt-4">
         <div class="inline-flex items-center gap-2 bg-[#7c3aed] text-white px-4 py-2 rounded-full text-sm font-bold mb-8">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-            Ethereum Mainnet
+            Botchain Testnet
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
 
@@ -1736,7 +1736,7 @@
             <button class="btn-outline" style="flex:1;width:auto;display:flex;align-items:center;justify-content:center;gap:7px" onclick="navigateTo('page-swap-from')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 20V7M7 7L3 11M7 7l4 4"/><path d="M17 4v13m0 0l4-4m-4 4l-4-4"/></svg>Swap</button>
         </div>
         <div class="card p-4 mb-4">
-            <div class="flex justify-between items-center py-3 border-b border-gray-50"><span class="text-sm text-gray-400 font-semibold">Network</span><span class="text-sm font-bold text-[#1a1a1a]">Ethereum Mainnet</span></div>
+            <div class="flex justify-between items-center py-3 border-b border-gray-50"><span class="text-sm text-gray-400 font-semibold">Network</span>            <span class="text-sm font-bold text-[#1a1a1a]">Botchain Testnet</span></div>
             <div class="flex justify-between items-center py-3 border-b border-gray-50"><span class="text-sm text-gray-400 font-semibold">Balance</span><span class="text-sm font-bold text-[#1a1a1a] cx-num" id="wdbalETH">0.00 BOT</span></div>
             <div class="flex justify-between items-center py-3"><span class="text-sm text-gray-400 font-semibold">Standard</span><span class="text-sm font-bold text-[#1a1a1a]">Native Token</span></div>
         </div>
@@ -2275,12 +2275,12 @@
     </header>
     <main class="flex-1 flex flex-col items-center pt-1 px-5 relative w-full space-y-3 overflow-y-auto no-scrollbar z-10" style="padding-bottom:100px;">
         <div class="w-full flex justify-between items-center px-1">
-            <h1 class="text-2xl font-extrabold tracking-tight">Botchain Mainnet</h1>
+            <h1 class="text-2xl font-extrabold tracking-tight">Botchain Testnet</h1>
         </div>
         <div class="flip-card cursor-pointer shrink-0" id="interactiveCard" onclick="flipCard()">
             <div class="flip-card-inner" id="cardInner">
                 <div class="flip-card-front">
-                    <span class="absolute top-6 right-6 font-black text-[10px] tracking-widest text-stone-500 uppercase">BOTCHAIN MAINNET</span>
+                    <span class="absolute top-6 right-6 font-black text-[10px] tracking-widest text-stone-500 uppercase">BOTCHAIN TESTNET</span>
                     <div class="absolute top-5 left-6 flex items-center gap-3">
                         <div class="avatar-container">
                             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar" class="avatar-img" />
@@ -3040,7 +3040,7 @@
         <div class="cx-lab" style="margin-bottom:8px">Network</div>
         <button class="cx-sel mb-3" onclick="cxOpenPicker('network','depNet')">
             <span id="cxDepNetIco"></span>
-            <div class="cx-sel-info"><div class="cx-sel-sym" id="cxDepNetName">Ethereum</div><div class="cx-sel-sub" id="cxDepNetSub">Ethereum Mainnet</div></div>
+            <div class="cx-sel-info"><div class="cx-sel-sym" id="cxDepNetName">Botchain</div><div class="cx-sel-sub" id="cxDepNetSub">Botchain Testnet</div></div>
             <svg class="cx-sel-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="cx-lab" style="margin-bottom:8px">Token</div>
@@ -3097,15 +3097,11 @@
         <div id="cxSendAddrMsg" style="font-size:11px;font-weight:800;height:16px;margin-bottom:8px"></div>
         <div class="flex gap-2 overflow-x-auto no-scrollbar mb-4" id="cxContactRow" style="padding-bottom:4px"></div>
         <div class="cx-amtcard mb-4" style="padding:16px">
-            <div class="flex justify-between mb-3"><span style="font-weight:800;font-size:14px">Network fee</span><span class="cx-num" id="cxSendFeeUsd" style="font-weight:800;font-size:14px">~$0.01</span></div>
-            <div class="flex gap-2">
-                <button class="cx-pill-fee" data-fee="1.20" onclick="cxSetSendFee(this)">Slow<small>$1.20</small></button>
-                <button class="cx-pill-fee active" data-fee="0.001" onclick="cxSetSendFee(this)">Standard<small>$0.01</small></button>
-                <button class="cx-pill-fee" data-fee="4.80" onclick="cxSetSendFee(this)">Fast<small>$4.80</small></button>
-            </div>
+            <div class="flex justify-between mb-3"><span style="font-weight:800;font-size:14px">Network fee</span><span class="cx-num" id="cxSendFeeUsd" style="font-weight:800;font-size:14px">Estimating...</span></div>
+            <div id="cxSendGasDetail" style="font-size:11px;color:#9ca3af;font-weight:600">Fetching gas from Botchain testnet...</div>
         </div>
         <div class="cx-det" style="margin-top:0">
-            <div class="cx-det-row"><span class="cx-det-k">Total</span><span class="cx-det-v cx-disp" id="cxSendTotal" style="font-size:15px">0.00 ETH</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Total</span><span class="cx-det-v cx-disp" id="cxSendTotal" style="font-size:15px">0.00 BOT</span></div>
             <div class="cx-det-row"><span class="cx-det-k">Total (USD)</span><span class="cx-det-v cx-num" id="cxSendTotalFiat">≈ $0.00</span></div>
         </div>
         <button class="cx-cta" id="cxSendBtn" onclick="cxToConfirm()" disabled><span id="cxSendBtnLabel">Enter details</span></button>
@@ -3116,14 +3112,14 @@
     <div class="flex-1 px-5 pt-4 overflow-y-auto no-scrollbar" style="padding-bottom:110px">
         <div style="text-align:center;margin-bottom:24px">
             <div id="cxCfIco" class="flex justify-center mb-4"></div>
-            <div class="cx-disp cx-num" id="cxCfAmt" style="font-size:32px;font-weight:900;letter-spacing:-.02em">0 ETH</div>
+            <div class="cx-disp cx-num" id="cxCfAmt" style="font-size:32px;font-weight:900;letter-spacing:-.02em">0 BOT</div>
             <div class="cx-num" id="cxCfFiat" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:4px">≈ $0.00</div>
         </div>
         <div class="cx-det" style="margin-top:0">
             <div class="cx-det-row"><span class="cx-det-k">To</span><span class="cx-det-v cx-num" id="cxCfTo">—</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Network</span><span class="cx-det-v" id="cxCfNet">Ethereum</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxCfFee">$0.01</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Arrival</span><span class="cx-det-v">~30 sec</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Network</span><span class="cx-det-v" id="cxCfNet">Botchain Testnet</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxCfFee">Estimating...</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Arrival</span><span class="cx-det-v">~15 sec</span></div>
         </div>
         <button class="cx-cta" id="cxCfBtn" onclick="cxExecSend()"><span id="cxCfBtnLabel">Confirm &amp; Send</span></button>
         <button class="btn-outline mt-3" onclick="goBack()">Cancel</button>
@@ -3133,7 +3129,7 @@
     <div class="flex-1 flex flex-col justify-center px-7" style="text-align:center">
         <div class="cx-success-ring"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
         <h2 class="cx-disp" style="font-size:26px;font-weight:900;margin-top:26px;color:#1a1a1a">Sent!</h2>
-        <p class="cx-num" id="cxSuccAmt" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:8px">0 ETH → 0x12...abcd</p>
+        <p class="cx-num" id="cxSuccAmt" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:8px">0 BOT → 0x12...abcd</p>
         <div class="cx-det mt-6" style="margin-top:24px"><div class="cx-det-row"><span class="cx-det-k">Transaction hash</span><span class="cx-det-v cx-num" id="cxSuccHash">0x8f3a...9c21</span></div></div>
         <button class="btn-dark cx-disp mt-6" style="font-weight:800" onclick="cxResetWallet()">Done</button>
     </div>
@@ -4743,15 +4739,11 @@
         </div>
         <div id="cxWdAddrMsg" style="font-size:11px;font-weight:800;height:16px;margin-bottom:8px"></div>
         <div class="cx-amtcard mb-4" style="padding:16px">
-            <div class="flex justify-between mb-3"><span style="font-weight:800;font-size:14px">Network fee</span><span class="cx-num" id="cxWdFeeUsd" style="font-weight:800;font-size:14px">~$0.01</span></div>
-            <div class="flex gap-2">
-                <button class="cx-pill-fee" data-fee="1.20" onclick="cxSetWdFee(this)">Slow<small>$1.20</small></button>
-                <button class="cx-pill-fee active" data-fee="0.001" onclick="cxSetWdFee(this)">Standard<small>$0.01</small></button>
-                <button class="cx-pill-fee" data-fee="4.80" onclick="cxSetWdFee(this)">Fast<small>$4.80</small></button>
-            </div>
+            <div class="flex justify-between mb-3"><span style="font-weight:800;font-size:14px">Network fee</span><span class="cx-num" id="cxWdFeeUsd" style="font-weight:800;font-size:14px">Estimating...</span></div>
+            <div id="cxWdGasDetail" style="font-size:11px;color:#9ca3af;font-weight:600">Fetching gas from Botchain testnet...</div>
         </div>
         <div class="cx-det" style="margin-top:0">
-            <div class="cx-det-row"><span class="cx-det-k">You will receive</span><span class="cx-det-v cx-disp" id="cxWdTotal" style="font-size:15px">0.00 ETH</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">You will receive</span><span class="cx-det-v cx-disp" id="cxWdTotal" style="font-size:15px">0.00 BOT</span></div>
             <div class="cx-det-row"><span class="cx-det-k">You will receive (USD)</span><span class="cx-det-v cx-num" id="cxWdTotalFiat">≈ $0.00</span></div>
         </div>
         <button class="cx-cta" id="cxWdBtn" onclick="cxWdToConfirm()" disabled><span id="cxWdBtnLabel">Enter details</span></button>
@@ -4763,13 +4755,14 @@
     <div class="flex-1 px-5 pt-4 overflow-y-auto no-scrollbar" style="padding-bottom:110px">
         <div style="text-align:center;margin-bottom:24px">
             <div id="cxWdCfIco" class="flex justify-center mb-4"></div>
-            <div class="cx-disp cx-num" id="cxWdCfAmt" style="font-size:32px;font-weight:900;letter-spacing:-.02em">0 ETH</div>
+            <div class="cx-disp cx-num" id="cxWdCfAmt" style="font-size:32px;font-weight:900;letter-spacing:-.02em">0 BOT</div>
             <div class="cx-num" id="cxWdCfFiat" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:4px">≈ $0.00</div>
         </div>
         <div class="cx-det" style="margin-top:0">
+            <div class="cx-det-row"><span class="cx-det-k">Network</span><span class="cx-det-v">Botchain Testnet</span></div>
             <div class="cx-det-row"><span class="cx-det-k">To</span><span class="cx-det-v cx-num" id="cxWdCfTo">—</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxWdCfFee">$0.01</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Arrival</span><span class="cx-det-v">~5 min</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxWdCfFee">Estimating...</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Arrival</span><span class="cx-det-v">~15 sec</span></div>
         </div>
         <button class="cx-cta" id="cxWdCfBtn" onclick="cxWdExec()"><span id="cxWdCfBtnLabel">Confirm &amp; Withdraw</span></button>
         <button class="btn-outline mt-3" onclick="goBack()">Cancel</button>
@@ -4779,7 +4772,7 @@
     <div class="flex-1 flex flex-col justify-center px-7" style="text-align:center">
         <div class="cx-success-ring"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
         <h2 class="cx-disp" style="font-size:26px;font-weight:900;margin-top:26px;color:#1a1a1a">Withdrawn!</h2>
-        <p class="cx-num" id="cxWdSuccAmt" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:8px">0 ETH → 0x12...abcd</p>
+        <p class="cx-num" id="cxWdSuccAmt" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:8px">0 BOT → 0x12...abcd</p>
         <div class="cx-det" style="margin-top:24px"><div class="cx-det-row"><span class="cx-det-k">Transaction hash</span><span class="cx-det-v cx-num" id="cxWdSuccHash">0x…</span></div></div>
         <button class="btn-dark cx-disp mt-6" style="font-weight:800" onclick="showPage('page-wallet')">Done</button>
     </div>
@@ -5495,8 +5488,8 @@ var TOKENS=[
  {id:'BNB',name:'BNB',bal:0,price:0,color:'#f3ba2f'},
  {id:'XRP',name:'Ripple',bal:0,price:0,color:'#23292f'}];
 var CHAINS=[
- {id:'eth',name:'Ethereum',short:'ETH',color:'#627eea',letter:'E',addr:'0xDa3ad22D6604836B9f02E91c4a1F5b7C0d91f877',min:'0.001 ETH',conf:'12 blocks',time:'~3 min',warn:'Only send ETH and EVM-compatible tokens to this address. Sending other assets may result in permanent loss.'},
- {id:'bot',name:'Botchain',short:'BOT',color:'#7c3aed',img:IMG.bot,addr:'bot1x9q7f2k4m8s1t6v3w0y5z2c7n4a8d',min:'1 BOT',conf:'20 blocks',time:'~1 min',warn:'Only send BOT (Botchain) assets to this address. Other assets will be permanently lost.'},
+ {id:'eth',name:'Ethereum',short:'ETH',color:'#627eea',letter:'E',addr:'Loading...',min:'0.001 ETH',conf:'12 blocks',time:'~3 min',warn:'Only send ETH and EVM-compatible tokens to this address. Sending other assets may result in permanent loss.'},
+ {id:'bot',name:'Botchain',short:'BOT',color:'#7c3aed',img:IMG.bot,addr:'Loading...',min:'1 BOT',conf:'20 blocks',time:'~15 sec',warn:'Only send BOT (Botchain) assets to this address. Other assets will be permanently lost.'},
  {id:'sol',name:'Solana',short:'SOL',color:'#9945ff',letter:'S',addr:'7xKXgAsbQp2mN5vT8cRf3WdYhL4jE6uZnB1sPa9oQe2F',min:'0.01 SOL',conf:'32 blocks',time:'~1 min',warn:'Only send SOL and SPL tokens to this address.'},
  {id:'btc',name:'Bitcoin',short:'BTC',color:'#f7931a',letter:'B',addr:'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',min:'0.0001 BTC',conf:'2 blocks',time:'~30 min',warn:'Only send BTC to this address.'},
  {id:'bnb',name:'BNB Chain',short:'BNB',color:'#f3ba2f',letter:'B',addr:'0x742d35Cc6634C0532925a3b844Bc454e4438f44e',min:'0.01 BNB',conf:'15 blocks',time:'~2 min',warn:'Only send BNB and BEP-20 tokens to this address.'},
@@ -5578,30 +5571,55 @@ function renderContacts(){var cs=[{n:'Alex_S',i:'AS',c:'#7c3aed',a:'0xDa3ad22D66
   '<span style="font-size:12px;font-weight:800;color:#374151">'+c.n+'</span></button>';}).join('');}
 function fillAddr(a){$('cxSendAddr').value=a;calcSend();}
 window.cxFillAddr=fillAddr;
-function sendMax(){$('cxSendAmt').value=tok(S.sendToken).bal;calcSend();}
+function sendMax(){if(window.WalletEngine && window.WalletEngine.isInitialized()){
+ window.WalletEngine.fetchBOTBalance().then(function(bal){var n=parseFloat(bal)||0;var max=Math.max(n-0.001,0);$('cxSendAmt').value=max.toFixed(6);calcSend();});
+} else {$('cxSendAmt').value=tok(S.sendToken).bal;calcSend();}}
 window.cxSendMax=sendMax;
-function setSendFee(btn){S.sendFee=parseFloat(btn.getAttribute('data-fee'));var all=document.querySelectorAll('.cx-pill-fee');for(var i=0;i<all.length;i++)all[i].classList.remove('active');btn.classList.add('active');$('cxSendFeeUsd').textContent='~$'+S.sendFee.toFixed(2);calcSend();}
-window.cxSetSendFee=setSendFee;
 function calcSend(){var t=tok(S.sendToken);var amt=parseFloat($('cxSendAmt').value)||0;var addr=$('cxSendAddr').value.trim();
- $('cxSendFiat').textContent='≈ '+usd(amt*t.price);$('cxSendTotal').textContent=fmt(amt)+' '+t.id;$('cxSendTotalFiat').textContent='≈ '+usd(amt*t.price+S.sendFee);
+ $('cxSendFiat').textContent='≈ '+usd(amt*t.price);$('cxSendTotal').textContent=fmt(amt)+' BOT';$('cxSendTotalFiat').textContent='≈ '+usd(amt*t.price+S.sendFee);
  var msg=$('cxSendAddrMsg');if(addr.length>10){msg.textContent='✓ Valid address';msg.style.color='#16a34a';}else if(addr.length>0){msg.textContent='✗ Invalid address';msg.style.color='#ef4444';}else msg.textContent='';
  var btn=$('cxSendBtn'),lbl=$('cxSendBtnLabel');
  if(amt<=0){btn.disabled=true;lbl.textContent='Enter an amount';}
  else if(addr.length<=10){btn.disabled=true;lbl.textContent='Enter recipient address';}
- else if(amt>t.bal){btn.disabled=true;lbl.textContent='Insufficient '+t.id+' balance';}
- else{btn.disabled=false;lbl.textContent='Review Send';}}
+ else if(amt>t.bal){btn.disabled=true;lbl.textContent='Insufficient BOT balance';}
+ else{btn.disabled=false;lbl.textContent='Review Send';}
+ if(amt>0 && addr.length>10 && window.WalletEngine && window.WalletEngine.isInitialized()){
+  $('cxSendFeeUsd').textContent='Estimating...';
+  $('cxSendGasDetail').textContent='Fetching gas from Botchain testnet...';
+  window.WalletEngine.estimateGasFee(addr, amt).then(function(gas){
+   S.sendFee=parseFloat(gas.feeBot);
+   $('cxSendFeeUsd').textContent='~'+gas.feeUsd;
+   $('cxSendGasDetail').textContent=gas.gasLimit+' gas × '+gas.gasPrice+' Gwei = '+gas.feeBot+' BOT';
+   $('cxSendTotalFiat').textContent='≈ '+usd(amt*t.price+S.sendFee);
+  }).catch(function(){ $('cxSendFeeUsd').textContent='~$0.00'; $('cxSendGasDetail').textContent='Could not estimate gas'; });
+ }}
 window.cxCalcSend=calcSend;
 function toConfirm(){var t=tok(S.sendToken);var amt=parseFloat($('cxSendAmt').value)||0;var addr=$('cxSendAddr').value.trim();
- $('cxCfIco').innerHTML=ico(t,56);$('cxCfAmt').textContent=fmt(amt)+' '+t.id;$('cxCfFiat').textContent='≈ '+usd(amt*t.price);
- $('cxCfTo').textContent=addr.length>12?addr.slice(0,6)+'...'+addr.slice(-4):addr;$('cxCfNet').textContent=t.name;$('cxCfFee').textContent='$'+S.sendFee.toFixed(2);
+ $('cxCfIco').innerHTML=ico(t,56);$('cxCfAmt').textContent=fmt(amt)+' BOT';$('cxCfFiat').textContent='≈ '+usd(amt*t.price);
+ $('cxCfTo').textContent=addr.length>12?addr.slice(0,6)+'...'+addr.slice(-4):addr;$('cxCfNet').textContent='Botchain Testnet';
+ $('cxCfFee').textContent=S.sendFee>0?'~'+usd(S.sendFee*WalletEngine.getBOTPrice()):'Estimating...';
+ if(window.WalletEngine && window.WalletEngine.isInitialized() && amt>0 && addr.length>10){
+  window.WalletEngine.estimateGasFee(addr, amt).then(function(gas){
+   S.sendFee=parseFloat(gas.feeBot);
+   $('cxCfFee').textContent='~'+gas.feeUsd+' ('+gas.feeBot+' BOT)';
+  });
+ }
  navigateTo('page-send-confirm');}
 window.cxToConfirm=toConfirm;
 function execSend(){var t=tok(S.sendToken);var amt=parseFloat($('cxSendAmt').value)||0;var addr=$('cxSendAddr').value.trim();
- var btn=$('cxCfBtn');btn.disabled=true;$('cxCfBtnLabel').innerHTML='<span class="cx-spin">◌</span>&nbsp;Broadcasting…';
- setTimeout(function(){t.bal-=amt;$('cxSuccAmt').textContent=fmt(amt)+' '+t.id+' → '+(addr.slice(0,6)+'...'+addr.slice(-4));
-  $('cxSuccHash').textContent='0x'+Math.random().toString(16).slice(2,6)+'...'+Math.random().toString(16).slice(2,6);
-  btn.disabled=false;$('cxCfBtnLabel').textContent='Confirm & Send';$('cxSendAmt').value='';$('cxSendAddr').value='';calcSend();renderSendToken();
-  showPage('page-send-success');confetti();toast('Sent '+fmt(amt)+' '+t.id+' successfully','ok');},1500);}
+ var btn=$('cxCfBtn');btn.disabled=true;$('cxCfBtnLabel').innerHTML='Broadcasting…';
+ if(t.id==='BOT' && window.WalletEngine && window.WalletEngine.isInitialized()){
+  window.WalletEngine.realSend(addr, amt).then(function(result){
+   t.bal-=amt;$('cxSuccAmt').textContent=fmt(amt)+' BOT → '+(addr.slice(0,6)+'...'+addr.slice(-4));
+   $('cxSuccHash').textContent=result.hash;
+   btn.disabled=false;$('cxCfBtnLabel').textContent='Confirm & Send';$('cxSendAmt').value='';$('cxSendAddr').value='';calcSend();renderSendToken();
+   showPage('page-send-success');confetti();toast('Sent '+fmt(amt)+' BOT successfully','ok');
+   WalletEngine.fetchAllBalances();
+  }).catch(function(err){
+   btn.disabled=false;$('cxCfBtnLabel').textContent='Confirm & Send';
+   toast('Send failed: '+(err.message||'Unknown'),'err');
+  });
+ } else {toast('Only BOT is supported on testnet','err');btn.disabled=false;$('cxCfBtnLabel').textContent='Confirm & Send';}}
 window.cxExecSend=execSend;
 function resetToWallet(){showPage('page-wallet');}
 window.cxResetWallet=resetToWallet;
@@ -5678,24 +5696,42 @@ window.cxOpenPicker=openPicker;window.cxClosePicker=closePicker;window.cxRenderP
 
 /* ── WITHDRAW ── */
 function renderWdToken(){var t=tok(S.wdToken);$('cxWdTokenIco').innerHTML=ico(t,40);$('cxWdTokenSym').textContent=t.id;
- $('cxWdTokenBal').textContent='Available: '+fmt(t.bal);$('cxWdAmtSym').textContent=t.id;}
+ $('cxWdTokenBal').textContent='Available: '+fmt(t.bal)+' BOT';$('cxWdAmtSym').textContent=t.id;}
 function calcWd(){var t=tok(S.wdToken);var amt=parseFloat($('cxWdAmt').value)||0;var addr=$('cxWdAddr').value.trim();
  $('cxWdFiat').textContent='≈ '+usd(amt*t.price);
- var net=amt>0?Math.max(amt-S.wdFee/t.price,0):0;$('cxWdTotal').textContent=fmt(net)+' '+t.id;$('cxWdTotalFiat').textContent='≈ '+usd(net*t.price);
+ var net=amt>0?Math.max(amt-S.wdFee,0):0;$('cxWdTotal').textContent=fmt(net)+' BOT';$('cxWdTotalFiat').textContent='≈ '+usd(net*t.price);
  var msg=$('cxWdAddrMsg');if(addr.length>10){msg.textContent='✓ Valid address';msg.style.color='#16a34a';}else if(addr.length>0){msg.textContent='✗ Invalid address';msg.style.color='#ef4444';}else msg.textContent='';
  var btn=$('cxWdBtn'),lbl=$('cxWdBtnLabel');
  if(amt<=0){btn.disabled=true;lbl.textContent='Enter an amount';}
  else if(addr.length<=10){btn.disabled=true;lbl.textContent='Enter withdrawal address';}
- else if(amt>t.bal){btn.disabled=true;lbl.textContent='Insufficient '+t.id+' balance';}
- else{btn.disabled=false;lbl.textContent='Review Withdrawal';}}
+ else if(amt>t.bal){btn.disabled=true;lbl.textContent='Insufficient BOT balance';}
+ else{btn.disabled=false;lbl.textContent='Review Withdrawal';}
+ if(amt>0 && addr.length>10 && window.WalletEngine && window.WalletEngine.isInitialized()){
+  $('cxWdFeeUsd').textContent='Estimating...';
+  $('cxWdGasDetail').textContent='Fetching gas from Botchain testnet...';
+  window.WalletEngine.estimateGasFee(addr, amt).then(function(gas){
+   S.wdFee=parseFloat(gas.feeBot);
+   $('cxWdFeeUsd').textContent='~'+gas.feeUsd;
+   $('cxWdGasDetail').textContent=gas.gasLimit+' gas × '+gas.gasPrice+' Gwei = '+gas.feeBot+' BOT';
+   calcWd();
+  }).catch(function(){ $('cxWdFeeUsd').textContent='~$0.00'; $('cxWdGasDetail').textContent='Could not estimate gas'; });
+ }}
 window.cxCalcWd=calcWd;
-function wdMax(){$('cxWdAmt').value=tok(S.wdToken).bal;calcWd();}
+function wdMax(){if(window.WalletEngine && window.WalletEngine.isInitialized()){
+  window.WalletEngine.fetchBOTBalance().then(function(bal){
+   var n=parseFloat(bal)||0;var max=Math.max(n-0.001,0);$('cxWdAmt').value=max.toFixed(6);calcWd();
+  });
+ } else {$('cxWdAmt').value=tok(S.wdToken).bal;calcWd();}}
 window.cxWdMax=wdMax;
-function setWdFee(btn){S.wdFee=parseFloat(btn.getAttribute('data-fee'));var a=document.querySelectorAll('#page-withdraw .cx-pill-fee');for(var i=0;i<a.length;i++)a[i].classList.remove('active');btn.classList.add('active');$('cxWdFeeUsd').textContent='~$'+S.wdFee.toFixed(2);calcWd();}
-window.cxSetWdFee=setWdFee;
 function wdToConfirm(){var t=tok(S.wdToken);var amt=parseFloat($('cxWdAmt').value)||0;var addr=$('cxWdAddr').value.trim();
- $('cxWdCfIco').innerHTML=ico(t,56);$('cxWdCfAmt').textContent=fmt(amt)+' '+t.id;$('cxWdCfFiat').textContent='≈ '+usd(amt*t.price);
- $('cxWdCfTo').textContent=addr.length>12?addr.slice(0,6)+'...'+addr.slice(-4):addr;$('cxWdCfFee').textContent='$'+S.wdFee.toFixed(2);
+ $('cxWdCfIco').innerHTML=ico(t,56);$('cxWdCfAmt').textContent=fmt(amt)+' BOT';$('cxWdCfFiat').textContent='≈ '+usd(amt*t.price);
+ $('cxWdCfTo').textContent=addr.length>12?addr.slice(0,6)+'...'+addr.slice(-4):addr;$('cxWdCfFee').textContent=S.wdFee>0?'~'+usd(S.wdFee*WalletEngine.getBOTPrice()):'Estimating...';
+ if(window.WalletEngine && window.WalletEngine.isInitialized() && amt>0 && addr.length>10){
+  window.WalletEngine.estimateGasFee(addr, amt).then(function(gas){
+   S.wdFee=parseFloat(gas.feeBot);
+   $('cxWdCfFee').textContent='~'+gas.feeUsd+' ('+gas.feeBot+' BOT)';
+  });
+ }
  navigateTo('page-withdraw-confirm');}
 window.cxWdToConfirm=wdToConfirm;
 function wdExec(){var t=tok(S.wdToken);var amt=parseFloat($('cxWdAmt').value)||0;var addr=$('cxWdAddr').value.trim();
@@ -5719,7 +5755,7 @@ window.cxWdExec=wdExec;
 
 /* ── PROFILE + AVATARS ── */
 var SEEDS=['Felix','Aneka','Zoe','Milo','Luna','Kai','Nova','Rex','Ivy','Oscar'];
-var profile={name:'Samuel Hawking',email:'Samuel.lmk@gmail.com',seed:'Felix'};
+var profile={name:'User',email:'',seed:'Felix'};
 function avUrl(sd){return 'https://api.dicebear.com/7.x/avataaars/svg?seed='+sd;}
 function renderAvatars(){var g=$('cxAvatarGrid');if(!g)return;g.innerHTML=SEEDS.map(function(sd){
  return '<button onclick="cxSelectAvatar(\''+sd+'\')" style="border-radius:50%;overflow:hidden;border:3px solid '+(sd===profile.seed?'#7c3aed':'#f3f4f6')+';padding:0;background:#fff;cursor:pointer" data-seed="'+sd+'"><img src="'+avUrl(sd)+'" alt="'+sd+'" style="width:100%;height:100%;object-fit:cover;display:block" /></button>';}).join('');}
@@ -6865,7 +6901,7 @@ if(document.readyState === 'loading'){
 
 })();
 </script>
-<script src="wallet-engine.js?v=4"></script>
+<script src="wallet-engine.js?v=6"></script>
 <script>
 function doCreateWallet(){
   var name = document.getElementById('createUserName').value.trim();
