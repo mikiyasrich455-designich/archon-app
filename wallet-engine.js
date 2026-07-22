@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   WALLET ENGINE — Real blockchain integration (ethers.js + Botchain testnet)
+   WALLET ENGINE v2 — Real blockchain + tx history + gift codes + global sync
    ═══════════════════════════════════════════════════════════════════ */
 (function(){
 "use strict";
@@ -24,6 +24,8 @@ var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,e
 var BOT_PRICE_USD = 0;
 var STORAGE_KEY = 'creso_wallet_v1';
 var PROFILE_KEY = 'creso_profile_v1';
+var TX_HISTORY_KEY = 'creso_tx_history';
+var GIFT_CODES_KEY = 'creso_gift_codes';
 
 var provider = null;
 var wallet = null;
@@ -33,6 +35,35 @@ var walletData = null;
 function $(id){ return document.getElementById(id); }
 function shortAddr(a){ return a ? a.slice(0,6)+'...'+a.slice(-4) : ''; }
 function fmt(n){ return Number(n).toLocaleString('en-US',{maximumFractionDigits:6}); }
+
+/* ═══ TX HISTORY ═══ */
+function getTxHistory(){
+  try { var raw = localStorage.getItem(TX_HISTORY_KEY); if(raw) return JSON.parse(raw); } catch(e){}
+  return [];
+}
+function addTx(tx){
+  var list = getTxHistory();
+  tx.id = Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  tx.timestamp = tx.timestamp || Date.now();
+  list.unshift(tx);
+  if(list.length > 100) list = list.slice(0,100);
+  localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(list));
+}
+
+/* ═══ GIFT CODE MAPPING ═══ */
+function getGiftCodes(){
+  try { var raw = localStorage.getItem(GIFT_CODES_KEY); if(raw) return JSON.parse(raw); } catch(e){}
+  return {};
+}
+function saveGiftCode(code, tokenId, amount, recipient){
+  var map = getGiftCodes();
+  map[code] = { tokenId: tokenId, amount: amount, recipient: recipient, createdAt: Date.now() };
+  localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(map));
+}
+function lookupGiftCode(code){
+  var map = getGiftCodes();
+  return map[code] || null;
+}
 
 /* ── 1. WALLET CREATION / LOADING ── */
 function loadWallet(){
@@ -55,6 +86,11 @@ function initProvider(){
     sbtContract = new ethers.Contract(SBT_ADDRESS, SBT_ABI, wallet);
   } catch(e){ console.error('[WalletEngine] init error', e); }
 }
+function logoutWallet(){
+  walletData = null; wallet = null; provider = null; sbtContract = null;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(PROFILE_KEY);
+}
 
 /* ── 2. BALANCE FETCHING ── */
 async function fetchBOTBalance(){
@@ -62,30 +98,62 @@ async function fetchBOTBalance(){
   try { var bal = await provider.getBalance(walletData.address); return ethers.formatEther(bal); }
   catch(e){ console.error('[WalletEngine] balance error', e); return '0'; }
 }
+function syncBalanceToUI(n){
+  var priceUsd = BOT_PRICE_USD;
+  var usdVal = n * priceUsd;
+  var balStr = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  var usdStr = usdVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  var priceStr = priceUsd > 0 ? priceUsd.toLocaleString('en-US') : '0';
+
+  if(typeof window.cxTOKENS!=='undefined'){ for(var i=0;i<window.cxTOKENS.length;i++){ if(window.cxTOKENS[i].id==='BOT'){ window.cxTOKENS[i].bal=n; if(priceUsd>0) window.cxTOKENS[i].price=priceUsd; } } }
+  if(typeof chainDatabase!=='undefined' && chainDatabase.bot){
+    chainDatabase.bot.balance = balStr;
+    chainDatabase.bot.usdBalance = usdStr;
+    chainDatabase.bot.addr = walletData?walletData.address:chainDatabase.bot.addr;
+    if(priceUsd>0) chainDatabase.bot.price = priceStr;
+    if(chainDatabase.bot.tokens&&chainDatabase.bot.tokens[0]){
+      chainDatabase.bot.tokens[0].bal = balStr;
+      chainDatabase.bot.tokens[0].usd = '$'+usdStr;
+    }
+  }
+  if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='$BOT'||GVT[i].sym==='BOT'){ GVT[i].bal=n; if(priceUsd>0) GVT[i].price=priceUsd; } } }
+  if(typeof tokenDetails!=='undefined' && tokenDetails.BOT){
+    tokenDetails.BOT.bal = balStr;
+    if(priceUsd>0) tokenDetails.BOT.price = '$'+priceStr;
+  }
+  if(typeof window.cxS!=='undefined') window.cxS.wdFee = 0.001;
+}
 async function fetchAllBalances(){
   var botBal = await fetchBOTBalance();
   var n = parseFloat(botBal) || 0;
-  if(window.cxTOKENS){ for(var i=0;i<window.cxTOKENS.length;i++){ if(window.cxTOKENS[i].id==='BOT') window.cxTOKENS[i].bal = n; } }
-  if(typeof chainDatabase!=='undefined'){
-    chainDatabase.bot.balance = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    chainDatabase.bot.usdBalance = (n*BOT_PRICE_USD).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    if(BOT_PRICE_USD > 0) chainDatabase.bot.price = BOT_PRICE_USD.toLocaleString('en-US');
-    if(chainDatabase.bot.tokens&&chainDatabase.bot.tokens[0]){
-      chainDatabase.bot.tokens[0].bal = chainDatabase.bot.balance;
-      chainDatabase.bot.tokens[0].usd = '$'+chainDatabase.bot.usdBalance;
-    }
-  }
-  if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='\\$BOT'){ GVT[i].bal = n; if(BOT_PRICE_USD>0) GVT[i].price = BOT_PRICE_USD; } } }
-  if(typeof tokenDetails!=='undefined' && tokenDetails.BOT){
-    tokenDetails.BOT.bal = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    if(BOT_PRICE_USD > 0) tokenDetails.BOT.price = '$'+BOT_PRICE_USD.toLocaleString('en-US');
-  }
+  syncBalanceToUI(n);
+  renderDashboardBalance();
   return botBal;
+}
+function renderDashboardBalance(){
+  if(!walletData) return;
+  var n = 0;
+  if(typeof chainDatabase!=='undefined' && chainDatabase.bot){
+    n = parseFloat(chainDatabase.bot.balance) || 0;
+  }
+  var priceUsd = BOT_PRICE_USD;
+  var usdVal = (n * priceUsd).toFixed(2);
+  var balEl = document.querySelector('.flip-card-front .text-3xl');
+  if(balEl) balEl.textContent = '$'+usdVal;
+  var chartBot = document.querySelector('.card-charts p:first-child');
+  if(chartBot) chartBot.textContent = 'BOT '+n.toFixed(2);
+  var nameEls = document.querySelectorAll('.flip-card-front .font-extrabold.text-sm');
+  var profile = getProfile();
+  var name = profile ? profile.name : 'User';
+  for(var i=0;i<nameEls.length;i++){
+    if(nameEls[i].textContent.indexOf('Hi,')===0 || nameEls[i].textContent.indexOf('Hi ')===0)
+      nameEls[i].textContent = 'Hi, '+name.split(' ')[0];
+  }
 }
 
 /* ── 3. REAL GAS ESTIMATION ── */
 async function estimateGasFee(toAddress, amountEth){
-  if(!provider || !wallet) return { gasLimit: '21000', gasPrice: '0', feeBot: '0', feeUsd: '0' };
+  if(!provider || !wallet) return { gasLimit: '21000', gasPrice: '0', feeBot: '0', feeUsd: '$0.00' };
   try {
     var amountWei = ethers.parseEther(amountEth.toString());
     var tx = { from: wallet.address, to: toAddress, value: amountWei };
@@ -115,7 +183,6 @@ async function fetchPrices(){
     var map = { ETH: data.ethereum, BTC: data.bitcoin, SOL: data.solana, BNB: data.binancecoin, XRP: data.ripple, BOT: data['wrapped-bot'] };
     if(map.BOT && map.BOT.usd){
       BOT_PRICE_USD = map.BOT.usd;
-      console.log('[WalletEngine] BOT price: $' + BOT_PRICE_USD);
       var p = map.BOT.usd.toLocaleString('en-US');
       var ch = map.BOT.usd_24h_change;
       var chStr = ch != null ? (ch>0?'+':'')+ch.toFixed(2)+'%' : '—';
@@ -148,7 +215,6 @@ async function fetchPrices(){
         }
       }
     }
-    console.log('[WalletEngine] Prices updated');
   } catch(e){ console.error('[WalletEngine] CoinGecko failed', e); }
 }
 
@@ -170,7 +236,18 @@ async function realSend(toAddress, amountEth){
   var gasCost = gasEstimate * (feeData.gasPrice || ethers.parseUnits('1','gwei'));
   if(bal < amountWei + gasCost) throw new Error('Insufficient balance for gas');
   var tx = await wallet.sendTransaction({ to: toAddress, value: amountWei });
-  return { hash: tx.hash, wait: function(){ return tx.wait(); } };
+  var receipt = await tx.wait();
+  addTx({
+    type: 'send',
+    amount: parseFloat(amountEth),
+    token: 'BOT',
+    to: toAddress,
+    from: wallet.address,
+    hash: tx.hash,
+    status: receipt.status === 1 ? 'confirmed' : 'failed',
+    gasUsed: receipt.gasUsed ? ethers.formatEther(receipt.gasUsed * (feeData.gasPrice||ethers.parseUnits('1','gwei'))) : '0'
+  });
+  return { hash: tx.hash, receipt: receipt, wait: function(){ return Promise.resolve(receipt); } };
 }
 
 /* ── 7. REAL GIFT SEND (SBT) ── */
@@ -180,14 +257,53 @@ async function realGiftSend(recipient, amountEth, message, tokenURI){
   var amountWei = ethers.parseEther(amountEth.toString());
   var uri = tokenURI || 'ipfs://QmDefaultGiftMetadata';
   var tx = await sbtContract.mintSoulboundGift(recipient, uri, message, { value: amountWei });
-  return { hash: tx.hash, wait: function(){ return tx.wait(); } };
+  var receipt = await tx.wait();
+  var tokenId = null;
+  if(receipt.logs){
+    for(var i=0;i<receipt.logs.length;i++){
+      try {
+        var parsed = sbtContract.interface.parseLog({ topics: receipt.logs[i].topics, data: receipt.logs[i].data });
+        if(parsed && parsed.name === 'SoulboundGiftMinted'){
+          tokenId = parsed.args.tokenId.toString();
+          break;
+        }
+      } catch(e){}
+    }
+  }
+  addTx({
+    type: 'gift_sent',
+    amount: parseFloat(amountEth),
+    token: 'BOT',
+    to: recipient,
+    from: wallet.address,
+    hash: tx.hash,
+    tokenId: tokenId,
+    message: message || '',
+    status: receipt.status === 1 ? 'confirmed' : 'failed'
+  });
+  return { hash: tx.hash, tokenId: tokenId, receipt: receipt, wait: function(){ return Promise.resolve(receipt); } };
 }
 
 /* ── 8. REAL GIFT CLAIM (SBT) ── */
 async function realGiftClaim(tokenId){
   if(!sbtContract) throw new Error('Contract not connected');
   var tx = await sbtContract.convertToBot(tokenId);
-  return { hash: tx.hash, wait: function(){ return tx.wait(); } };
+  var receipt = await tx.wait();
+  var giftData = null;
+  try { giftData = await readGiftData(tokenId); } catch(e){}
+  addTx({
+    type: 'gift_claimed',
+    amount: giftData ? parseFloat(giftData.amount) : 0,
+    token: 'BOT',
+    from: giftData ? giftData.sender : 'unknown',
+    to: wallet.address,
+    hash: tx.hash,
+    tokenId: tokenId,
+    message: giftData ? giftData.message : '',
+    status: receipt.status === 1 ? 'confirmed' : 'failed'
+  });
+  await fetchAllBalances();
+  return { hash: tx.hash, receipt: receipt, wait: function(){ return Promise.resolve(receipt); } };
 }
 
 /* ── 9. READ GIFT DATA ── */
@@ -212,6 +328,10 @@ function replaceAddresses(){
   if(typeof chainDatabase!=='undefined'){ if(chainDatabase.bot) chainDatabase.bot.addr=addr; if(chainDatabase.eth) chainDatabase.eth.addr=addr; }
   var flipAddr = document.querySelector('.flip-card-back .font-mono'); if(flipAddr) flipAddr.textContent=short;
   var walletAddrEl = document.querySelector('#page-wallet-address .font-mono'); if(walletAddrEl) walletAddrEl.textContent=addr;
+  var depAddrText = $('cxDepAddrText'); if(depAddrText) depAddrText.textContent = addr.length > 20 ? shortAddr(addr) : addr;
+  var depAddr = $('cxDepAddr'); if(depAddr) depAddr.textContent = addr;
+  var chainAddrs = document.querySelectorAll('.chain-addr');
+  for(var i=0;i<chainAddrs.length;i++) chainAddrs[i].textContent = short;
 }
 
 /* ── 12. OVERRIDE FAKE FUNCTIONS ── */
@@ -239,6 +359,7 @@ function wireRealFunctions(){
     try{origRenderDeposit();}catch(e){}
     if(!walletData) return;
     var addrEl=$('cxDepAddr'); if(addrEl) addrEl.textContent=walletData.address;
+    var depAddrText=$('cxDepAddrText'); if(depAddrText) depAddrText.textContent=walletData.address;
     generateRealQR('cxDepQr',walletData.address);
   };
 
@@ -256,15 +377,14 @@ function wireRealFunctions(){
       btn.disabled=true;
       lbl.innerHTML='Broadcasting...';
       realSend(addr,amt).then(function(result){
-        t.bal-=amt;
-        $('cxSuccAmt').textContent=fmt(amt)+' '+t.id+' \u2192 '+(addr.slice(0,6)+'...'+addr.slice(-4));
+        $('cxSuccAmt').textContent=fmt(amt)+' BOT → '+(addr.slice(0,6)+'...'+addr.slice(-4));
         $('cxSuccHash').textContent=result.hash;
         btn.disabled=false; $('cxCfBtnLabel').textContent='Confirm & Send';
         $('cxSendAmt').value=''; $('cxSendAddr').value='';
         window.cxCalcSend(); window.cxRenderSendToken();
         showPage('page-send-success');
-        if(window.cxConfetti) window.cxConfetti();
-        fetchAllBalances();
+        if(typeof confetti==='function') confetti();
+        globalRefresh();
       }).catch(function(err){
         btn.disabled=false; $('cxCfBtnLabel').textContent='Confirm & Send';
         if(window.cxToast) window.cxToast('Send failed: '+(err.message||'Unknown'),'err');
@@ -294,8 +414,9 @@ function wireRealFunctions(){
         clearInterval(iv); if(bar) bar.style.width='100%'; if(pct) pct.textContent='100%';
         if(status) status.textContent='Gift sealed on-chain!';
         payload.txHash=result.hash;
-        setTimeout(function(){ if(ov) ov.classList.remove('show'); buildSentFn(payload); showPage('page-gift-sent'); if(window.cxConfetti) window.cxConfetti(); },1200);
-        fetchAllBalances();
+        if(result.tokenId) saveGiftCode(code, result.tokenId, GV.amount, GV.to);
+        setTimeout(function(){ if(ov) ov.classList.remove('show'); buildSentFn(payload); showPage('page-gift-sent'); if(typeof confetti==='function') confetti(); },1200);
+        globalRefresh();
       }).catch(function(err){
         clearInterval(iv); if(bar) bar.style.width='100%'; if(pct) pct.textContent='100%';
         if(status) status.textContent='Gift failed: '+(err.message||'Unknown');
@@ -361,7 +482,7 @@ function updateWalletUI(){
   var short = shortAddr(addr);
 
   var nameEls = document.querySelectorAll('.flip-card-front .font-extrabold.text-sm');
-  for(var i=0;i<nameEls.length;i++){ if(nameEls[i].textContent.indexOf('Hi,')===0) nameEls[i].textContent='Hi, '+name.split(' ')[0]; }
+  for(var i=0;i<nameEls.length;i++){ if(nameEls[i].textContent.indexOf('Hi,')===0||nameEls[i].textContent.indexOf('Hi ')===0) nameEls[i].textContent='Hi, '+name.split(' ')[0]; }
 
   var backAddr = document.querySelector('.flip-card-back .font-mono');
   if(backAddr) backAddr.textContent = short;
@@ -369,28 +490,105 @@ function updateWalletUI(){
   var walletAddrPage = document.querySelector('#page-wallet-address .font-mono');
   if(walletAddrPage) walletAddrPage.textContent = addr;
 
-  fetchBOTBalance().then(function(bal){
-    var n = parseFloat(bal)||0;
-    var usd = (n * BOT_PRICE_USD).toFixed(2);
-    var balEl = document.querySelector('.flip-card-front .text-3xl');
-    if(balEl) balEl.textContent = '$'+usd;
-    if(typeof chainDatabase!=='undefined' && chainDatabase.bot){
-      chainDatabase.bot.usdBalance = (n*BOT_PRICE_USD).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-      chainDatabase.bot.balance = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-      if(chainDatabase.bot.tokens&&chainDatabase.bot.tokens[0]){
-        chainDatabase.bot.tokens[0].bal = chainDatabase.bot.balance;
-        chainDatabase.bot.tokens[0].usd = '$'+chainDatabase.bot.usdBalance;
-      }
-    }
-    if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='\\$BOT') GVT[i].bal = n; } }
-    if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
-  });
+  var depAddrText = $('cxDepAddrText'); if(depAddrText) depAddrText.textContent = addr;
+  var depAddr = $('cxDepAddr'); if(depAddr) depAddr.textContent = addr;
 
   generateRealQR('cxDepQr', addr);
-  var depAddr = $('cxDepAddr'); if(depAddr) depAddr.textContent = addr;
 }
 
-/* ── 18. AUTO-INIT ── */
+/* ── 18. GLOBAL REFRESH ── */
+function globalRefresh(){
+  return Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
+    if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
+    updateWalletUI();
+    renderTxHistory();
+  });
+}
+
+/* ── 19. RENDER TX HISTORY ── */
+function renderTxHistory(){
+  var el = $('txHistoryList');
+  if(!el) return;
+  var list = getTxHistory();
+  if(list.length === 0){
+    el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#9ca3af"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div style="font-size:15px;font-weight:700;color:#374151;margin-bottom:4px">No transactions yet</div><div style="font-size:13px;color:#9ca3af">Your transaction history will appear here</div></div>';
+    return;
+  }
+  var html = '';
+  for(var i=0;i<list.length;i++){
+    var tx = list[i];
+    var icon, typeLabel, amtPrefix, color, bg;
+    var timeStr = formatTimeAgo(tx.timestamp);
+    var addrStr = '';
+    if(tx.type==='send'){ icon='↑'; typeLabel='Sent'; amtPrefix='-'; color='#ef4444'; bg='#fef2f2'; addrStr=tx.to?'To '+shortAddr(tx.to):''; }
+    else if(tx.type==='receive'){ icon='↓'; typeLabel='Received'; amtPrefix='+'; color='#22c55e'; bg='#f0fdf4'; addrStr=tx.from?'From '+shortAddr(tx.from):''; }
+    else if(tx.type==='gift_sent'){ icon='🎁'; typeLabel='Gift Sent'; amtPrefix='-'; color='#a855f7'; bg='#faf5ff'; addrStr=tx.to?'To '+shortAddr(tx.to):''; }
+    else if(tx.type==='gift_claimed'){ icon='🎁'; typeLabel='Gift Claimed'; amtPrefix='+'; color='#22c55e'; bg='#f0fdf4'; addrStr=tx.from?'From '+shortAddr(tx.from):''; }
+    else { icon='•'; typeLabel='Transaction'; amtPrefix=''; color='#6b7280'; bg='#f9fafb'; }
+    var statusDot = tx.status==='confirmed' ? '<span style="color:#22c55e;font-size:10px">●</span>' : '<span style="color:#ef4444;font-size:10px">●</span>';
+    var hashShort = tx.hash ? tx.hash.slice(0,10)+'...' : '';
+    html += '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border-radius:14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04)" onclick="window.cxOpenTxDetail && window.cxOpenTxDetail('+i+')">'+
+      '<div style="width:40px;height:40px;border-radius:12px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+icon+'</div>'+
+      '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700;color:#1a1a1a">'+typeLabel+'</span>'+
+      '<span style="font-size:13px;font-weight:800;color:'+color+'">'+amtPrefix+fmt(tx.amount)+' '+(tx.token||'BOT')+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px"><span style="font-size:11px;color:#9ca3af">'+addrStr+(hashShort?' · '+hashShort:'')+'</span>'+
+      '<span style="font-size:11px;color:#9ca3af">'+statusDot+' '+timeStr+'</span></div></div></div>';
+  }
+  el.innerHTML = html;
+}
+function formatTimeAgo(ts){
+  var diff = Date.now() - ts;
+  if(diff < 60000) return 'Just now';
+  if(diff < 3600000) return Math.floor(diff/60000)+'m ago';
+  if(diff < 86400000) return Math.floor(diff/3600000)+'h ago';
+  if(diff < 604800000) return Math.floor(diff/86400000)+'d ago';
+  return new Date(ts).toLocaleDateString();
+}
+window.cxOpenTxDetail = function(idx){
+  var list = getTxHistory();
+  var tx = list[idx];
+  if(!tx) return;
+  var el = $('txDetailContent');
+  if(!el) return;
+  var typeLabel = tx.type==='send'?'Sent':tx.type==='receive'?'Received':tx.type==='gift_sent'?'Gift Sent':tx.type==='gift_claimed'?'Gift Claimed':'Transaction';
+  var color = (tx.type==='send'||tx.type==='gift_sent')?'#ef4444':'#22c55e';
+  el.innerHTML = '<div style="text-align:center;padding:20px 0">'+
+    '<div style="width:56px;height:56px;border-radius:16px;background:'+(tx.type==='send'||tx.type==='gift_sent'?'#fef2f2':'#f0fdf4')+';display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px">'+(tx.type==='gift_sent'||tx.type==='gift_claimed'?'🎁':(tx.type==='send'?'↑':'↓'))+'</div>'+
+    '<div style="font-size:13px;font-weight:700;color:#9ca3af;margin-bottom:4px">'+typeLabel+'</div>'+
+    '<div style="font-size:28px;font-weight:900;color:'+color+'">'+((tx.type==='send'||tx.type==='gift_sent')?'-':'+')+fmt(tx.amount)+' '+(tx.token||'BOT')+'</div>'+
+    '<div style="font-size:13px;color:#9ca3af;margin-top:4px">'+(BOT_PRICE_USD>0?'≈ $'+(tx.amount*BOT_PRICE_USD).toFixed(2):'')+'</div>'+
+    '</div>'+
+    '<div style="background:#f9fafb;border-radius:14px;padding:16px;margin-top:8px">'+
+    '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">Status</span><span style="font-size:12px;font-weight:700;color:'+(tx.status==='confirmed'?'#22c55e':'#ef4444')+'">'+(tx.status==='confirmed'?'Confirmed':'Failed')+'</span></div>'+
+    (tx.to?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">To</span><span style="font-size:12px;font-weight:700;color:#1a1a1a;font-family:monospace">'+shortAddr(tx.to)+'</span></div>':'')+
+    (tx.from?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">From</span><span style="font-size:12px;font-weight:700;color:#1a1a1a;font-family:monospace">'+shortAddr(tx.from)+'</span></div>':'')+
+    (tx.hash?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">Hash</span><span style="font-size:12px;font-weight:700;color:#7c3aed;font-family:monospace;cursor:pointer" onclick="window.cxCopy(\''+tx.hash+'\',\'Hash copied\')">'+shortAddr(tx.hash)+' ↗</span></div>':'')+
+    (tx.gasUsed?'<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:12px;color:#9ca3af;font-weight:600">Gas Fee</span><span style="font-size:12px;font-weight:700;color:#1a1a1a">'+tx.gasUsed+' BOT</span></div>':'')+
+    '<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:12px;color:#9ca3af;font-weight:600">Time</span><span style="font-size:12px;font-weight:700;color:#1a1a1a">'+new Date(tx.timestamp).toLocaleString()+'</span></div>'+
+    '</div>'+
+    (tx.hash?'<button style="width:100%;margin-top:16px;padding:14px;background:#1a1a1a;color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer" onclick="window.open(\''+BOT_EXPLORER+'/tx/'+tx.hash+'\',\'_blank\')">View on Explorer ↗</button>':'');
+  navigateTo('page-tx-detail');
+};
+
+/* ── 20. REAL GIFT REDEEM ── */
+async function redeemGiftCode(code){
+  if(!code || code.length < 5) throw new Error('Please enter a valid gift code');
+  var codeUpper = code.toUpperCase().trim();
+  var giftInfo = lookupGiftCode(codeUpper);
+  if(!giftInfo) throw new Error('Gift code not found. Make sure you entered the correct code.');
+  var tokenId = giftInfo.tokenId;
+  if(!sbtContract) throw new Error('Wallet not connected');
+  var giftData = await readGiftData(tokenId);
+  if(!giftData) throw new Error('Gift not found on-chain');
+  var owner = await sbtContract.ownerOf(tokenId);
+  if(owner.toLowerCase() !== walletData.address.toLowerCase()){
+    throw new Error('This gift was sent to a different address. Connect the recipient wallet to claim.');
+  }
+  var result = await realGiftClaim(tokenId);
+  return { hash: result.hash, amount: giftData.amount, sender: giftData.sender, message: giftData.message };
+}
+
+/* ── 21. AUTO-INIT ── */
 function autoInit(){
   try {
     var existed = loadWallet();
@@ -407,6 +605,7 @@ function autoInit(){
         Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
           if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
           updateWalletUI();
+          renderTxHistory();
         });
       }
     },500);
@@ -424,7 +623,7 @@ function autoInit(){
 /* ── PUBLIC API ── */
 window.WalletEngine = {
   loadWallet:loadWallet, createWallet:createWallet, importFromMnemonic:importFromMnemonic,
-  createReal:createReal, importReal:importReal,
+  createReal:createReal, importReal:importReal, logoutWallet:logoutWallet,
   saveProfile:saveProfile, getProfile:getProfile,
   getAddress:function(){return walletData?walletData.address:null;},
   getShortAddress:function(){return walletData?shortAddr(walletData.address):'';},
@@ -433,13 +632,17 @@ window.WalletEngine = {
   fetchBOTBalance:fetchBOTBalance, fetchAllBalances:fetchAllBalances, fetchPrices:fetchPrices,
   estimateGasFee:estimateGasFee,
   realSend:realSend, realGiftSend:realGiftSend, realGiftClaim:realGiftClaim, readGiftData:readGiftData,
+  redeemGiftCode:redeemGiftCode,
   generateRealQR:generateRealQR, addBotToMetaMask:addBotToMetaMask,
-  updateWalletUI:updateWalletUI,
+  updateWalletUI:updateWalletUI, globalRefresh:globalRefresh,
+  getTxHistory:getTxHistory, addTx:addTx, renderTxHistory:renderTxHistory,
+  getGiftCodes:getGiftCodes, saveGiftCode:saveGiftCode, lookupGiftCode:lookupGiftCode,
   isInitialized:function(){return !!walletData;},
   getBOTPrice:function(){return BOT_PRICE_USD;},
+  hasWallet:function(){return !!localStorage.getItem(STORAGE_KEY);},
   SBT_ADDRESS:SBT_ADDRESS, BOT_RPC:BOT_RPC, BOT_CHAIN_ID:BOT_CHAIN_ID, BOT_EXPLORER:BOT_EXPLORER
 };
 
-if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',autoInit);}else{autoInit();}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',autoInit);}else{autoInit;}
 
 })();

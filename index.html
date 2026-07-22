@@ -2270,7 +2270,9 @@
             <span class="font-black tracking-tighter text-lg">HUB</span>
         </div>
         <div class="flex items-center gap-2">
-            <button onclick="navigateTo('page-create-wallet')" class="text-[#7c3aed] font-bold text-sm hover:opacity-80 active:scale-95 transition-all">+ Create</button>
+            <button onclick="navigateTo('page-tx-history')" class="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm press" title="Transaction History">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </button>
         </div>
     </header>
     <main class="flex-1 flex flex-col items-center pt-1 px-5 relative w-full space-y-3 overflow-y-auto no-scrollbar z-10" style="padding-bottom:100px;">
@@ -2871,7 +2873,7 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
         </div>
-        <button class="btn-outline text-red-500 border-red-100 bg-red-50" onclick="navigateTo('page-onboarding')">Log Out</button>
+        <button class="btn-outline text-red-500 border-red-100 bg-red-50" onclick="doLogout()">Log Out</button>
     </main>
 </div>
 
@@ -3591,7 +3593,7 @@
         <div class="w-full card p-6 mb-8 slide-up" style="animation-delay:0.2s">
             <div class="text-center mb-4">
                 <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Amount Received</div>
-                <div class="text-4xl font-black text-[#1a1a1a]" id="redeemedAmount">0.5 ETH</div>
+                <div class="text-4xl font-black text-[#1a1a1a]" id="redeemedAmount">0 BOT</div>
                 <div class="text-sm text-gray-400 font-medium" id="redeemedFiat">≈ $1,594.00</div>
             </div>
             <div class="w-full h-px bg-gray-100 mb-4"></div>
@@ -4410,7 +4412,7 @@
         <div class="w-full card p-6 mb-8 slide-up" style="animation-delay:0.2s">
             <div class="text-center mb-4">
                 <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Amount Received</div>
-                <div class="text-4xl font-black text-[#1a1a1a]" id="redeemedAmount">0.5 ETH</div>
+                <div class="text-4xl font-black text-[#1a1a1a]" id="redeemedAmount">0 BOT</div>
                 <div class="text-sm text-gray-400 font-medium" id="redeemedFiat">≈ $1,594.00</div>
             </div>
             <div class="w-full h-px bg-gray-100 mb-4"></div>
@@ -4630,6 +4632,32 @@
 
 <!-- Home bar -->
 <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-black/10 rounded-full hidden z-50"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGE: TRANSACTION HISTORY -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="page-tx-history" class="page flex-col">
+    <div class="page-header">
+        <div class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+        <h1>Transaction History</h1>
+        <div style="width:36px"></div>
+    </div>
+    <div class="flex-1 px-4 pt-2 pb-6 overflow-y-auto no-scrollbar" style="padding-bottom:100px">
+        <div id="txHistoryList"></div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGE: TX DETAIL -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="page-tx-detail" class="page white-bg flex-col">
+    <div class="page-header">
+        <div class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+        <h1>Transaction Details</h1>
+        <div style="width:36px"></div>
+    </div>
+    <div class="flex-1 px-5 pt-4 pb-8 overflow-y-auto no-scrollbar" id="txDetailContent"></div>
+</div>
 
 
 <div id="page-game-quiz" class="page flex-col">
@@ -5359,19 +5387,32 @@ function formatRedeemCode(input) {
 
 function redeemGift() {
     const code = document.getElementById('redeemCode')?.value;
-    if(!code || code.length < 14) {
-        alert('Please enter a valid gift code');
+    if(!code || code.length < 5) {
+        toast('Please enter a valid gift code', 'err');
         return;
     }
+    if(!window.WalletEngine || !window.WalletEngine.isInitialized()) {
+        toast('Please create or import a wallet first', 'err');
+        return;
+    }
+    var btn = document.querySelector('#page-redeem-gift .btn-dark');
+    if(btn){ btn.textContent = 'Claiming...'; btn.disabled = true; }
 
-    // Simulate redemption
-    document.getElementById('redeemedAmount').textContent = '0.5 ETH';
-    document.getElementById('redeemedFiat').textContent = '≈ $1,594.00';
-    document.getElementById('redeemedMessage').textContent = '"Happy Birthday! Enjoy your gift! 🎉"';
-    document.getElementById('redeemSenderName').textContent = 'Alex';
-
-    navigateTo('page-redeem-success');
-    setTimeout(() => spawnConfetti(), 300);
+    window.WalletEngine.redeemGiftCode(code).then(function(result) {
+        var priceUsd = window.WalletEngine.getBOTPrice();
+        var amt = parseFloat(result.amount) || 0;
+        document.getElementById('redeemedAmount').textContent = fmt(amt) + ' BOT';
+        document.getElementById('redeemedFiat').textContent = priceUsd > 0 ? '≈ $' + (amt * priceUsd).toFixed(2) : '';
+        document.getElementById('redeemedMessage').textContent = result.message ? '"' + result.message + '"' : 'Gift claimed successfully!';
+        document.getElementById('redeemSenderName').textContent = result.sender ? result.sender.slice(0,6)+'...'+result.sender.slice(-4) : 'Someone';
+        if(btn){ btn.textContent = 'Redeem Gift'; btn.disabled = false; }
+        navigateTo('page-redeem-success');
+        setTimeout(function(){ spawnConfetti(); }, 300);
+        window.WalletEngine.globalRefresh();
+    }).catch(function(err) {
+        if(btn){ btn.textContent = 'Redeem Gift'; btn.disabled = false; }
+        toast('Redeem failed: ' + (err.message || 'Unknown error'), 'err');
+    });
 }
 
 function spawnConfetti() {
@@ -5469,7 +5510,14 @@ function generateVoucherQR() {
 // ─── TICKET CAROUSEL — manual scroll only (no auto) ───
 
 // ─── INIT ───
-showPage('page-onboarding');
+(function(){
+  var existing = localStorage.getItem('creso_wallet_v1');
+  if(existing){
+    showPage('page-wallet');
+  } else {
+    showPage('page-onboarding');
+  }
+})();
 </script>
 
 <script>
@@ -5742,7 +5790,7 @@ function wdExec(){var t=tok(S.wdToken);var amt=parseFloat($('cxWdAmt').value)||0
    $('cxWdSuccHash').textContent=result.hash;
    btn.disabled=false;$('cxWdCfBtnLabel').textContent='Confirm & Withdraw';$('cxWdAmt').value='';$('cxWdAddr').value='';calcWd();renderWdToken();
    showPage('page-withdraw-success');confetti();toast('Withdrew '+fmt(amt)+' '+t.id+' successfully','ok');
-   WalletEngine.fetchAllBalances();
+   WalletEngine.globalRefresh();
   }).catch(function(err){
    btn.disabled=false;$('cxWdCfBtnLabel').textContent='Confirm & Withdraw';
    toast('Withdraw failed: '+(err.message||'Unknown'),'err');
@@ -6904,7 +6952,7 @@ if(document.readyState === 'loading'){
 
 })();
 </script>
-<script src="wallet-engine.js?v=7"></script>
+<script src="wallet-engine.js?v=8"></script>
 <script>
 function doCreateWallet(){
   var name = document.getElementById('createUserName').value.trim();
@@ -6933,6 +6981,12 @@ function doImportWallet(){
     window.WalletEngine.updateWalletUI();
     showPage('page-wallet');
   } catch(e){ alert('Failed: ' + e.message); }
+}
+function doLogout(){
+  if(!confirm('Log out? Your wallet data will be removed from this device.')) return;
+  if(window.WalletEngine) window.WalletEngine.logoutWallet();
+  historyStack.length = 0;
+  showPage('page-onboarding');
 }
 (function(){
   var ex = localStorage.getItem('creso_wallet_v1');
