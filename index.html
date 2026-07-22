@@ -4990,6 +4990,7 @@ let currentPage = 'page-onboarding';
 const mainTabs = ['page-wallet','page-gifts','page-games','page-account'];
 
 function showPage(id) {
+    if(typeof cxClosePicker==='function') cxClosePicker();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const el = document.getElementById(id);
     if(el) el.classList.add('active');
@@ -5128,23 +5129,21 @@ function switchChain(chain) {
 function updateActiveChainView(chain) {
     const data = chainDatabase[chain] || chainDatabase.bot;
 
-    // Update chart title + change
-    const chartP = document.querySelectorAll('.container-card-charts p');
-    if (chartP[0]) chartP[0].textContent = data.label + ' ' + data.price;
-    if (chartP[1]) {
-        chartP[1].textContent = data.change24h;
-        chartP[1].style.backgroundImage = data.changeDir === 'up'
-            ? 'linear-gradient(to right,#16a34a,#4ade80,#4ade80)'
-            : data.changeDir === 'down'
-            ? 'linear-gradient(to right,#dc2626,#f87171,#f87171)'
-            : 'linear-gradient(to right,#8e1414,#fff,#fff)';
+    /* update chart price label */
+    var priceEl = document.getElementById('chartPriceLabel');
+    if(priceEl) priceEl.textContent = '$' + (data.price || '0.00');
+    var chEl = document.getElementById('chartChangeLabel');
+    if(chEl){
+        var ch = data.change24h || '—';
+        var dir = data.changeDir;
+        var color = dir==='up'?'#22c55e':(dir==='down'?'#ef4444':'#9ca3af');
+        chEl.innerHTML = '<span style="color:#9ca3af">24h:</span> <span style="color:'+color+'">'+ch+'</span>';
     }
 
-    // Update flip card total balance
-    const flipBalance = document.querySelector('.flip-card-front .text-3xl');
-    if (flipBalance) flipBalance.textContent = '$' + data.usdBalance;
+    /* update wallet pocket */
+    if(typeof updateWalletPocket==='function') updateWalletPocket();
 
-    // Update token list
+    /* update token list */
     const pane = document.getElementById('walletTokenContentPane');
     if (pane) {
         if (!data.tokens || data.tokens.length === 0) {
@@ -5883,8 +5882,6 @@ function pickItem(id){
  }
  closePicker();}
 window.cxOpenPicker=openPicker;window.cxClosePicker=closePicker;window.cxRenderPicker=renderPicker;window.cxPickItem=pickItem;
-/* permanent bottom nav (hidden only on onboarding/login) + picker can never get stuck */
-(function(){var orig=window.showPage;if(typeof orig==='function'){window.showPage=function(){closePicker();var r=orig.apply(this,arguments);var nav=document.getElementById('bottomNav');if(nav){var id=arguments[0];var hideNav=['page-onboarding','page-login','page-tx-history','page-tx-detail'];if(hideNav.indexOf(id)>-1){nav.classList.add('hidden');}else{nav.classList.remove('hidden');}}return r;};}})();
 
 /* ── WITHDRAW ── */
 function renderWdToken(){var t=tok(S.wdToken);$('cxWdTokenIco').innerHTML=ico(t,40);$('cxWdTokenSym').textContent=t.id;
@@ -6971,42 +6968,7 @@ try {
 // This means it's always at the bottom of the frame, regardless of page scroll.
 // The issue is the `hidden` class being added/removed incorrectly.
 
-// Override showPage to ensure nav is visible on main tabs
-var _origShowPage = window.showPage;
-if(typeof _origShowPage === 'function'){
-  window.showPage = function(){
-    var r = _origShowPage.apply(this, arguments);
-    var nav = $('bottomNav');
-    if(nav){
-      var id = arguments[0];
-      // Only hide on onboarding and login
-      if(id === 'page-onboarding' || id === 'page-login'){
-        nav.classList.add('hidden');
-      } else {
-        nav.classList.remove('hidden');
-      }
-    }
-    return r;
-  };
-}
-
-// Override navigateTo similarly
-var _origNavTo = window.navigateTo;
-if(typeof _origNavTo === 'function'){
-  window.navigateTo = function(){
-    var r = _origNavTo.apply(this, arguments);
-    var nav = $('bottomNav');
-    if(nav){
-      var id = arguments[0];
-      if(id === 'page-onboarding' || id === 'page-login'){
-        nav.classList.add('hidden');
-      } else {
-        nav.classList.remove('hidden');
-      }
-    }
-    return r;
-  };
-}
+// Bottom nav is handled by the main showPage() function
 
 // Override switchTabMain to always show nav
 var _origSwitchTabMain = window.switchTabMain;
