@@ -20,7 +20,7 @@ var SBT_ABI = [
   'event SoulboundGiftMinted(uint256 indexed tokenId, address indexed sender, address indexed recipient, string tokenURI, uint256 amount)',
   'event GiftConverted(uint256 indexed tokenId, address indexed recipient, uint256 amount)'
 ];
-var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=usd&include_24hr_change=true';
+var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,wrapped-bot&vs_currencies=usd&include_24hr_change=true';
 var BOT_PRICE_USD = 9.74;
 var STORAGE_KEY = 'creso_wallet_v1';
 var PROFILE_KEY = 'creso_profile_v1';
@@ -83,7 +83,11 @@ async function fetchPrices(){
   try {
     var resp = await fetch(COINGECKO_URL);
     var data = await resp.json();
-    var map = { ETH: data.ethereum, BTC: data.bitcoin, SOL: data.solana, BNB: data.binancecoin, XRP: data.ripple };
+    var map = { ETH: data.ethereum, BTC: data.bitcoin, SOL: data.solana, BNB: data.binancecoin, XRP: data.ripple, BOT: data['wrapped-bot'] };
+    if(map.BOT && map.BOT.usd){
+      BOT_PRICE_USD = map.BOT.usd;
+      console.log('[WalletEngine] BOT price: $' + BOT_PRICE_USD);
+    }
     if(window.cxTOKENS){ for(var i=0;i<window.cxTOKENS.length;i++){ var t=window.cxTOKENS[i]; if(map[t.id]&&map[t.id].usd) t.price=map[t.id].usd; } }
     if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ var s=GVT[i].sym.replace('\\$',''); if(map[s]&&map[s].usd) GVT[i].price=map[s].usd; } }
     if(typeof chainDatabase!=='undefined'){
@@ -91,6 +95,13 @@ async function fetchPrices(){
       for(var p=0;p<pairs.length;p++){ var cg=pairs[p][0],db=pairs[p][1];
         if(map[cg]&&map[cg].usd){ chainDatabase[db].price=map[cg].usd.toLocaleString('en-US');
           if(map[cg].usd_24h_change!=null){ chainDatabase[db].change24h=(map[cg].usd_24h_change>0?'+':'')+map[cg].usd_24h_change.toFixed(2)+'%'; chainDatabase[db].changeDir=map[cg].usd_24h_change>0?'up':'down'; }
+        }
+      }
+      if(map.BOT && map.BOT.usd){
+        chainDatabase.bot.price = map.BOT.usd.toLocaleString('en-US');
+        if(map.BOT.usd_24h_change != null){
+          chainDatabase.bot.change24h = (map.BOT.usd_24h_change>0?'+':'')+map.BOT.usd_24h_change.toFixed(2)+'%';
+          chainDatabase.bot.changeDir = map.BOT.usd_24h_change>0?'up':'down';
         }
       }
     }
