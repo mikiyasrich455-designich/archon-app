@@ -1612,7 +1612,7 @@
         </div>
 
         <div class="w-full mt-6 space-y-3">
-            <button onclick="importWalletFromMnemonic()" class="btn-primary w-full shadow-lg shadow-purple-200">Restore Wallet</button>
+            <button onclick="doImportWallet()" class="btn-primary w-full shadow-lg shadow-purple-200">Restore Wallet</button>
             <button onclick="showPage('page-wallet')" class="btn-outline w-full" id="existingWalletBtn" style="display:none">Continue with Existing Wallet</button>
         </div>
 
@@ -1905,7 +1905,7 @@
 
         <div class="flex gap-3">
             <button class="btn-outline" onclick="goBack()">Cancel</button>
-            <button class="btn-dark" id="createWalletBtn" onclick="createRealWallet()">Create Wallet</button>
+            <button class="btn-dark" id="createWalletBtn" onclick="doCreateWallet()">Create Wallet</button>
         </div>
     </div>
 </div>
@@ -6852,66 +6852,40 @@ if(document.readyState === 'loading'){
 
 })();
 </script>
-<script src="wallet-engine.js"></script>
+<script src="wallet-engine.js?v=2"></script>
 <script>
-/* ══ WALLET CREATION & IMPORT FLOW ══ */
-function createRealWallet(){
+function doCreateWallet(){
   var name = document.getElementById('createUserName').value.trim();
   var dob = document.getElementById('createUserDob').value;
   var walletName = document.getElementById('walletNameInput').value.trim();
-  var address = document.getElementById('createUserAddress').value.trim();
-
-  if(!name){ alert('Please enter your name'); return; }
-  if(!dob){ alert('Please enter your date of birth'); return; }
-  if(!walletName){ alert('Please enter a wallet name'); return; }
-
+  var addr = document.getElementById('createUserAddress').value.trim();
   var btn = document.getElementById('createWalletBtn');
-  btn.textContent = 'Creating...';
-  btn.disabled = true;
-
-  setTimeout(function(){
-    try {
-      var wd = window.WalletEngine.createWallet();
-      window.WalletEngine.saveProfile(name, dob, address);
-      console.log('[Creso] Wallet created:', wd.address);
-      btn.textContent = 'Created!';
-      setTimeout(function(){
-        window.WalletEngine.updateWalletUI();
-        showPage('page-wallet');
-        btn.textContent = 'Create Wallet';
-        btn.disabled = false;
-      }, 500);
-    } catch(e){
-      console.error('[Creso] Create error:', e);
-      alert('Failed to create wallet: '+e.message);
-      btn.textContent = 'Create Wallet';
-      btn.disabled = false;
-    }
-  }, 300);
-}
-
-function importWalletFromMnemonic(){
-  var mnemonic = document.getElementById('importMnemonic').value.trim();
-  if(!mnemonic){ alert('Please enter your recovery phrase'); return; }
-  var words = mnemonic.split(/\s+/);
-  if(words.length < 12){ alert('Recovery phrase must be at least 12 words'); return; }
-
+  btn.textContent = 'Creating...'; btn.disabled = true;
   try {
-    var wd = window.WalletEngine.importFromMnemonic(mnemonic);
-    if(!wd){ alert('Invalid recovery phrase'); return; }
-    console.log('[Creso] Wallet imported:', wd.address);
-    window.WalletEngine.updateWalletUI();
-    showPage('page-wallet');
+    window.WalletEngine.createReal(name, dob, walletName, addr);
+    btn.textContent = 'Created!';
+    setTimeout(function(){
+      window.WalletEngine.updateWalletUI();
+      showPage('page-wallet');
+      btn.textContent = 'Create Wallet'; btn.disabled = false;
+    }, 400);
   } catch(e){
-    alert('Failed to import wallet: '+e.message);
+    alert('Failed: ' + e.message);
+    btn.textContent = 'Create Wallet'; btn.disabled = false;
   }
 }
-
-/* Show "Continue" button if wallet already exists */
+function doImportWallet(){
+  var m = document.getElementById('importMnemonic').value.trim();
+  try {
+    window.WalletEngine.importReal(m);
+    window.WalletEngine.updateWalletUI();
+    showPage('page-wallet');
+  } catch(e){ alert('Failed: ' + e.message); }
+}
 (function(){
-  var existing = localStorage.getItem('creso_wallet_v1');
-  var btn = document.getElementById('existingWalletBtn');
-  if(existing && btn) btn.style.display = 'block';
+  var ex = localStorage.getItem('creso_wallet_v1');
+  var b = document.getElementById('existingWalletBtn');
+  if(ex && b) b.style.display = 'block';
 })();
 </script>
 </body>
