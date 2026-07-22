@@ -69,12 +69,17 @@ async function fetchAllBalances(){
   if(typeof chainDatabase!=='undefined'){
     chainDatabase.bot.balance = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     chainDatabase.bot.usdBalance = (n*BOT_PRICE_USD).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(BOT_PRICE_USD > 0) chainDatabase.bot.price = BOT_PRICE_USD.toLocaleString('en-US');
     if(chainDatabase.bot.tokens&&chainDatabase.bot.tokens[0]){
       chainDatabase.bot.tokens[0].bal = chainDatabase.bot.balance;
       chainDatabase.bot.tokens[0].usd = '$'+chainDatabase.bot.usdBalance;
     }
   }
-  if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='\\$BOT') GVT[i].bal = n; } }
+  if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='\\$BOT'){ GVT[i].bal = n; if(BOT_PRICE_USD>0) GVT[i].price = BOT_PRICE_USD; } } }
+  if(typeof tokenDetails!=='undefined' && tokenDetails.BOT){
+    tokenDetails.BOT.bal = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(BOT_PRICE_USD > 0) tokenDetails.BOT.price = '$'+BOT_PRICE_USD.toLocaleString('en-US');
+  }
   return botBal;
 }
 
@@ -87,9 +92,23 @@ async function fetchPrices(){
     if(map.BOT && map.BOT.usd){
       BOT_PRICE_USD = map.BOT.usd;
       console.log('[WalletEngine] BOT price: $' + BOT_PRICE_USD);
+      var p = map.BOT.usd.toLocaleString('en-US');
+      var ch = map.BOT.usd_24h_change;
+      var chStr = ch != null ? (ch>0?'+':'')+ch.toFixed(2)+'%' : '—';
+      var dir = ch != null ? (ch>0?'up':'down') : 'neutral';
+      if(typeof chartData !== 'undefined'){
+        chartData['1H'].val = p; chartData['1D'].val = p; chartData['1W'].val = p;
+        chartData['1H'].chg = chStr; chartData['1D'].chg = chStr; chartData['1W'].chg = chStr;
+        chartData['1H'].dir = dir; chartData['1D'].dir = dir; chartData['1W'].dir = dir;
+      }
+      if(typeof chainMap !== 'undefined' && chainMap.bot){
+        chainMap.bot.prices['1H'] = p; chainMap.bot.prices['1D'] = p; chainMap.bot.prices['1W'] = p;
+        chainMap.bot.chgs['1H'] = chStr; chainMap.bot.chgs['1D'] = chStr; chainMap.bot.chgs['1W'] = chStr;
+        chainMap.bot.dirs['1H'] = dir; chainMap.bot.dirs['1D'] = dir; chainMap.bot.dirs['1W'] = dir;
+      }
     }
     if(window.cxTOKENS){ for(var i=0;i<window.cxTOKENS.length;i++){ var t=window.cxTOKENS[i]; if(map[t.id]&&map[t.id].usd) t.price=map[t.id].usd; } }
-    if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ var s=GVT[i].sym.replace('\\$',''); if(map[s]&&map[s].usd) GVT[i].price=map[s].usd; } }
+    if(window.GVT){ for(var i=0;i<window.GVT.length;i++){ var s=window.GVT[i].sym.replace('\\$',''); if(map[s]&&map[s].usd){ window.GVT[i].price=map[s].usd; } } }
     if(typeof chainDatabase!=='undefined'){
       var pairs=[['ETH','eth'],['BTC','btc'],['SOL','sol'],['BNB','bnb'],['XRP','xrp']];
       for(var p=0;p<pairs.length;p++){ var cg=pairs[p][0],db=pairs[p][1];
@@ -340,8 +359,13 @@ function updateWalletUI(){
 
   fetchBOTBalance().then(function(bal){
     var n = parseFloat(bal)||0;
+    var usd = (n * BOT_PRICE_USD).toFixed(2);
     var balEl = document.querySelector('.flip-card-front .text-3xl');
-    if(balEl) balEl.textContent = '$'+(n*BOT_PRICE_USD).toFixed(2);
+    if(balEl) balEl.textContent = '$'+usd;
+    if(typeof chainDatabase!=='undefined' && chainDatabase.bot){
+      chainDatabase.bot.usdBalance = (n*BOT_PRICE_USD).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
+    if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
   });
 
   generateRealQR('cxDepQr', addr);
@@ -362,13 +386,32 @@ function autoInit(){
     wireRealFunctions();
     setTimeout(function(){
       if(walletData){
-        fetchAllBalances().then(function(){ if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} } });
-        fetchPrices();
-        updateWalletUI();
+        fetchAllBalances().then(function(){
+          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
+          updateWalletUI();
+        });
+        fetchPrices().then(function(){
+          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
+          updateWalletUI();
+        });
       }
     },500);
-    setInterval(function(){ if(walletData) fetchAllBalances(); },30000);
-    setInterval(function(){ if(walletData) fetchPrices(); },60000);
+    setInterval(function(){
+      if(walletData){
+        fetchAllBalances().then(function(){
+          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
+          updateWalletUI();
+        });
+      }
+    },30000);
+    setInterval(function(){
+      if(walletData){
+        fetchPrices().then(function(){
+          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
+          updateWalletUI();
+        });
+      }
+    },60000);
   } catch(e){ console.error('[WalletEngine] autoInit error', e); }
 }
 

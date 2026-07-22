@@ -1725,10 +1725,10 @@
     <div class="page-header"><div class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div><h1>Token</h1><div style="width:36px"></div></div>
     <div class="flex-1 px-5 pt-2 pb-8 overflow-y-auto no-scrollbar">
         <div class="flex flex-col items-center pt-4 pb-5">
-            <span class="cx-ticon" style="width:72px;height:72px;font-size:26px;background:#627eea1a;color:#627eea;margin-bottom:12px">E</span>
-            <div style="font-size:14px;font-weight:700;color:#9ca3af">Ethereum</div>
-            <div class="cx-disp cx-num" style="font-size:30px;font-weight:900;color:#1a1a1a;margin-top:2px">$3,187.99</div>
-            <div class="cx-num cx-up" style="font-size:13px;font-weight:800;margin-top:4px">▲ +1.87% (24h)</div>
+            <span class="cx-ticon" style="width:72px;height:72px;font-size:26px;background:#7c3aed1a;color:#7c3aed;margin-bottom:12px">B</span>
+            <div style="font-size:14px;font-weight:700;color:#9ca3af">Botchain</div>
+            <div class="cx-disp cx-num" style="font-size:30px;font-weight:900;color:#1a1a1a;margin-top:2px" id="cxSendPrice">$0.00</div>
+                <div class="cx-num cx-up" style="font-size:13px;font-weight:800;margin-top:4px">— (24h)</div>
         </div>
         <div class="flex gap-3 mb-5">
             <button class="btn-dark" style="flex:1;width:auto;display:flex;align-items:center;justify-content:center;gap:7px" onclick="navigateTo('page-send')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Send</button>
@@ -1737,7 +1737,7 @@
         </div>
         <div class="card p-4 mb-4">
             <div class="flex justify-between items-center py-3 border-b border-gray-50"><span class="text-sm text-gray-400 font-semibold">Network</span><span class="text-sm font-bold text-[#1a1a1a]">Ethereum Mainnet</span></div>
-            <div class="flex justify-between items-center py-3 border-b border-gray-50"><span class="text-sm text-gray-400 font-semibold">Balance</span><span class="text-sm font-bold text-[#1a1a1a] cx-num">3.18799 ETH</span></div>
+            <div class="flex justify-between items-center py-3 border-b border-gray-50"><span class="text-sm text-gray-400 font-semibold">Balance</span><span class="text-sm font-bold text-[#1a1a1a] cx-num" id="wdbalETH">0.00 BOT</span></div>
             <div class="flex justify-between items-center py-3"><span class="text-sm text-gray-400 font-semibold">Standard</span><span class="text-sm font-bold text-[#1a1a1a]">Native Token</span></div>
         </div>
         <p class="text-xs text-gray-400 font-medium text-center">Tap any token on your wallet to view its details, then Send / Receive / Swap.</p>
@@ -1775,7 +1775,7 @@
         </div>
         <div class="cx-det">
             <div class="cx-det-row"><span class="cx-det-k">Rate</span><span class="cx-det-v cx-num" id="cxSwapRate">—</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num">~$1.85</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxNetFee">~$0.00</span></div>
             <div class="cx-det-row"><span class="cx-det-k">Price impact</span><span class="cx-det-v cx-num" style="color:#16a34a">&lt;0.01%</span></div>
             <div class="cx-det-row"><span class="cx-det-k">Min. received</span><span class="cx-det-v cx-num" id="cxSwapMin">—</span></div>
         </div>
@@ -3097,10 +3097,10 @@
         <div id="cxSendAddrMsg" style="font-size:11px;font-weight:800;height:16px;margin-bottom:8px"></div>
         <div class="flex gap-2 overflow-x-auto no-scrollbar mb-4" id="cxContactRow" style="padding-bottom:4px"></div>
         <div class="cx-amtcard mb-4" style="padding:16px">
-            <div class="flex justify-between mb-3"><span style="font-weight:800;font-size:14px">Network fee</span><span class="cx-num" id="cxSendFeeUsd" style="font-weight:800;font-size:14px">~$2.45</span></div>
+            <div class="flex justify-between mb-3"><span style="font-weight:800;font-size:14px">Network fee</span><span class="cx-num" id="cxSendFeeUsd" style="font-weight:800;font-size:14px">~$0.01</span></div>
             <div class="flex gap-2">
                 <button class="cx-pill-fee" data-fee="1.20" onclick="cxSetSendFee(this)">Slow<small>$1.20</small></button>
-                <button class="cx-pill-fee active" data-fee="2.45" onclick="cxSetSendFee(this)">Standard<small>$2.45</small></button>
+                <button class="cx-pill-fee active" data-fee="0.001" onclick="cxSetSendFee(this)">Standard<small>$0.01</small></button>
                 <button class="cx-pill-fee" data-fee="4.80" onclick="cxSetSendFee(this)">Fast<small>$4.80</small></button>
             </div>
         </div>
@@ -3122,7 +3122,7 @@
         <div class="cx-det" style="margin-top:0">
             <div class="cx-det-row"><span class="cx-det-k">To</span><span class="cx-det-v cx-num" id="cxCfTo">—</span></div>
             <div class="cx-det-row"><span class="cx-det-k">Network</span><span class="cx-det-v" id="cxCfNet">Ethereum</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxCfFee">$2.45</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxCfFee">$0.01</span></div>
             <div class="cx-det-row"><span class="cx-det-k">Arrival</span><span class="cx-det-v">~30 sec</span></div>
         </div>
         <button class="cx-cta" id="cxCfBtn" onclick="cxExecSend()"><span id="cxCfBtnLabel">Confirm &amp; Send</span></button>
@@ -4743,10 +4743,10 @@
         </div>
         <div id="cxWdAddrMsg" style="font-size:11px;font-weight:800;height:16px;margin-bottom:8px"></div>
         <div class="cx-amtcard mb-4" style="padding:16px">
-            <div class="flex justify-between mb-3"><span style="font-weight:800;font-size:14px">Network fee</span><span class="cx-num" id="cxWdFeeUsd" style="font-weight:800;font-size:14px">~$2.45</span></div>
+            <div class="flex justify-between mb-3"><span style="font-weight:800;font-size:14px">Network fee</span><span class="cx-num" id="cxWdFeeUsd" style="font-weight:800;font-size:14px">~$0.01</span></div>
             <div class="flex gap-2">
                 <button class="cx-pill-fee" data-fee="1.20" onclick="cxSetWdFee(this)">Slow<small>$1.20</small></button>
-                <button class="cx-pill-fee active" data-fee="2.45" onclick="cxSetWdFee(this)">Standard<small>$2.45</small></button>
+                <button class="cx-pill-fee active" data-fee="0.001" onclick="cxSetWdFee(this)">Standard<small>$0.01</small></button>
                 <button class="cx-pill-fee" data-fee="4.80" onclick="cxSetWdFee(this)">Fast<small>$4.80</small></button>
             </div>
         </div>
@@ -4768,7 +4768,7 @@
         </div>
         <div class="cx-det" style="margin-top:0">
             <div class="cx-det-row"><span class="cx-det-k">To</span><span class="cx-det-v cx-num" id="cxWdCfTo">—</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxWdCfFee">$2.45</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Network fee</span><span class="cx-det-v cx-num" id="cxWdCfFee">$0.01</span></div>
             <div class="cx-det-row"><span class="cx-det-k">Arrival</span><span class="cx-det-v">~5 min</span></div>
         </div>
         <button class="cx-cta" id="cxWdCfBtn" onclick="cxWdExec()"><span id="cxWdCfBtnLabel">Confirm &amp; Withdraw</span></button>
@@ -4927,25 +4927,25 @@ function selectNetwork(name) {
 
 // ─── CHAIN DATABASE ───
 const chainDatabase = {
-    bot: { label: 'BOT', name: 'Botchain', balance: '1,250.00', price: '2.45', usdBalance: '3,062.50', change24h: '+4.50%', changeDir: 'up',
-        tokens: [{sym:'$BOT',name:'Botchain Token',bal:'1,250.00',usd:'$3,062.50',color:'#7c3aed',bg:'bg-purple-50',svg:'<img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg" style="width:20px;height:20px;border-radius:50%;" />'}]
+    bot: { label: 'BOT', name: 'Botchain', balance: '0.00', price: '0', usdBalance: '0.00', change24h: '—', changeDir: 'neutral',
+        tokens: [{sym:'$BOT',name:'Botchain Token',bal:'0.00',usd:'$0.00',color:'#7c3aed',bg:'bg-purple-50',svg:'<img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg" style="width:20px;height:20px;border-radius:50%;" />'}]
     },
-    sol: { label: 'SOL', name: 'Solana', balance: '0.00', price: '180.42', usdBalance: '0.00', change24h: '+3.24%', changeDir: 'up',
+    sol: { label: 'SOL', name: 'Solana', balance: '0.00', price: '0', usdBalance: '0.00', change24h: '—', changeDir: 'neutral',
         tokens: [{sym:'SOL',name:'Solana',bal:'0.00',usd:'$0.00',color:'#9945ff',bg:'bg-purple-50'}]
     },
-    eth: { label: 'ETH', name: 'Ethereum', balance: '0.54', price: '3,187.99', usdBalance: '1,721.51', change24h: '+1.87%', changeDir: 'up',
+    eth: { label: 'ETH', name: 'Ethereum', balance: '0.00', price: '0', usdBalance: '0.00', change24h: '—', changeDir: 'neutral',
         tokens: [
-            {sym:'ETH',name:'Ethereum',bal:'0.54',usd:'$1,721.51',color:'#627eea',bg:'bg-stone-100',svg:'<svg width="20" height="20" viewBox="0 0 784 1277" fill="#627eea"><path d="M392 0L383 30v852l9 9 392-232z M392 0L0 659l392 232V472z"/></svg>'},
-            {sym:'DAI',name:'Dai Stablecoin',bal:'594.23',usd:'$594.17',color:'#f5ac37',bg:'bg-yellow-50',letter:'D'}
+            {sym:'ETH',name:'Ethereum',bal:'0.00',usd:'$0.00',color:'#627eea',bg:'bg-stone-100',svg:'<svg width="20" height="20" viewBox="0 0 784 1277" fill="#627eea"><path d="M392 0L383 30v852l9 9 392-232z M392 0L0 659l392 232V472z"/></svg>'},
+            {sym:'DAI',name:'Dai Stablecoin',bal:'0.00',usd:'$0.00',color:'#f5ac37',bg:'bg-yellow-50',letter:'D'}
         ]
     },
-    btc: { label: 'BTC', name: 'Bitcoin', balance: '0.00', price: '67,432.10', usdBalance: '0.00', change24h: '-0.52%', changeDir: 'down',
+    btc: { label: 'BTC', name: 'Bitcoin', balance: '0.00', price: '0', usdBalance: '0.00', change24h: '—', changeDir: 'neutral',
         tokens: [{sym:'BTC',name:'Bitcoin',bal:'0.00',usd:'$0.00',color:'#f7931a',bg:'bg-orange-50',letter:'B'}]
     },
-    bnb: { label: 'BNB', name: 'BNB Chain', balance: '0.00', price: '612.38', usdBalance: '0.00', change24h: '+0.91%', changeDir: 'up',
+    bnb: { label: 'BNB', name: 'BNB Chain', balance: '0.00', price: '0', usdBalance: '0.00', change24h: '—', changeDir: 'neutral',
         tokens: [{sym:'BNB',name:'BNB Chain',bal:'0.00',usd:'$0.00',color:'#f3ba2f',bg:'bg-yellow-50',letter:'B'}]
     },
-    xrp: { label: 'XRP', name: 'Ripple', balance: '0.00', price: '0.6234', usdBalance: '0.00', change24h: '-1.15%', changeDir: 'down',
+    xrp: { label: 'XRP', name: 'Ripple', balance: '0.00', price: '0', usdBalance: '0.00', change24h: '—', changeDir: 'neutral',
         tokens: [{sym:'XRP',name:'Ripple',bal:'0.00',usd:'$0.00',color:'#23292f',bg:'bg-slate-100',letter:'X'}]
     }
 };
@@ -5148,8 +5148,9 @@ function claimTask(el, points) {
 function setMaxAmount() {
     const input = document.getElementById('sendAmount');
     if(input) {
-        input.value = '3.18799';
-        updateSendFiat();
+        if(window.WalletEngine && window.WalletEngine.isInitialized()){
+            window.WalletEngine.fetchBOTBalance().then(function(bal){ input.value = bal; updateSendFiat(); });
+        } else { input.value = '0'; updateSendFiat(); }
     }
 }
 
@@ -5161,11 +5162,12 @@ function updateSendFiat() {
     if(!input || !fiat) return;
 
     const val = parseFloat(input.value) || 0;
-    const usd = (val * 3187.99).toFixed(2);
+    const price = (window.WalletEngine && typeof BOT_PRICE_USD !== 'undefined') ? BOT_PRICE_USD : 0;
+    const usd = (val * price).toFixed(2);
     fiat.textContent = '≈ $' + usd;
 
-    if(total) total.textContent = val.toFixed(5) + ' ETH';
-    if(totalFiat) totalFiat.textContent = '≈ $' + (parseFloat(usd) + 2.45).toFixed(2);
+    if(total) total.textContent = val.toFixed(5) + ' BOT';
+    if(totalFiat) totalFiat.textContent = '≈ $' + usd;
 }
 
 function validateAddress() {
@@ -5196,9 +5198,9 @@ function scanQR() {
     alert('QR scanner would open here');
 }
 
-let selectedFee = 2.45;
+let selectedFee = 0.001;
 function setFee(type) {
-    const fees = {slow: 1.20, standard: 2.45, fast: 4.80};
+    const fees = {slow: 0.0005, standard: 0.001, fast: 0.002};
     selectedFee = fees[type];
     document.getElementById('networkFee').textContent = '~$' + selectedFee.toFixed(2);
     updateSendFiat();
@@ -5483,15 +5485,15 @@ showPage('page-onboarding');
 (function(){
 var IMG={bot:'https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg'};
 var TOKENS=[
- {id:'BOT',name:'Botchain',bal:1250,price:2.45,color:'#7c3aed',img:IMG.bot},
- {id:'ETH',name:'Ethereum',bal:3.18799,price:3187.99,color:'#627eea'},
- {id:'USDC',name:'USD Coin',bal:850,price:1.0,color:'#2775ca'},
- {id:'DAI',name:'Dai',bal:594.23,price:1.0,color:'#f5ac37'},
- {id:'WETH',name:'Wrapped Ether',bal:0.42,price:3187.5,color:'#c13584'},
- {id:'SOL',name:'Solana',bal:12.5,price:180.42,color:'#9945ff'},
- {id:'BTC',name:'Bitcoin',bal:0.0215,price:67432.10,color:'#f7931a'},
- {id:'BNB',name:'BNB',bal:1.8,price:612.38,color:'#f3ba2f'},
- {id:'XRP',name:'Ripple',bal:340,price:0.6234,color:'#23292f'}];
+ {id:'BOT',name:'Botchain',bal:0,price:0,color:'#7c3aed',img:IMG.bot},
+ {id:'ETH',name:'Ethereum',bal:0,price:0,color:'#627eea'},
+ {id:'USDC',name:'USD Coin',bal:0,price:1.0,color:'#2775ca'},
+ {id:'DAI',name:'Dai',bal:0,price:1.0,color:'#f5ac37'},
+ {id:'WETH',name:'Wrapped Ether',bal:0,price:0,color:'#c13584'},
+ {id:'SOL',name:'Solana',bal:0,price:0,color:'#9945ff'},
+ {id:'BTC',name:'Bitcoin',bal:0,price:0,color:'#f7931a'},
+ {id:'BNB',name:'BNB',bal:0,price:0,color:'#f3ba2f'},
+ {id:'XRP',name:'Ripple',bal:0,price:0,color:'#23292f'}];
 var CHAINS=[
  {id:'eth',name:'Ethereum',short:'ETH',color:'#627eea',letter:'E',addr:'0xDa3ad22D6604836B9f02E91c4a1F5b7C0d91f877',min:'0.001 ETH',conf:'12 blocks',time:'~3 min',warn:'Only send ETH and EVM-compatible tokens to this address. Sending other assets may result in permanent loss.'},
  {id:'bot',name:'Botchain',short:'BOT',color:'#7c3aed',img:IMG.bot,addr:'bot1x9q7f2k4m8s1t6v3w0y5z2c7n4a8d',min:'1 BOT',conf:'20 blocks',time:'~1 min',warn:'Only send BOT (Botchain) assets to this address. Other assets will be permanently lost.'},
@@ -5499,7 +5501,7 @@ var CHAINS=[
  {id:'btc',name:'Bitcoin',short:'BTC',color:'#f7931a',letter:'B',addr:'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',min:'0.0001 BTC',conf:'2 blocks',time:'~30 min',warn:'Only send BTC to this address.'},
  {id:'bnb',name:'BNB Chain',short:'BNB',color:'#f3ba2f',letter:'B',addr:'0x742d35Cc6634C0532925a3b844Bc454e4438f44e',min:'0.01 BNB',conf:'15 blocks',time:'~2 min',warn:'Only send BNB and BEP-20 tokens to this address.'},
  {id:'xrp',name:'Ripple',short:'XRP',color:'#23292f',letter:'X',addr:'rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh',min:'20 XRP',conf:'1 ledger',time:'~1 min',warn:'Only send XRP to this address. A 20 XRP reserve is required.'}];
-var S={swapFrom:'BOT',swapTo:'ETH',slip:0.5,sendToken:'ETH',sendFee:2.45,depNet:'eth',depToken:'ETH',wdToken:'ETH',wdFee:2.45,sheetTarget:null};
+var S={swapFrom:'BOT',swapTo:'ETH',slip:0.5,sendToken:'BOT',sendFee:0.001,depNet:'bot',depToken:'BOT',wdToken:'BOT',wdFee:0.001,sheetTarget:null};
 function $(id){return document.getElementById(id);}
 function tok(id){for(var i=0;i<TOKENS.length;i++)if(TOKENS[i].id===id)return TOKENS[i];return TOKENS[0];}
 function chain(id){for(var i=0;i<CHAINS.length;i++)if(CHAINS[i].id===id)return CHAINS[i];return CHAINS[0];}
@@ -5697,11 +5699,22 @@ function wdToConfirm(){var t=tok(S.wdToken);var amt=parseFloat($('cxWdAmt').valu
  navigateTo('page-withdraw-confirm');}
 window.cxWdToConfirm=wdToConfirm;
 function wdExec(){var t=tok(S.wdToken);var amt=parseFloat($('cxWdAmt').value)||0;var addr=$('cxWdAddr').value.trim();
- var btn=$('cxWdCfBtn');btn.disabled=true;$('cxWdCfBtnLabel').innerHTML='<span class="cx-spin">◌</span>&nbsp;Processing…';
- setTimeout(function(){t.bal-=amt;$('cxWdSuccAmt').textContent=fmt(amt)+' '+t.id+' → '+(addr.slice(0,6)+'...'+addr.slice(-4));
-  $('cxWdSuccHash').textContent='0x'+Math.random().toString(16).slice(2,6)+'...'+Math.random().toString(16).slice(2,6);
-  btn.disabled=false;$('cxWdCfBtnLabel').textContent='Confirm & Withdraw';$('cxWdAmt').value='';$('cxWdAddr').value='';calcWd();renderWdToken();
-  showPage('page-withdraw-success');confetti();toast('Withdrew '+fmt(amt)+' '+t.id+' successfully','ok');},1500);}
+ var btn=$('cxWdCfBtn');btn.disabled=true;$('cxWdCfBtnLabel').innerHTML='<span class="cx-spin">◌</span>&nbsp;Broadcasting…';
+ if(t.id==='BOT' && window.WalletEngine && window.WalletEngine.isInitialized()){
+  window.WalletEngine.realSend(addr, amt).then(function(result){
+   t.bal-=amt;$('cxWdSuccAmt').textContent=fmt(amt)+' '+t.id+' → '+(addr.slice(0,6)+'...'+addr.slice(-4));
+   $('cxWdSuccHash').textContent=result.hash;
+   btn.disabled=false;$('cxWdCfBtnLabel').textContent='Confirm & Withdraw';$('cxWdAmt').value='';$('cxWdAddr').value='';calcWd();renderWdToken();
+   showPage('page-withdraw-success');confetti();toast('Withdrew '+fmt(amt)+' '+t.id+' successfully','ok');
+   WalletEngine.fetchAllBalances();
+  }).catch(function(err){
+   btn.disabled=false;$('cxWdCfBtnLabel').textContent='Confirm & Withdraw';
+   toast('Withdraw failed: '+(err.message||'Unknown'),'err');
+  });
+ } else {
+  toast('Only BOT withdrawals are supported on testnet','err');
+  btn.disabled=false;$('cxWdCfBtnLabel').textContent='Confirm & Withdraw';
+ }}
 window.cxWdExec=wdExec;
 
 /* ── PROFILE + AVATARS ── */
@@ -5884,15 +5897,15 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
   /* ── token registry: real logos, brand colors, gradient pairs, presets ── */
   var GI = 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/';
   var GVT = [
-    { sym:'$BOT', name:'Botchain',      bal:1250,    price:2.45,    c:'#7c3aed', g:['#7c3aed','#b07cff'], img:'https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg', pre:[25,50,100,250] },
-    { sym:'ETH',  name:'Ethereum',      bal:3.18799, price:3187.99, c:'#627eea', g:['#627eea','#8fa8ff'], img:GI+'eth.png',  pre:[0.05,0.1,0.25,0.5] },
-    { sym:'USDC', name:'USD Coin',      bal:850,     price:1,       c:'#2775ca', g:['#2775ca','#5aa4f0'], img:GI+'usdc.png', pre:[10,25,50,100] },
-    { sym:'DAI',  name:'Dai',           bal:594.23,  price:1,       c:'#e8930c', g:['#e8930c','#ffc861'], img:GI+'dai.png',  pre:[10,25,50,100] },
-    { sym:'WETH', name:'Wrapped Ether', bal:0.42,    price:3187.5,  c:'#c13584', g:['#c13584','#e878b4'], img:'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png', pre:[0.05,0.1,0.15,0.25] },
-    { sym:'SOL',  name:'Solana',        bal:12.5,    price:180.42,  c:'#9945ff', g:['#9945ff','#22e0a1'], img:GI+'sol.png',  pre:[0.5,1,2,5] },
-    { sym:'BTC',  name:'Bitcoin',       bal:0.0215,  price:67432.1, c:'#f7931a', g:['#f7931a','#ffc15e'], img:GI+'btc.png',  pre:[0.001,0.0025,0.005,0.01] },
-    { sym:'BNB',  name:'BNB',           bal:1.8,     price:612.38,  c:'#d99e0b', g:['#d99e0b','#ffd35c'], img:GI+'bnb.png',  pre:[0.25,0.5,1,1.5] },
-    { sym:'XRP',  name:'Ripple',        bal:340,     price:0.6234,  c:'#23292f', g:['#3a4150','#6b7688'], img:GI+'xrp.png',  pre:[25,50,100,250] }
+    { sym:'$BOT', name:'Botchain',      bal:0,    price:0,    c:'#7c3aed', g:['#7c3aed','#b07cff'], img:'https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg', pre:[25,50,100,250] },
+    { sym:'ETH',  name:'Ethereum',      bal:0,    price:0,    c:'#627eea', g:['#627eea','#8fa8ff'], img:GI+'eth.png',  pre:[0.05,0.1,0.25,0.5] },
+    { sym:'USDC', name:'USD Coin',      bal:0,     price:1,       c:'#2775ca', g:['#2775ca','#5aa4f0'], img:GI+'usdc.png', pre:[10,25,50,100] },
+    { sym:'DAI',  name:'Dai',           bal:0,  price:1,       c:'#e8930c', g:['#e8930c','#ffc861'], img:GI+'dai.png',  pre:[10,25,50,100] },
+    { sym:'WETH', name:'Wrapped Ether', bal:0,    price:0,  c:'#c13584', g:['#c13584','#e878b4'], img:'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png', pre:[0.05,0.1,0.15,0.25] },
+    { sym:'SOL',  name:'Solana',        bal:0,    price:0,  c:'#9945ff', g:['#9945ff','#22e0a1'], img:GI+'sol.png',  pre:[0.5,1,2,5] },
+    { sym:'BTC',  name:'Bitcoin',       bal:0,  price:0, c:'#f7931a', g:['#f7931a','#ffc15e'], img:GI+'btc.png',  pre:[0.001,0.0025,0.005,0.01] },
+    { sym:'BNB',  name:'BNB',           bal:0,     price:0,  c:'#d99e0b', g:['#d99e0b','#ffd35c'], img:GI+'bnb.png',  pre:[0.25,0.5,1,1.5] },
+    { sym:'XRP',  name:'Ripple',        bal:0,     price:0,  c:'#23292f', g:['#3a4150','#6b7688'], img:GI+'xrp.png',  pre:[25,50,100,250] }
   ];
 
   var GV = { t: GVT[0], amount: 0, to: '', msg: '', code: '' };
@@ -6547,13 +6560,13 @@ function $(id){return document.getElementById(id);}
    1. TOKEN DETAIL PAGE — populate dynamically per token
    ────────────────────────────────────────────────────────────── */
 var TOKEN_DETAIL_DATA = {
-  'BOT':{sym:'$BOT',name:'Botchain Token',network:'Botchain Mainnet',bal:'1,250.00',price:'$2.45',change:'+4.50%',dir:'up',standard:'Native Token',color:'#7c3aed',letter:'B',img:'https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg'},
-  'ETH':{sym:'ETH',name:'Ethereum',network:'Ethereum Mainnet',bal:'0.54',price:'$3,187.99',change:'+1.87%',dir:'up',standard:'Native Token',color:'#627eea',letter:'E',img:''},
-  'DAI':{sym:'DAI',name:'Dai Stablecoin',network:'Ethereum Mainnet',bal:'594.23',price:'$1.00',change:'+0.01%',dir:'up',standard:'ERC-20',color:'#f5ac37',letter:'D',img:''},
-  'SOL':{sym:'SOL',name:'Solana',network:'Solana Mainnet',bal:'0.00',price:'$180.42',change:'+3.24%',dir:'up',standard:'Native Token',color:'#9945ff',letter:'S',img:''},
-  'BTC':{sym:'BTC',name:'Bitcoin',network:'Bitcoin Mainnet',bal:'0.00',price:'$67,432.10',change:'-0.52%',dir:'down',standard:'Native Token',color:'#f7931a',letter:'B',img:''},
-  'BNB':{sym:'BNB',name:'BNB Chain',network:'BNB Smart Chain',bal:'0.00',price:'$612.38',change:'+0.91%',dir:'up',standard:'Native Token',color:'#f3ba2f',letter:'B',img:''},
-  'XRP':{sym:'XRP',name:'Ripple',network:'XRP Ledger',bal:'340.00',price:'$0.6234',change:'-1.15%',dir:'down',standard:'Native Token',color:'#23292f',letter:'X',img:''}
+  'BOT':{sym:'$BOT',name:'Botchain Token',network:'Botchain Mainnet',bal:'0.00',price:'$0',change:'—',dir:'neutral',standard:'Native Token',color:'#7c3aed',letter:'B',img:'https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg'},
+  'ETH':{sym:'ETH',name:'Ethereum',network:'Ethereum Mainnet',bal:'0.00',price:'$0',change:'—',dir:'neutral',standard:'Native Token',color:'#627eea',letter:'E',img:''},
+  'DAI':{sym:'DAI',name:'Dai Stablecoin',network:'Ethereum Mainnet',bal:'0.00',price:'$1.00',change:'—',dir:'neutral',standard:'ERC-20',color:'#f5ac37',letter:'D',img:''},
+  'SOL':{sym:'SOL',name:'Solana',network:'Solana Mainnet',bal:'0.00',price:'$0',change:'—',dir:'neutral',standard:'Native Token',color:'#9945ff',letter:'S',img:''},
+  'BTC':{sym:'BTC',name:'Bitcoin',network:'Bitcoin Mainnet',bal:'0.00',price:'$0',change:'—',dir:'neutral',standard:'Native Token',color:'#f7931a',letter:'B',img:''},
+  'BNB':{sym:'BNB',name:'BNB Chain',network:'BNB Smart Chain',bal:'0.00',price:'$0',change:'—',dir:'neutral',standard:'Native Token',color:'#f3ba2f',letter:'B',img:''},
+  'XRP':{sym:'XRP',name:'Ripple',network:'XRP Ledger',bal:'0.00',price:'$0',change:'—',dir:'neutral',standard:'Native Token',color:'#23292f',letter:'X',img:''}
 };
 
 window.openTokenDetail = function(sym, chainKey){
@@ -6852,7 +6865,7 @@ if(document.readyState === 'loading'){
 
 })();
 </script>
-<script src="wallet-engine.js?v=3"></script>
+<script src="wallet-engine.js?v=4"></script>
 <script>
 function doCreateWallet(){
   var name = document.getElementById('createUserName').value.trim();
