@@ -20,8 +20,7 @@ var SBT_ABI = [
   'event SoulboundGiftMinted(uint256 indexed tokenId, address indexed sender, address indexed recipient, string tokenURI, uint256 amount)',
   'event GiftConverted(uint256 indexed tokenId, address indexed recipient, uint256 amount)'
 ];
-var COINGECKO_API_KEY = 'CG-y15ZH3qSpLnBRwxaq9pGfiwW';
-var COINGECKO_URL = 'https://pro-api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,wrapped-bot&vs_currencies=usd&include_24hr_change=true&x_cg_pro_api_key=' + COINGECKO_API_KEY;
+var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,wrapped-bot&vs_currencies=usd&include_24hr_change=true';
 var BOT_PRICE_USD = 0;
 var STORAGE_KEY = 'creso_wallet_v1';
 var PROFILE_KEY = 'creso_profile_v1';
