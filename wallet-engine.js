@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   WALLET ENGINE v12 — Auth + Cloud Sync + Encryption + Blockchain
+   WALLET ENGINE v15 — Seed/Key Auth + Cloud Sync + Blockchain
    ═══════════════════════════════════════════════════════════════════ */
 (function(){
 "use strict";
@@ -27,7 +27,6 @@ var PROFILE_KEY = 'archon_profile_v1';
 var TX_HISTORY_KEY = 'archon_tx_history';
 var GIFT_CODES_KEY = 'archon_gift_codes';
 var POINTS_KEY = 'archon_points';
-var AUTH_SESSION_KEY = 'archon_auth_session';
 
 var SUPABASE_URL = 'https://vjljoydtwvpvhqiecbqr.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3ZwdmhxaWVjYnFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTAwMjYsImV4cCI6MjA5OTM2NjAyNn0.YFIbiUGGzGvjuvF2bsm4dQv_yzNtJr8G1La8Rtqexy8';
@@ -37,8 +36,7 @@ var provider = null;
 var wallet = null;
 var sbtContract = null;
 var walletData = null;
-var _authUser = null;
-var _authSession = null;
+var _seedHash = null;
 
 function $(id){ return document.getElementById(id); }
 window._cx$ = $;
@@ -65,35 +63,20 @@ function initSupabase(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 2: AUTH — SIGN UP (email + password)
+   SECTION 2: HASHING UTILITIES
    ═══════════════════════════════════════════════════════════════════ */
-async function authSignUp(email, password){
-  initSupabase();
-  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
-  var { data, error } = await sbClient.auth.signUp({ email: email, password: password });
-  if(error) throw new Error(extractError(error));
-  _authUser = data.user;
-  _authSession = data.session;
-  if(data.session) saveAuthSession(data.session);
-  return { user: data.user, session: data.session };
+async function hashString(str){
+  var enc = new TextEncoder();
+  var hash = await crypto.subtle.digest('SHA-256', enc.encode(str));
+  return Array.from(new Uint8Array(hash)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+async function getSeedHash(mnemonic){
+  return await hashString('archon-seed-' + mnemonic.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 3: AUTH — SIGN IN (email + password)
-   ═══════════════════════════════════════════════════════════════════ */
-async function authSignIn(email, password){
-  initSupabase();
-  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
-  var { data, error } = await sbClient.auth.signInWithPassword({ email: email, password: password });
-  if(error) throw new Error(extractError(error));
-  _authUser = data.user;
-  _authSession = data.session;
-  saveAuthSession(data.session);
-  return { user: data.user, session: data.session };
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 3B: RECOVERY KEY SYSTEM
+   SECTION 3: RECOVERY KEY GENERATION
    ═══════════════════════════════════════════════════════════════════ */
 function generateRecoveryKey(){
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -109,145 +92,9 @@ function formatRecoveryKey(key){
 function normalizeRecoveryKey(input){
   return input.replace(/[^A-Z0-9]/gi, '').toUpperCase();
 }
-async function hashString(str){
-  var enc = new TextEncoder();
-  var hash = await crypto.subtle.digest('SHA-256', enc.encode(str));
-  return Array.from(new Uint8Array(hash)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-}
-async function saveRecoveryKey(recoveryKey){
-  initSupabase();
-  if(!sbClient || !_authUser || !walletData) return false;
-  try {
-    var cleanKey = normalizeRecoveryKey(recoveryKey);
-    var encKey = 'archon-recovery-' + cleanKey;
-    var seedEnc = await encryptText(walletData.mnemonic, encKey);
-    var pkEnc = await encryptText(walletData.privateKey, encKey);
-    var keyHash = await hashString(cleanKey);
-    var { error } = await sbClient
-      .from('recovery_keys')
-      .upsert({
-        user_id: _authUser.id,
-        key_hash: keyHash,
-        seed_phrase_encrypted: seedEnc,
-        private_key_encrypted: pkEnc,
-        wallet_address: walletData.address,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id' });
-    if(error) throw new Error(extractError(error));
-    console.log('[Archon] Recovery key saved');
-    return true;
-  } catch(e){
-    console.error('[Archon] Recovery key save failed', e);
-    return false;
-  }
-}
-async function recoverWithKey(recoveryKey){
-  initSupabase();
-  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
-  try {
-    var cleanKey = normalizeRecoveryKey(recoveryKey);
-    if(cleanKey.length !== 16) throw new Error('Recovery key must be 16 characters');
-    var keyHash = await hashString(cleanKey);
-    var { data, error } = await sbClient
-      .from('recovery_keys')
-      .select('*')
-      .eq('key_hash', keyHash)
-      .single();
-    if(error || !data) throw new Error('Invalid recovery key');
-    var encKey = 'archon-recovery-' + cleanKey;
-    var seedPhrase = await decryptText(data.seed_phrase_encrypted, encKey);
-    var privateKey = await decryptText(data.private_key_encrypted, encKey);
-    walletData = { address: data.wallet_address, privateKey: privateKey, mnemonic: seedPhrase, createdAt: Date.now() };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
-    initProvider();
-    console.log('[Archon] Wallet recovered with key:', walletData.address);
-    return walletData;
-  } catch(e){
-    throw new Error(extractError(e));
-  }
-}
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 4: AUTH — RESET PASSWORD
-   ═══════════════════════════════════════════════════════════════════ */
-async function authResetPassword(email){
-  initSupabase();
-  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
-  var { data, error } = await sbClient.auth.resetPasswordForEmail(email);
-  if(error) throw new Error(extractError(error));
-  return data;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 5: AUTH — UPDATE PASSWORD
-   ═══════════════════════════════════════════════════════════════════ */
-async function authUpdatePassword(newPassword){
-  initSupabase();
-  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
-  var { data, error } = await sbClient.auth.updateUser({ password: newPassword });
-  if(error) throw new Error(extractError(error));
-  return data;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 6: AUTH — LOGOUT
-   ═══════════════════════════════════════════════════════════════════ */
-async function authLogout(){
-  initSupabase();
-  if(sbClient){
-    try { await sbClient.auth.signOut(); } catch(e){}
-  }
-  _authUser = null;
-  _authSession = null;
-  localStorage.removeItem(AUTH_SESSION_KEY);
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 7: AUTH — GET CURRENT USER
-   ═══════════════════════════════════════════════════════════════════ */
-async function authGetUser(){
-  initSupabase();
-  if(!sbClient) return null;
-  try {
-    var { data: { user } } = await sbClient.auth.getUser();
-    _authUser = user;
-    return user;
-  } catch(e){ return null; }
-}
-
-function authGetUserSync(){ return _authUser; }
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 8: SESSION PERSISTENCE
-   ═══════════════════════════════════════════════════════════════════ */
-function saveAuthSession(session){
-  if(session){
-    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-      user: session.user,
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
-      expires_at: session.expires_at
-    }));
-  }
-}
-
-async function restoreAuthSession(){
-  initSupabase();
-  if(!sbClient) return false;
-  try {
-    var { data: { session } } = await sbClient.auth.getSession();
-    if(session && session.user){
-      _authUser = session.user;
-      _authSession = session;
-      saveAuthSession(session);
-      return true;
-    }
-  } catch(e){}
-  return false;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 9: ENCRYPTION — AES-256-GCM
+   SECTION 4: ENCRYPTION — AES-256-GCM
    ═══════════════════════════════════════════════════════════════════ */
 async function deriveKey(password, salt){
   var enc = new TextEncoder();
@@ -263,7 +110,7 @@ async function deriveKey(password, salt){
 
 async function encryptText(plaintext, password){
   var enc = new TextEncoder();
-  var salt = 'archon-v12-' + password.slice(0,8);
+  var salt = 'archon-v15-' + password.slice(0,8);
   var key = await deriveKey(password, salt);
   var iv = crypto.getRandomValues(new Uint8Array(12));
   var ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(plaintext));
@@ -280,40 +127,39 @@ async function decryptText(encoded, password){
     for(var i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
     var iv = bytes.slice(0, 12);
     var ciphertext = bytes.slice(12);
-    var salt = 'archon-v12-' + password.slice(0,8);
+    var salt = 'archon-v15-' + password.slice(0,8);
     var key = await deriveKey(password, salt);
     var decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
     return new TextDecoder().decode(decrypted);
   } catch(e){
-    throw new Error('Decryption failed — wrong password or corrupted data');
+    throw new Error('Decryption failed — wrong key or corrupted data');
   }
 }
 
-function getEncryptionKey(userId){
-  return userId || 'archon-default-key';
-}
-
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 10: CLOUD SYNC — SAVE WALLET TO SUPABASE
+   SECTION 5: CLOUD SYNC — SAVE WALLET (seed-hash keyed)
    ═══════════════════════════════════════════════════════════════════ */
 async function saveWalletToCloud(){
   initSupabase();
-  if(!sbClient || !_authUser) { console.log('[Archon] No auth — skipping cloud save'); return false; }
-  if(!walletData) { console.log('[Archon] No wallet — skipping cloud save'); return false; }
+  if(!sbClient || !walletData) { console.log('[Archon] No wallet — skipping cloud save'); return false; }
+  if(!walletData.mnemonic) { console.log('[Archon] No seed phrase — skipping cloud save'); return false; }
   try {
-    var encKey = getEncryptionKey(_authUser.id);
-    var seedEnc = await encryptText(walletData.mnemonic, encKey);
-    var pkEnc = await encryptText(walletData.privateKey, encKey);
+    var seedHash = await getSeedHash(walletData.mnemonic);
+    var encPassword = walletData.mnemonic;
+    var seedEnc = await encryptText(walletData.mnemonic, encPassword);
+    var pkEnc = await encryptText(walletData.privateKey, encPassword);
+    var recoveryKeyRaw = localStorage.getItem('archon_recovery_key');
+    var recoveryKeyHash = recoveryKeyRaw ? await hashString(normalizeRecoveryKey(recoveryKeyRaw)) : null;
     var profileData = getProfile() || {};
     var txData = getTxHistory();
     var giftData = getGiftCodes();
     var pointsVal = getPoints();
     var row = {
-      id: _authUser.id,
-      email: _authUser.email,
+      seed_hash: seedHash,
+      recovery_key_hash: recoveryKeyHash,
       wallet_address: walletData.address,
-      seed_phrase_encrypted: seedEnc,
-      private_key_encrypted: pkEnc,
+      encrypted_seed: seedEnc,
+      encrypted_pk: pkEnc,
       profile: profileData,
       tx_history: txData,
       gift_codes: giftData,
@@ -321,8 +167,8 @@ async function saveWalletToCloud(){
       updated_at: new Date().toISOString()
     };
     var { data, error } = await sbClient
-      .from('user_wallets')
-      .upsert(row, { onConflict: 'id' });
+      .from('wallets')
+      .upsert(row, { onConflict: 'seed_hash' });
     if(error) throw new Error(extractError(error));
     console.log('[Archon] Wallet saved to cloud');
     return true;
@@ -333,60 +179,71 @@ async function saveWalletToCloud(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 11: CLOUD SYNC — LOAD WALLET FROM SUPABASE
+   SECTION 6: CLOUD SYNC — RESTORE BY SEED PHRASE
    ═══════════════════════════════════════════════════════════════════ */
-async function loadWalletFromCloud(){
+async function restoreFromSeed(mnemonic){
   initSupabase();
-  if(!sbClient || !_authUser) return null;
+  if(!sbClient) throw new Error('Supabase not loaded');
+  if(!mnemonic || !mnemonic.trim()) throw new Error('Enter your seed phrase');
   try {
+    var seedHash = await getSeedHash(mnemonic);
     var { data, error } = await sbClient
-      .from('user_wallets')
+      .from('wallets')
       .select('*')
-      .eq('id', _authUser.id)
+      .eq('seed_hash', seedHash)
       .single();
-    if(error || !data) return null;
-    var encKey = getEncryptionKey(_authUser.id);
-    var seedPhrase = await decryptText(data.seed_phrase_encrypted, encKey);
-    var privateKey = await decryptText(data.private_key_encrypted, encKey);
-    return {
-      address: data.wallet_address,
-      privateKey: privateKey,
-      mnemonic: seedPhrase,
-      profile: data.profile,
-      tx_history: data.tx_history || [],
-      gift_codes: data.gift_codes || {},
-      points: data.points || 0
-    };
+    if(error || !data) throw new Error('No wallet found with this seed phrase');
+    var seedPhrase = await decryptText(data.encrypted_seed, mnemonic);
+    var privateKey = await decryptText(data.encrypted_pk, mnemonic);
+    walletData = { address: data.wallet_address, privateKey: privateKey, mnemonic: seedPhrase, createdAt: Date.now() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
+    if(data.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
+    if(data.tx_history && data.tx_history.length) localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(data.tx_history));
+    if(data.gift_codes && Object.keys(data.gift_codes).length) localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(data.gift_codes));
+    if(data.points) localStorage.setItem(POINTS_KEY, String(data.points));
+    initProvider();
+    console.log('[Archon] Wallet restored from seed:', walletData.address);
+    return walletData;
   } catch(e){
-    console.error('[Archon] Cloud load failed', e);
-    return null;
+    throw new Error(extractError(e));
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 12: CLOUD SYNC — FULL RESTORE FROM CLOUD
+   SECTION 7: CLOUD SYNC — RESTORE BY RECOVERY KEY
    ═══════════════════════════════════════════════════════════════════ */
-async function restoreFromCloud(){
-  var cloudData = await loadWalletFromCloud();
-  if(!cloudData) return false;
-  walletData = {
-    address: cloudData.address,
-    privateKey: cloudData.privateKey,
-    mnemonic: cloudData.mnemonic,
-    createdAt: Date.now()
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
-  if(cloudData.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(cloudData.profile));
-  if(cloudData.tx_history && cloudData.tx_history.length) localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(cloudData.tx_history));
-  if(cloudData.gift_codes && Object.keys(cloudData.gift_codes).length) localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(cloudData.gift_codes));
-  if(cloudData.points) localStorage.setItem(POINTS_KEY, String(cloudData.points));
-  initProvider();
-  console.log('[Archon] Wallet restored from cloud:', walletData.address);
-  return true;
+async function restoreFromKey(recoveryKey){
+  initSupabase();
+  if(!sbClient) throw new Error('Supabase not loaded');
+  try {
+    var cleanKey = normalizeRecoveryKey(recoveryKey);
+    if(cleanKey.length !== 16) throw new Error('Security key must be 16 characters');
+    var keyHash = await hashString(cleanKey);
+    var { data, error } = await sbClient
+      .from('wallets')
+      .select('*')
+      .eq('recovery_key_hash', keyHash)
+      .single();
+    if(error || !data) throw new Error('No wallet found with this security key');
+    var encKey = 'archon-recovery-' + cleanKey;
+    var seedPhrase = await decryptText(data.encrypted_seed, encKey);
+    var privateKey = await decryptText(data.encrypted_pk, encKey);
+    walletData = { address: data.wallet_address, privateKey: privateKey, mnemonic: seedPhrase, createdAt: Date.now() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
+    if(data.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
+    if(data.tx_history && data.tx_history.length) localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(data.tx_history));
+    if(data.gift_codes && Object.keys(data.gift_codes).length) localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(data.gift_codes));
+    if(data.points) localStorage.setItem(POINTS_KEY, String(data.points));
+    initProvider();
+    console.log('[Archon] Wallet restored from key:', walletData.address);
+    return walletData;
+  } catch(e){
+    throw new Error(extractError(e));
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 13: CLOUD SYNC — AUTO-SYNC (debounced)
+   SECTION 8: CLOUD SYNC — AUTO-SYNC (debounced)
    ═══════════════════════════════════════════════════════════════════ */
 var _syncTimer = null;
 function autoSyncCloud(){
@@ -397,55 +254,7 @@ function autoSyncCloud(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 14: TX HISTORY
-   ═══════════════════════════════════════════════════════════════════ */
-function getTxHistory(){
-  try { var raw = localStorage.getItem(TX_HISTORY_KEY); if(raw) return JSON.parse(raw); } catch(e){}
-  return [];
-}
-function addTx(tx){
-  var list = getTxHistory();
-  tx.id = Date.now()+'-'+Math.random().toString(36).slice(2,6);
-  tx.timestamp = tx.timestamp || Date.now();
-  list.unshift(tx);
-  if(list.length > 100) list = list.slice(0,100);
-  localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(list));
-  autoSyncCloud();
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 15: GIFT CODE MAPPING
-   ═══════════════════════════════════════════════════════════════════ */
-function getGiftCodes(){
-  try { var raw = localStorage.getItem(GIFT_CODES_KEY); if(raw) return JSON.parse(raw); } catch(e){}
-  return {};
-}
-function saveGiftCode(code, tokenId, amount, recipient){
-  var map = getGiftCodes();
-  map[code] = { tokenId: tokenId, amount: amount, recipient: recipient, createdAt: Date.now() };
-  localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(map));
-  autoSyncCloud();
-}
-function lookupGiftCode(code){
-  var map = getGiftCodes();
-  return map[code] || null;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 16: POINTS
-   ═══════════════════════════════════════════════════════════════════ */
-function getPoints(){
-  try { return parseInt(localStorage.getItem(POINTS_KEY)) || 0; } catch(e){ return 0; }
-}
-function addPoints(n){
-  var p = getPoints() + n;
-  localStorage.setItem(POINTS_KEY, String(p));
-  autoSyncCloud();
-  return p;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SECTION 17: WALLET CREATION / LOADING
+   SECTION 9: WALLET CREATION / LOADING
    ═══════════════════════════════════════════════════════════════════ */
 function loadWallet(){
   try { var raw = localStorage.getItem(STORAGE_KEY); if(raw){ walletData = JSON.parse(raw); return true; } } catch(e){}
@@ -474,12 +283,60 @@ function logoutWallet(){
   localStorage.removeItem(TX_HISTORY_KEY);
   localStorage.removeItem(GIFT_CODES_KEY);
   localStorage.removeItem(POINTS_KEY);
-  localStorage.removeItem(AUTH_SESSION_KEY);
-  _authUser = null; _authSession = null;
+  localStorage.removeItem('archon_recovery_key');
+  _seedHash = null;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 18: BALANCE FETCHING
+   SECTION 10: TX HISTORY
+   ═══════════════════════════════════════════════════════════════════ */
+function getTxHistory(){
+  try { var raw = localStorage.getItem(TX_HISTORY_KEY); if(raw) return JSON.parse(raw); } catch(e){}
+  return [];
+}
+function addTx(tx){
+  var list = getTxHistory();
+  tx.id = Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  tx.timestamp = tx.timestamp || Date.now();
+  list.unshift(tx);
+  if(list.length > 100) list = list.slice(0,100);
+  localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(list));
+  autoSyncCloud();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 11: GIFT CODE MAPPING
+   ═══════════════════════════════════════════════════════════════════ */
+function getGiftCodes(){
+  try { var raw = localStorage.getItem(GIFT_CODES_KEY); if(raw) return JSON.parse(raw); } catch(e){}
+  return {};
+}
+function saveGiftCode(code, tokenId, amount, recipient){
+  var map = getGiftCodes();
+  map[code] = { tokenId: tokenId, amount: amount, recipient: recipient, createdAt: Date.now() };
+  localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(map));
+  autoSyncCloud();
+}
+function lookupGiftCode(code){
+  var map = getGiftCodes();
+  return map[code] || null;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 12: POINTS
+   ═══════════════════════════════════════════════════════════════════ */
+function getPoints(){
+  try { return parseInt(localStorage.getItem(POINTS_KEY)) || 0; } catch(e){ return 0; }
+}
+function addPoints(n){
+  var p = getPoints() + n;
+  localStorage.setItem(POINTS_KEY, String(p));
+  autoSyncCloud();
+  return p;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 13: BALANCE FETCHING
    ═══════════════════════════════════════════════════════════════════ */
 async function fetchBOTBalance(){
   if(!provider || !walletData) return '0';
@@ -538,7 +395,7 @@ function renderDashboardBalance(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 19: REAL GAS ESTIMATION
+   SECTION 14: GAS ESTIMATION
    ═══════════════════════════════════════════════════════════════════ */
 async function estimateGasFee(toAddress, amountEth){
   if(!provider || !wallet) return { gasLimit: '21000', gasPrice: '0', feeBot: '0', feeUsd: '$0.00' };
@@ -564,7 +421,7 @@ async function estimateGasFee(toAddress, amountEth){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 20: COINGECKO PRICE FETCHING
+   SECTION 15: COINGECKO PRICE FETCHING
    ═══════════════════════════════════════════════════════════════════ */
 async function fetchPrices(){
   try {
@@ -609,7 +466,7 @@ async function fetchPrices(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 21: REAL QR CODE
+   SECTION 16: QR CODE
    ═══════════════════════════════════════════════════════════════════ */
 function generateRealQR(containerId, address){
   var el = $(containerId); if(!el||!address) return;
@@ -617,7 +474,7 @@ function generateRealQR(containerId, address){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 22: REAL SEND
+   SECTION 17: REAL SEND
    ═══════════════════════════════════════════════════════════════════ */
 async function realSend(toAddress, amountEth){
   if(!wallet) throw new Error('Wallet not connected');
@@ -649,7 +506,7 @@ async function realSend(toAddress, amountEth){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 23: REAL GIFT SEND
+   SECTION 18: GIFT SEND
    ═══════════════════════════════════════════════════════════════════ */
 async function realGiftSend(toAddress, amountEth, message, tokenURI){
   if(!wallet || !sbtContract) throw new Error('Wallet not connected');
@@ -686,7 +543,7 @@ async function realGiftSend(toAddress, amountEth, message, tokenURI){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 24: REAL GIFT CLAIM
+   SECTION 19: GIFT CLAIM
    ═══════════════════════════════════════════════════════════════════ */
 async function realGiftClaim(tokenId){
   if(!sbtContract) throw new Error('Wallet not connected');
@@ -702,7 +559,7 @@ async function realGiftClaim(tokenId){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 25: READ GIFT DATA
+   SECTION 20: READ GIFT DATA
    ═══════════════════════════════════════════════════════════════════ */
 async function readGiftData(tokenId){
   if(!sbtContract) return null;
@@ -713,7 +570,7 @@ async function readGiftData(tokenId){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 26: ADD BOT TO METAMASK
+   SECTION 21: ADD BOT TO METAMASK
    ═══════════════════════════════════════════════════════════════════ */
 async function addBotToMetaMask(){
   if(!window.ethereum) throw new Error('MetaMask not installed');
@@ -730,7 +587,7 @@ async function addBotToMetaMask(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 27: GIFT FUNCTIONS WIRING
+   SECTION 22: GIFT FUNCTIONS WIRING
    ═══════════════════════════════════════════════════════════════════ */
 function wireRealFunctions(){
   window.doRealSend = function(){
@@ -785,7 +642,7 @@ function wireRealFunctions(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 28: IMPORT WALLET FROM MNEMONIC
+   SECTION 23: IMPORT WALLET FROM MNEMONIC
    ═══════════════════════════════════════════════════════════════════ */
 function importFromMnemonic(mnemonic){
   if(typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
@@ -799,7 +656,7 @@ function importFromMnemonic(mnemonic){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 29: IMPORT FROM PRIVATE KEY
+   SECTION 24: IMPORT FROM PRIVATE KEY
    ═══════════════════════════════════════════════════════════════════ */
 function importFromPrivateKey(privateKey){
   if(typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
@@ -813,7 +670,7 @@ function importFromPrivateKey(privateKey){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 30: SAVE USER PROFILE
+   SECTION 25: SAVE USER PROFILE
    ═══════════════════════════════════════════════════════════════════ */
 function saveProfile(name, dob, address){
   var profile = { name:name, dob:dob, address:address, createdAt:Date.now() };
@@ -826,7 +683,7 @@ function getProfile(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 31: CREATE REAL WALLET
+   SECTION 26: CREATE REAL WALLET
    ═══════════════════════════════════════════════════════════════════ */
 function createReal(name, dob, walletName, address){
   if(!name) throw new Error('Please enter your name');
@@ -839,7 +696,7 @@ function createReal(name, dob, walletName, address){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 32: IMPORT REAL WALLET
+   SECTION 27: IMPORT REAL WALLET
    ═══════════════════════════════════════════════════════════════════ */
 function importReal(mnemonic){
   if(!mnemonic) throw new Error('Please enter your recovery phrase');
@@ -852,7 +709,7 @@ function importReal(mnemonic){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 33: UPDATE WALLET UI
+   SECTION 28: UPDATE WALLET UI
    ═══════════════════════════════════════════════════════════════════ */
 function updateWalletUI(){
   if(!walletData) return;
@@ -864,7 +721,7 @@ function updateWalletUI(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 34: GLOBAL REFRESH
+   SECTION 29: GLOBAL REFRESH
    ═══════════════════════════════════════════════════════════════════ */
 function globalRefresh(){
   return Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
@@ -876,7 +733,7 @@ function globalRefresh(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 35: RENDER TX HISTORY
+   SECTION 30: RENDER TX HISTORY
    ═══════════════════════════════════════════════════════════════════ */
 function renderTxHistory(){
   var el = $('txHistoryList');
@@ -944,7 +801,7 @@ window.cxOpenTxDetail = function(idx){
 };
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 36: GIFT CODE REDEEM
+   SECTION 31: GIFT CODE REDEEM
    ═══════════════════════════════════════════════════════════════════ */
 async function redeemGiftCode(code){
   if(!code || code.length < 5) throw new Error('Please enter a valid gift code');
@@ -964,7 +821,7 @@ async function redeemGiftCode(code){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 37: AUTO-INIT
+   SECTION 32: AUTO-INIT
    ═══════════════════════════════════════════════════════════════════ */
 function autoInit(){
   try {
@@ -998,7 +855,7 @@ function autoInit(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 38: PUBLIC API
+   SECTION 33: PUBLIC API
    ═══════════════════════════════════════════════════════════════════ */
 window.WalletEngine = {
   loadWallet:loadWallet, createWallet:createWallet, importFromMnemonic:importFromMnemonic,
@@ -1022,15 +879,10 @@ window.WalletEngine = {
   getBOTPrice:function(){return BOT_PRICE_USD;},
   hasWallet:function(){return !!localStorage.getItem(STORAGE_KEY);},
   SBT_ADDRESS:SBT_ADDRESS, BOT_RPC:BOT_RPC, BOT_CHAIN_ID:BOT_CHAIN_ID, BOT_EXPLORER:BOT_EXPLORER,
-  authSignUp:authSignUp, authSignIn:authSignIn,
-  authResetPassword:authResetPassword, authUpdatePassword:authUpdatePassword,
-  authLogout:authLogout, authGetUser:authGetUser, authGetUserSync:authGetUserSync,
-  restoreAuthSession:restoreAuthSession,
   generateRecoveryKey:generateRecoveryKey, formatRecoveryKey:formatRecoveryKey,
-  normalizeRecoveryKey:normalizeRecoveryKey, saveRecoveryKey:saveRecoveryKey,
-  recoverWithKey:recoverWithKey,
-  saveWalletToCloud:saveWalletToCloud, loadWalletFromCloud:loadWalletFromCloud,
-  restoreFromCloud:restoreFromCloud, autoSyncCloud:autoSyncCloud,
+  normalizeRecoveryKey:normalizeRecoveryKey,
+  restoreFromSeed:restoreFromSeed, restoreFromKey:restoreFromKey,
+  saveWalletToCloud:saveWalletToCloud, autoSyncCloud:autoSyncCloud,
   encryptText:encryptText, decryptText:decryptText,
   getPoints:getPoints, addPoints:addPoints,
   extractError:extractError
