@@ -501,6 +501,8 @@ function syncBalanceToUI(n){
     }
   }
   if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='$BOT'||GVT[i].sym==='BOT'){ GVT[i].bal=n; if(priceUsd>0) GVT[i].price=priceUsd; } } }
+  if(typeof window._GVT!=='undefined'){ for(var i=0;i<window._GVT.length;i++){ if(window._GVT[i].sym==='$BOT'||window._GVT[i].sym==='BOT'){ window._GVT[i].bal=n; if(priceUsd>0) window._GVT[i].price=priceUsd; } } }
+  if(typeof window.gvRefresh==='function'){ try{ window.gvRefresh(); }catch(e){} }
   if(typeof tokenDetails!=='undefined' && tokenDetails.BOT){
     tokenDetails.BOT.bal = balStr;
     if(priceUsd>0) tokenDetails.BOT.price = '$'+priceStr;

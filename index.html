@@ -5013,6 +5013,12 @@ function showPage(id) {
             nav.classList.add('hidden');
         }
     }
+    if(id==='page-wallet' && window.WalletEngine && window.WalletEngine.isInitialized()){
+      setTimeout(function(){ window.WalletEngine.fetchAllBalances().then(function(){ updateWalletPocket(); }); }, 200);
+    }
+    if((id==='page-create-voucher'||id==='page-gift-send') && window.WalletEngine && window.WalletEngine.isInitialized()){
+      setTimeout(function(){ window.WalletEngine.fetchAllBalances().then(function(){ var b=window.WalletEngine.getBOTBalance(); var el2=$('gvBalHint'); if(el2) el2.textContent='Balance: '+b+' BOT'; }); }, 200);
+    }
 }
 
 function navigateTo(id) {
@@ -6158,6 +6164,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 
   var GV = { t: GVT[0], amount: 0, to: '', msg: '', code: '' };
   window._GV = GV;
+  window._GVT = GVT;
 
   /* ── ═══ TESTNET INTEGRATION POINT ═══ ─────────────────────────────
      Swap onConfirm for a real call, e.g.:
@@ -6261,6 +6268,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
     GV.t = GVT[i];
     accent(); renderTokens(); renderPills(); popBadge(); refresh();
   };
+  window.gvRefresh = function () { renderTokens(); renderPills(); refresh(); };
   window.gvPill = function (v) {
     GV.amount = v;
     var inp = $('gvAmount'); if (inp) inp.value = v;
@@ -7295,6 +7303,11 @@ function pinLockKey(n){
         _revealSecurityItem(item);
       } else {
         showPage('page-wallet');
+        setTimeout(function(){
+          if(window.WalletEngine && window.WalletEngine.isInitialized()){
+            window.WalletEngine.fetchAllBalances().then(function(){ updateWalletPocket(); });
+          }
+        }, 300);
       }
     } else {
       var errEl = document.getElementById('pinLockError');
@@ -7486,31 +7499,8 @@ function showDepositNotif(amount, from){
   if(ex){
     try {
       var wd = JSON.parse(ex);
-      if(wd && wd.address){
-        function _tryAutoLogin(){
-          if(window.WalletEngine && window.WalletEngine.isInitialized && window.WalletEngine.isInitialized()){
-            if(window.WalletEngine.isPinSet() && window.WalletEngine.isPinEnabled()){
-              showPage('page-pin-lock');
-            } else {
-              showPage('page-wallet');
-            }
-            setTimeout(function(){
-              if(window.WalletEngine && window.WalletEngine.isInitialized()){
-                window.WalletEngine.fetchAllBalances().then(function(){
-                  updateWalletPocket();
-                  var bv = document.getElementById('wpcBotBal');
-                  if(bv && bv.textContent.indexOf('0.0000') >= 0){
-                    var bal = window.WalletEngine.getBOTBalance ? window.WalletEngine.getBOTBalance() : '0';
-                    bv.textContent = bal + ' BOT';
-                  }
-                });
-              }
-            }, 600);
-          } else {
-            setTimeout(_tryAutoLogin, 100);
-          }
-        }
-        _tryAutoLogin();
+      if(wd && wd.address && window.WalletEngine && window.WalletEngine.isPinSet && window.WalletEngine.isPinSet() && window.WalletEngine.isPinEnabled()){
+        showPage('page-pin-lock');
         return;
       }
     } catch(e){}
