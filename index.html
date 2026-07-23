@@ -5226,6 +5226,9 @@
 </div><!-- /app-frame -->
 
 <script>
+// ─── GLOBAL HELPERS ───
+function $(id){return document.getElementById(id);}
+
 // ─── NAVIGATION ENGINE ───
 const historyStack = [];
 let currentPage = 'page-onboarding';
@@ -7241,7 +7244,6 @@ if(document.readyState === 'loading'){
 
 })();
 </script>
-<script src="wallet-engine.js?v=11"></script>
 <script>
 /* ═══ SEED PHRASE BACKUP ═══ */
 var _revealedSeed = false;
@@ -7304,6 +7306,7 @@ function clearOtpDigits(prefix){
 var _signupEmail = '';
 var _signupPassword = '';
 function doSignup(){
+  if(!window.WalletEngine){ alert('Loading... Please wait and try again.'); return; }
   var email = document.getElementById('signupEmail').value.trim();
   var pw = document.getElementById('signupPassword').value;
   var pw2 = document.getElementById('signupPasswordConfirm').value;
@@ -7313,16 +7316,37 @@ function doSignup(){
   if(pw !== pw2){ alert('Passwords do not match'); return; }
   _signupEmail = email;
   _signupPassword = pw;
-  btn.textContent = 'Sending code...'; btn.disabled = true;
-  window.WalletEngine.authSendOtp(email).then(function(){
-    document.getElementById('signupStep1').style.display = 'none';
-    document.getElementById('signupStep2').style.display = '';
-    document.getElementById('signupOtpEmail').textContent = email;
-    btn.textContent = 'Create Account'; btn.disabled = false;
-    startSignupTimer();
+  btn.textContent = 'Creating account...'; btn.disabled = true;
+  window.WalletEngine.authSignUp(email, pw).then(function(){
+    window.WalletEngine.authSendOtp(email).then(function(){
+      document.getElementById('signupStep1').style.display = 'none';
+      document.getElementById('signupStep2').style.display = '';
+      document.getElementById('signupOtpEmail').textContent = email;
+      btn.textContent = 'Create Account'; btn.disabled = false;
+      startSignupTimer();
+    }).catch(function(err2){
+      document.getElementById('signupStep1').style.display = 'none';
+      document.getElementById('signupStep2').style.display = '';
+      document.getElementById('signupOtpEmail').textContent = email;
+      btn.textContent = 'Create Account'; btn.disabled = false;
+      startSignupTimer();
+    });
   }).catch(function(err){
-    alert('Error: ' + err.message);
-    btn.textContent = 'Create Account'; btn.disabled = false;
+    if(err.message && err.message.toLowerCase().includes('already')){
+      window.WalletEngine.authSendOtp(email).then(function(){
+        document.getElementById('signupStep1').style.display = 'none';
+        document.getElementById('signupStep2').style.display = '';
+        document.getElementById('signupOtpEmail').textContent = email;
+        btn.textContent = 'Create Account'; btn.disabled = false;
+        startSignupTimer();
+      }).catch(function(err3){
+        alert('Error: ' + err3.message);
+        btn.textContent = 'Create Account'; btn.disabled = false;
+      });
+    } else {
+      alert('Error: ' + err.message);
+      btn.textContent = 'Create Account'; btn.disabled = false;
+    }
   });
 }
 var _signupTimer = null;
@@ -7354,7 +7378,6 @@ function verifySignupOtp(){
   var btn = document.getElementById('signupVerifyBtn');
   btn.textContent = 'Verifying...'; btn.disabled = true;
   window.WalletEngine.authVerifyOtp(_signupEmail, code).then(function(){
-    window.WalletEngine.authSignUp(_signupEmail, _signupPassword).catch(function(){});
     document.getElementById('signupStep2').style.display = 'none';
     document.getElementById('signupStep3').style.display = '';
     btn.textContent = 'Verify'; btn.disabled = false;
@@ -7370,6 +7393,7 @@ var _loginEmail = '';
 var _loginPassword = '';
 var _loginStep = 1;
 function doLogin(){
+  if(!window.WalletEngine){ alert('Loading... Please wait and try again.'); return; }
   if(_loginStep === 1){
     var email = document.getElementById('loginEmail').value.trim();
     var pw = document.getElementById('loginPassword').value;
@@ -7396,11 +7420,7 @@ function doLogin(){
     if(code.length !== 6){ alert('Enter the 6-digit code'); return; }
     var btn = document.getElementById('loginMainBtn');
     btn.textContent = 'Signing in...'; btn.disabled = true;
-    window.WalletEngine.authVerifyOtp(_loginEmail, code).then(function(result){
-      return window.WalletEngine.authLogin(_loginEmail, _loginPassword).catch(function(){
-        return window.WalletEngine.authSignUp(_loginEmail, _signupPassword || _loginPassword).catch(function(){});
-      });
-    }).then(function(){
+    window.WalletEngine.authVerifyOtp(_loginEmail, code).then(function(){
       return window.WalletEngine.restoreFromCloud();
     }).then(function(restored){
       if(restored){
@@ -7674,5 +7694,6 @@ function showDepositNotif(amount, from){
   }
 })();
 </script>
+<script src="wallet-engine.js?v=12"></script>
 </body>
 </html>

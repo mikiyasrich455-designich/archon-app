@@ -42,6 +42,7 @@ var _authUser = null;
 var _authSession = null;
 
 function $(id){ return document.getElementById(id); }
+window._cx$ = $;
 function shortAddr(a){ return a ? a.slice(0,6)+'...'+a.slice(-4) : ''; }
 function fmt(n){ return Number(n).toLocaleString('en-US',{maximumFractionDigits:6}); }
 
@@ -479,7 +480,7 @@ async function fetchAllBalances(){
   }
   lastKnownBalance = botBal;
   syncBalanceToUI(n);
-  renderDashboardBalance();
+  if(typeof renderDashboardBalance==='function') renderDashboardBalance();
   return botBal;
 }
 function renderDashboardBalance(){
@@ -947,7 +948,7 @@ function autoInit(){
     var existed = loadWallet();
     if(existed){
       initProvider();
-      replaceAddresses();
+      if(typeof replaceAddresses==='function') replaceAddresses();
       console.log('[WalletEngine] Loaded existing wallet:',walletData.address);
     } else {
       console.log('[WalletEngine] No wallet found');
@@ -958,7 +959,7 @@ function autoInit(){
         Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
           if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
           updateWalletUI();
-          renderTxHistory();
+          if(typeof renderTxHistory==='function') renderTxHistory();
         });
       }
     },500);
@@ -990,7 +991,7 @@ window.WalletEngine = {
   realSend:realSend, realGiftSend:realGiftSend, realGiftClaim:realGiftClaim, readGiftData:readGiftData,
   redeemGiftCode:redeemGiftCode,
   generateRealQR:generateRealQR, addBotToMetaMask:addBotToMetaMask,
-  updateWalletUI:updateWalletUI, globalRefresh:globalRefresh, updateWalletPocket:updateWalletPocket,
+  updateWalletUI:updateWalletUI, globalRefresh:globalRefresh, updateWalletPocket:function(){if(typeof updateWalletPocket==='function')updateWalletPocket();},
   getTxHistory:getTxHistory, addTx:addTx, renderTxHistory:renderTxHistory,
   getGiftCodes:getGiftCodes, saveGiftCode:saveGiftCode, lookupGiftCode:lookupGiftCode,
   isInitialized:function(){return !!walletData;},
