@@ -93,6 +93,39 @@ function normalizeRecoveryKey(input){
   return input.replace(/[^A-Z0-9]/gi, '').toUpperCase();
 }
 
+function saveRecoveryKey(key){
+  localStorage.setItem('archon_recovery_key', key);
+  autoSyncCloud();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 3B: DEVICE PIN LOCK
+   ═══════════════════════════════════════════════════════════════════ */
+function setPin(pin){
+  localStorage.setItem('archon_device_pin', pin);
+  localStorage.setItem('archon_pin_enabled', '1');
+}
+function getPin(){
+  return localStorage.getItem('archon_device_pin');
+}
+function isPinSet(){
+  return localStorage.getItem('archon_pin_enabled') === '1' && !!localStorage.getItem('archon_device_pin');
+}
+function verifyPin(pin){
+  return pin === localStorage.getItem('archon_device_pin');
+}
+function clearPin(){
+  localStorage.removeItem('archon_device_pin');
+  localStorage.removeItem('archon_pin_enabled');
+}
+function setPinEnabled(enabled){
+  if(enabled) localStorage.setItem('archon_pin_enabled', '1');
+  else localStorage.setItem('archon_pin_enabled', '0');
+}
+function isPinEnabled(){
+  return localStorage.getItem('archon_pin_enabled') !== '0';
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    SECTION 4: ENCRYPTION — AES-256-GCM
    ═══════════════════════════════════════════════════════════════════ */
@@ -145,11 +178,19 @@ async function saveWalletToCloud(){
   if(!walletData.mnemonic) { console.log('[Archon] No seed phrase — skipping cloud save'); return false; }
   try {
     var seedHash = await getSeedHash(walletData.mnemonic);
-    var encPassword = walletData.mnemonic;
-    var seedEnc = await encryptText(walletData.mnemonic, encPassword);
-    var pkEnc = await encryptText(walletData.privateKey, encPassword);
+    var seedEnc = await encryptText(walletData.mnemonic, walletData.mnemonic);
+    var pkEnc = await encryptText(walletData.privateKey, walletData.mnemonic);
     var recoveryKeyRaw = localStorage.getItem('archon_recovery_key');
-    var recoveryKeyHash = recoveryKeyRaw ? await hashString(normalizeRecoveryKey(recoveryKeyRaw)) : null;
+    var recoveryKeyHash = null;
+    var seedEncRK = null;
+    var pkEncRK = null;
+    if(recoveryKeyRaw){
+      var cleanRK = normalizeRecoveryKey(recoveryKeyRaw);
+      var rkPassword = 'archon-recovery-' + cleanRK;
+      recoveryKeyHash = await hashString(cleanRK);
+      seedEncRK = await encryptText(walletData.mnemonic, rkPassword);
+      pkEncRK = await encryptText(walletData.privateKey, rkPassword);
+    }
     var profileData = getProfile() || {};
     var txData = getTxHistory();
     var giftData = getGiftCodes();
@@ -160,6 +201,8 @@ async function saveWalletToCloud(){
       wallet_address: walletData.address,
       encrypted_seed: seedEnc,
       encrypted_pk: pkEnc,
+      encrypted_seed_rk: seedEncRK,
+      encrypted_pk_rk: pkEncRK,
       profile: profileData,
       tx_history: txData,
       gift_codes: giftData,
@@ -226,10 +269,17 @@ async function restoreFromKey(recoveryKey){
       .single();
     if(error || !data) throw new Error('No wallet found with this security key');
     var encKey = 'archon-recovery-' + cleanKey;
-    var seedPhrase = await decryptText(data.encrypted_seed, encKey);
-    var privateKey = await decryptText(data.encrypted_pk, encKey);
+    var seedPhrase, privateKey;
+    if(data.encrypted_seed_rk && data.encrypted_pk_rk){
+      seedPhrase = await decryptText(data.encrypted_seed_rk, encKey);
+      privateKey = await decryptText(data.encrypted_pk_rk, encKey);
+    } else {
+      seedPhrase = await decryptText(data.encrypted_seed, encKey);
+      privateKey = await decryptText(data.encrypted_pk, encKey);
+    }
     walletData = { address: data.wallet_address, privateKey: privateKey, mnemonic: seedPhrase, createdAt: Date.now() };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
+    localStorage.setItem('archon_recovery_key', recoveryKey);
     if(data.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
     if(data.tx_history && data.tx_history.length) localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(data.tx_history));
     if(data.gift_codes && Object.keys(data.gift_codes).length) localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(data.gift_codes));
@@ -880,12 +930,14 @@ window.WalletEngine = {
   hasWallet:function(){return !!localStorage.getItem(STORAGE_KEY);},
   SBT_ADDRESS:SBT_ADDRESS, BOT_RPC:BOT_RPC, BOT_CHAIN_ID:BOT_CHAIN_ID, BOT_EXPLORER:BOT_EXPLORER,
   generateRecoveryKey:generateRecoveryKey, formatRecoveryKey:formatRecoveryKey,
-  normalizeRecoveryKey:normalizeRecoveryKey,
+  normalizeRecoveryKey:normalizeRecoveryKey, saveRecoveryKey:saveRecoveryKey,
   restoreFromSeed:restoreFromSeed, restoreFromKey:restoreFromKey,
   saveWalletToCloud:saveWalletToCloud, autoSyncCloud:autoSyncCloud,
   encryptText:encryptText, decryptText:decryptText,
   getPoints:getPoints, addPoints:addPoints,
-  extractError:extractError
+  extractError:extractError,
+  setPin:setPin, getPin:getPin, isPinSet:isPinSet, verifyPin:verifyPin,
+  clearPin:clearPin, setPinEnabled:setPinEnabled, isPinEnabled:isPinEnabled
 };
 
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',autoInit);}else{autoInit;}

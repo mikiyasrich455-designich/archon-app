@@ -1049,7 +1049,7 @@
         }
 
     
-/* ══ CRESO v2 — new-page components (cx- namespaced) ══ */
+/* ══ ARCHON v2 — new-page components (cx- namespaced) ══ */
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800;900&display=swap');
 .cx-disp{font-family:'Unbounded',system-ui,sans-serif}
 .cx-num{font-variant-numeric:tabular-nums;font-feature-settings:'tnum'}
@@ -1107,7 +1107,7 @@
         /* cx: permanent bottom nav -> keep scroll content clear of it */
         .page > .overflow-y-auto { padding-bottom: 110px; }
     
-/* ══ CRESO v3 — premium picker + swap/send/deposit components ══ */
+/* ══ ARCHON v3 — premium picker + swap/send/deposit components ══ */
 /* token/network picker — compact structured sheet, guaranteed hidden until opened */
 .cx-pk-mask{position:absolute;inset:0;background:rgba(14,14,18,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:200;opacity:0;visibility:hidden;transition:opacity .28s,visibility 0s .28s}
 .cx-pk-mask.open{opacity:1;visibility:visible;transition:opacity .28s}
@@ -1288,11 +1288,27 @@
 .deposit-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#fff;border-radius:14px;padding:12px 20px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:10000;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#1a1a1a;border-left:4px solid #22c55e;animation:slideInDown .4s ease;max-width:340px}
 @keyframes slideInDown{from{transform:translateX(-50%) translateY(-100%);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
 
+        .pin-key {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            font-size: 24px;
+            font-weight: 800;
+            color: #1a1a1a;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pin-key:active { transform: scale(0.9); background: #e5e7eb; }
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
 <style id="gv-css">
 
-/* ══════════ CRESO v4 — GIFT VOUCHER STUDIO (gv- namespace) ══════════ */
+/* ══════════ ARCHON v4 — GIFT VOUCHER STUDIO (gv- namespace) ══════════ */
 :root{--gv-a1:#7c3aed;--gv-a2:#b07cff;--gv-glow:rgba(124,58,237,.38);--gv-glow-soft:rgba(124,58,237,.12);--gv-a1-soft:rgba(124,58,237,.1);}
 .gv-page{background:
   radial-gradient(120% 60% at 100% 0%, #f3edff 0%, transparent 55%),
@@ -1451,7 +1467,7 @@
 <style id="fx-css">
 
 /* ════════════════════════════════════════════════════════════
-   CRESO FX — Challenges · Mystery Box · Referrals · Settings · Redeem
+   ARCHON FX — Challenges · Mystery Box · Referrals · Settings · Redeem
    Additive design system. Namespaced fx-. Matches app language:
    purple #7c3aed · lime #a3e635 · ink #1a1a1a · Inter + Unbounded display
    ════════════════════════════════════════════════════════════ */
@@ -1665,17 +1681,21 @@
                 <div class="cx-ring"></div>
             </div>
             <div class="cx-eyebrow" style="margin-bottom:10px">Self-custody · Multi-chain</div>
-            <h1 class="cx-disp" style="font-size:40px;font-weight:900;letter-spacing:-.02em;line-height:1;color:#1a1a1a">CRE<span style="color:#7c3aed">SO</span></h1>
+            <h1 class="cx-disp" style="font-size:40px;font-weight:900;letter-spacing:-.02em;line-height:1;color:#1a1a1a">ARCH<span style="color:#7c3aed">ON</span></h1>
             <p style="margin:14px auto 0;max-width:270px;color:#9ca3af;font-size:14px;font-weight:500;line-height:1.6">Your keys, your coins. Swap, send, earn airdrops and play — all in one wallet.</p>
         </div>
         <div style="margin-top:38px;width:100%;max-width:300px;display:flex;flex-direction:column;gap:12px">
-            <button class="btn-primary cx-disp" style="font-weight:800" onclick="navigateTo('page-signup')">Create Account</button>
-            <button class="btn-outline" onclick="navigateTo('page-login')">Sign In</button>
+            <button class="btn-primary cx-disp" style="font-weight:800" onclick="navigateTo('page-create-profile')">Create New Wallet</button>
+            <button class="btn-outline" onclick="navigateTo('page-import')">Restore Existing Wallet</button>
         </div>
         <p style="margin-top:24px;font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:.08em">AUDITED · NON-CUSTODIAL · OPEN SOURCE</p>
     </div>
 </div>
-<div id="page-login" class="page white-bg flex-col">
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGE: CREATE PROFILE (after onboarding) -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="page-create-profile" class="page white-bg flex-col">
     <div class="ios-status">
         <span class="time">9:41</span>
         <div class="icons">
@@ -1684,147 +1704,46 @@
             <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
         </div>
     </div>
-    <div class="flex-1 flex flex-col items-center px-6 pt-8">
-        <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center mb-3">
-            <div class="w-5 h-5 bg-white rounded-sm"></div>
-        </div>
-        <span class="text-2xl font-black tracking-tight mb-2">archon</span>
-        <p class="text-sm text-gray-500 font-medium mb-8 text-center">Sign in to your account</p>
-
-        <div id="loginStep1" class="w-full space-y-4">
-            <div class="input-row">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <input type="email" id="loginEmail" placeholder="Email address" />
-            </div>
-            <div class="input-row">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <input type="password" id="loginPassword" placeholder="Password" />
-            </div>
-        </div>
-
-        <div class="w-full mt-6 space-y-3">
-            <button id="loginMainBtn" onclick="doLogin()" class="btn-primary w-full shadow-lg shadow-purple-200">Sign In</button>
-        </div>
-
-        <p class="text-xs text-gray-400 font-medium mt-4 text-center">
-            <a href="#" onclick="navigateTo('page-recover-key');return false" class="text-[#7c3aed] font-bold">Recover with Security Key</a>
-        </p>
-        <p class="text-xs text-gray-400 font-medium mt-3 text-center">
-            <a href="#" onclick="navigateTo('page-forgot-password');return false" class="text-[#7c3aed] font-bold">Forgot password?</a>
-        </p>
-        <p class="text-xs text-gray-400 font-medium mt-3 text-center">Don't have an account?<br/><a href="#" onclick="navigateTo('page-signup');return false" class="text-[#7c3aed] font-bold">Create a new one</a></p>
-    </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- PAGE: SIGNUP -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div id="page-signup" class="page white-bg flex-col">
-    <div class="ios-status">
-        <span class="time">9:41</span>
-        <div class="icons">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
-        </div>
+    <div class="page-header">
+        <div class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+        <h1>Create Wallet</h1>
+        <div style="width:36px"></div>
     </div>
     <div class="flex-1 flex flex-col items-center px-6 pt-4 overflow-y-auto">
-        <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center mb-3">
-            <div class="w-5 h-5 bg-white rounded-sm"></div>
+        <div class="inline-flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full text-sm font-bold mb-6">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            Botchain Testnet
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <span class="text-2xl font-black tracking-tight mb-2">archon</span>
-        <p class="text-sm text-gray-500 font-medium mb-6 text-center">Create your account</p>
-
-        <!-- Step 1: Email + Password -->
-        <div id="signupStep1" class="w-full space-y-4">
+        <div class="mb-3 w-full">
+            <label class="text-sm font-bold text-[#1a1a1a] mb-2 block">Full Name</label>
             <div class="input-row">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <input type="email" id="signupEmail" placeholder="Email address" />
+                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="createUserName" placeholder="E.g. John Doe" maxlength="40" />
             </div>
+        </div>
+        <div class="mb-3 w-full">
+            <label class="text-sm font-bold text-[#1a1a1a] mb-2 block">Date of Birth</label>
             <div class="input-row">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <input type="password" id="signupPassword" placeholder="Create password (min 6 chars)" />
+                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <input type="date" id="createUserDob" />
             </div>
+        </div>
+        <div class="mb-3 w-full">
+            <label class="text-sm font-bold text-[#1a1a1a] mb-2 block">Wallet Name</label>
             <div class="input-row">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <input type="password" id="signupPasswordConfirm" placeholder="Confirm password" />
+                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                <input type="text" id="walletNameInput" placeholder="E.g. My Wallet" maxlength="20" />
             </div>
-            <button id="signupBtn" onclick="doSignup()" class="btn-primary w-full shadow-lg shadow-purple-200">Create Account</button>
         </div>
-
-        <!-- Step 2: Wallet Creation -->
-        <div id="signupStep2" class="w-full space-y-4" style="display:none">
-            <div class="inline-flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full text-sm font-bold mb-4">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-                Botchain Testnet
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div class="mb-3">
-                <label class="text-sm font-bold text-[#1a1a1a] mb-2 block">Full Name</label>
-                <div class="input-row">
-                    <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    <input type="text" id="createUserName" placeholder="E.g. John Doe" maxlength="40" />
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="text-sm font-bold text-[#1a1a1a] mb-2 block">Date of Birth</label>
-                <div class="input-row">
-                    <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <input type="date" id="createUserDob" />
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="text-sm font-bold text-[#1a1a1a] mb-2 block">Wallet Name</label>
-                <div class="input-row">
-                    <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-                    <input type="text" id="walletNameInput" placeholder="E.g. My Wallet" maxlength="20" />
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="text-sm font-bold text-[#1a1a1a] mb-2 block">Address (optional)</label>
-                <div class="input-row">
-                    <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    <input type="text" id="createUserAddress" placeholder="City, Country" maxlength="100" />
-                </div>
-            </div>
-            <button id="createWalletBtn" onclick="doCreateWallet()" class="btn-primary w-full shadow-lg shadow-purple-200">Create Wallet</button>
-        </div>
-
-        <p class="text-xs text-gray-400 font-medium mt-6 text-center">Already have an account?<br/><a href="#" onclick="navigateTo('page-login');return false" class="text-[#7c3aed] font-bold">Sign in</a></p>
-    </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- PAGE: FORGOT PASSWORD -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div id="page-forgot-password" class="page white-bg flex-col">
-    <div class="ios-status">
-        <span class="time">9:41</span>
-        <div class="icons">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
-        </div>
-    </div>
-    <div class="flex-1 flex flex-col items-center px-6 pt-8">
-        <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center mb-3">
-            <div class="w-5 h-5 bg-white rounded-sm"></div>
-        </div>
-        <span class="text-2xl font-black tracking-tight mb-2">archon</span>
-        <p class="text-sm text-gray-500 font-medium mb-8 text-center">Enter your email to reset your password</p>
-
-        <div class="w-full space-y-4">
+        <div class="mb-3 w-full">
+            <label class="text-sm font-bold text-[#1a1a1a] mb-2 block">Address (optional)</label>
             <div class="input-row">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <input type="email" id="forgotEmail" placeholder="Email address" />
+                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <input type="text" id="createUserAddress" placeholder="City, Country" maxlength="100" />
             </div>
         </div>
-
-        <div class="w-full mt-6 space-y-3">
-            <button id="forgotBtn" onclick="doForgotPassword()" class="btn-primary w-full shadow-lg shadow-purple-200">Send Reset Link</button>
-        </div>
-
-        <p class="text-xs text-gray-400 font-medium mt-6 text-center"><a href="#" onclick="navigateTo('page-login');return false" class="text-[#7c3aed] font-bold">Back to Sign In</a></p>
+        <button id="createWalletBtn" onclick="doCreateWallet()" class="btn-primary w-full shadow-lg shadow-purple-200 mt-4">Generate Wallet</button>
     </div>
 </div>
 
@@ -1859,7 +1778,7 @@
             <button id="recoverKeyBtn" onclick="doRecoverWithKey()" class="btn-primary w-full shadow-lg shadow-purple-200">Recover Wallet</button>
         </div>
 
-        <p class="text-xs text-gray-400 font-medium mt-6 text-center"><a href="#" onclick="navigateTo('page-login');return false" class="text-[#7c3aed] font-bold">Back to Sign In</a></p>
+        <p class="text-xs text-gray-400 font-medium mt-6 text-center"><a href="#" onclick="navigateTo('page-onboarding');return false" class="text-[#7c3aed] font-bold">Back to Onboarding</a></p>
     </div>
 </div>
 
@@ -1903,7 +1822,7 @@
             <button onclick="doImportPrivateKey()" class="btn-primary w-full shadow-lg shadow-purple-200">Restore Wallet</button>
         </div>
 
-        <p class="text-xs text-gray-400 font-medium mt-6 text-center"><a href="#" onclick="navigateTo('page-login');return false" class="text-[#7c3aed] font-bold">Back to Sign In</a></p>
+        <p class="text-xs text-gray-400 font-medium mt-6 text-center"><a href="#" onclick="navigateTo('page-onboarding');return false" class="text-[#7c3aed] font-bold">Back to Onboarding</a></p>
     </div>
 </div>
 
@@ -2254,172 +2173,81 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
-<!-- PAGE 9A: BACKUP - EMAIL -->
+<!-- PAGE: SETUP DEVICE PIN -->
 <!-- ═══════════════════════════════════════════════════ -->
-<div id="page-backup-email" class="page white-bg flex-col">
-    <div class="ios-status">
-        <span class="time">9:41</span>
-        <div class="icons">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
-        </div>
+<div id="page-pin-setup" class="page white-bg flex-col">
+    <div class="page-header">
+        <div class="back-btn" onclick="navigateTo('page-seed-backup')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+        <h1>Setup PIN</h1>
+        <div style="width:36px"></div>
     </div>
-    <div class="stepper">
-        <div class="step-dot done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="step-line done"></div>
-        <div class="step-dot pending">2</div>
-        <div class="step-line"></div>
-        <div class="step-dot pending">3</div>
-        <div class="step-line"></div>
-        <div class="step-dot pending">4</div>
-    </div>
-    <div class="flex-1 flex flex-col px-6 pb-8">
-        <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Verify Email</h2>
-        <p class="text-sm text-gray-500 font-medium mb-8">A verification code was sent to<br/><span class="text-[#7c3aed] font-bold">Samuel.lmk@gmail.com</span></p>
+    <div class="flex-1 flex flex-col items-center px-6 pt-4 pb-8">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:20px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Set Device PIN</h2>
+        <p class="text-sm text-gray-500 font-medium text-center mb-8">Create a 4-digit code to quickly unlock your wallet on this device.</p>
 
-        <div class="flex justify-center gap-3 mb-8">
-            <input type="text" class="digit-box" maxlength="1" oninput="moveDigit(this,1)" />
-            <input type="text" class="digit-box" maxlength="1" oninput="moveDigit(this,2)" />
-            <input type="text" class="digit-box" maxlength="1" oninput="moveDigit(this,3)" />
-            <input type="text" class="digit-box" maxlength="1" oninput="moveDigit(this,4)" />
-            <input type="text" class="digit-box" maxlength="1" oninput="moveDigit(this,5)" />
-            <input type="text" class="digit-box" maxlength="1" oninput="moveDigit(this,6)" />
+        <div id="pinSetupDots" class="flex gap-4 mb-8">
+            <div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>
         </div>
 
-        <div class="text-center mb-8">
-            <span class="text-sm text-gray-400 font-medium">Resend in </span>
-            <span class="text-sm text-[#7c3aed] font-bold" id="resendTimer">59s</span>
-        </div>
+        <p class="text-xs text-gray-400 font-bold mb-4">Enter your PIN</p>
 
-        <button class="btn-dark mt-auto" onclick="navigateTo('page-backup-facemap')">Verify</button>
+        <div id="pinSetupError" class="text-red-500 text-sm font-bold mb-4" style="display:none"></div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:260px">
+            <button class="pin-key" onclick="pinSetupKey(1)">1</button>
+            <button class="pin-key" onclick="pinSetupKey(2)">2</button>
+            <button class="pin-key" onclick="pinSetupKey(3)">3</button>
+            <button class="pin-key" onclick="pinSetupKey(4)">4</button>
+            <button class="pin-key" onclick="pinSetupKey(5)">5</button>
+            <button class="pin-key" onclick="pinSetupKey(6)">6</button>
+            <button class="pin-key" onclick="pinSetupKey(7)">7</button>
+            <button class="pin-key" onclick="pinSetupKey(8)">8</button>
+            <button class="pin-key" onclick="pinSetupKey(9)">9</button>
+            <button class="pin-key" onclick="pinSetupSkip()" style="font-size:14px;color:#999">Skip</button>
+            <button class="pin-key" onclick="pinSetupKey(0)">0</button>
+            <button class="pin-key" onclick="pinSetupBack()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button>
+        </div>
     </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
-<!-- PAGE 9B: BACKUP - FACEMAP -->
+<!-- PAGE: ENTER PIN / LOCK SCREEN -->
 <!-- ═══════════════════════════════════════════════════ -->
-<div id="page-backup-facemap" class="page white-bg flex-col">
-    <div class="ios-status">
-        <span class="time">9:41</span>
-        <div class="icons">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
+<div id="page-pin-lock" class="page white-bg flex-col">
+    <div class="flex-1 flex flex-col items-center justify-center px-6">
+        <div style="width:72px;height:72px;background:#1a1a1a;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+            <div style="width:20px;height:20px;background:#ffffff;border-radius:6px"></div>
         </div>
-    </div>
-    <div class="stepper">
-        <div class="step-dot done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="step-line done"></div>
-        <div class="step-dot active">2</div>
-        <div class="step-line"></div>
-        <div class="step-dot pending">3</div>
-        <div class="step-line"></div>
-        <div class="step-dot pending">4</div>
-    </div>
-    <div class="flex-1 flex flex-col items-center px-6 pb-8">
-        <div class="illustration-box bg-gradient-to-br from-purple-100 to-pink-100 mb-6 mt-4">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <h2 class="text-xl font-black text-[#1a1a1a] mb-3 text-center">FaceMap Verification</h2>
-        <p class="text-sm text-gray-500 text-center font-medium leading-relaxed mb-8">Please position your face within the frame and slowly turn your head to complete the circle.</p>
+        <h1 class="text-2xl font-black text-[#1a1a1a] mb-2">archon</h1>
+        <p class="text-sm text-gray-500 font-medium mb-10">Enter your PIN to unlock</p>
 
-        <div class="w-full space-y-3 mb-8">
-            <div class="flex items-center gap-3 text-sm font-semibold text-gray-600">
-                <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-                Good lighting
-            </div>
-            <div class="flex items-center gap-3 text-sm font-semibold text-gray-600">
-                <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-                Face fully visible
-            </div>
-            <div class="flex items-center gap-3 text-sm font-semibold text-gray-600">
-                <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-                Remove glasses if possible
-            </div>
+        <div id="pinLockDots" class="flex gap-4 mb-6">
+            <div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>
         </div>
 
-        <button class="btn-dark mt-auto w-full" onclick="navigateTo('page-backup-recovery')">Start Scan</button>
-    </div>
-</div>
+        <div id="pinLockError" class="text-red-500 text-sm font-bold mb-4" style="display:none">Wrong PIN. Try again.</div>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- PAGE 9C: BACKUP - RECOVERY KEY -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div id="page-backup-recovery" class="page white-bg flex-col">
-    <div class="ios-status">
-        <span class="time">9:41</span>
-        <div class="icons">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:260px">
+            <button class="pin-key" onclick="pinLockKey(1)">1</button>
+            <button class="pin-key" onclick="pinLockKey(2)">2</button>
+            <button class="pin-key" onclick="pinLockKey(3)">3</button>
+            <button class="pin-key" onclick="pinLockKey(4)">4</button>
+            <button class="pin-key" onclick="pinLockKey(5)">5</button>
+            <button class="pin-key" onclick="pinLockKey(6)">6</button>
+            <button class="pin-key" onclick="pinLockKey(7)">7</button>
+            <button class="pin-key" onclick="pinLockKey(8)">8</button>
+            <button class="pin-key" onclick="pinLockKey(9)">9</button>
+            <div></div>
+            <button class="pin-key" onclick="pinLockKey(0)">0</button>
+            <button class="pin-key" onclick="pinLockBack()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button>
         </div>
-    </div>
-    <div class="stepper">
-        <div class="step-dot done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="step-line done"></div>
-        <div class="step-dot done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="step-line done"></div>
-        <div class="step-dot active">3</div>
-        <div class="step-line"></div>
-        <div class="step-dot pending">4</div>
-    </div>
-    <div class="flex-1 flex flex-col px-6 pb-8">
-        <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Back Up Personal Key Share</h2>
-        <p class="text-sm text-gray-500 font-medium leading-relaxed mb-8">Encrypted your key share with Recovery Key and store the encrypted data in Cloud Server.</p>
-
-        <div class="illustration-box bg-gradient-to-br from-lime-100 to-purple-100 mb-8 mx-auto">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-        </div>
-
-        <button class="btn-dark mt-auto" onclick="navigateTo('page-backup-save')">Next</button>
-    </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- PAGE 9D: BACKUP - SAVE -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div id="page-backup-save" class="page white-bg flex-col">
-    <div class="ios-status">
-        <span class="time">9:41</span>
-        <div class="icons">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
-        </div>
-    </div>
-    <div class="stepper">
-        <div class="step-dot done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="step-line done"></div>
-        <div class="step-dot done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="step-line done"></div>
-        <div class="step-dot done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="step-line done"></div>
-        <div class="step-dot active">4</div>
-    </div>
-    <div class="flex-1 flex flex-col px-6 pb-8">
-        <h2 class="text-2xl font-black text-[#1a1a1a] mb-2">Save Recovery Key</h2>
-        <p class="text-sm text-gray-500 font-medium leading-relaxed mb-6">Sync Recovery Key to your personal cloud storage.</p>
-
-        <div class="space-y-3 mb-8">
-            <div class="radio-row selected" onclick="selectCloud(this)">
-                <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="#007aff"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.21-1.98 1.07-3.11-1.05.05-2.31.72-3.06 1.64-.68.84-1.27 2.18-1.11 3.27 1.19.09 2.38-.6 3.1-1.8z"/></svg>
-                <div class="flex-1"><div class="font-bold text-[15px]">iCloud Drive</div><div class="text-xs text-gray-400 font-medium">Apple</div></div>
-                <div class="radio-circle"></div>
-            </div>
-            <div class="radio-row" onclick="selectCloud(this)">
-                <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="#4285f4"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                <div class="flex-1"><div class="font-bold text-[15px]">Google Drive</div><div class="text-xs text-gray-400 font-medium">Google</div></div>
-                <div class="radio-circle"></div>
-            </div>
-            <div class="radio-row" onclick="selectCloud(this)">
-                <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="#2932e1"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                <div class="flex-1"><div class="font-bold text-[15px]">Baidu Netdisk</div><div class="text-xs text-gray-400 font-medium">Baidu</div></div>
-                <div class="radio-circle"></div>
-            </div>
-        </div>
-
-        <button class="btn-dark mt-auto" onclick="navigateTo('page-verification-complete')">Enable Device Lock</button>
     </div>
 </div>
 
@@ -2452,15 +2280,15 @@
                 <div class="flex-1"><div class="font-bold text-[15px]">Private Key</div><div class="text-xs text-gray-400 font-medium">View your wallet private key</div></div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
-            <div class="list-row" onclick="showSecurityItem('changepw')">
-                <svg class="w-5 h-5 text-gray-400 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <div class="flex-1"><div class="font-bold text-[15px]">Change Password</div><div class="text-xs text-gray-400 font-medium">Update your account password</div></div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
             <div class="list-row" onclick="showSecurityItem('recoverykey')">
                 <svg class="w-5 h-5 text-amber-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                 <div class="flex-1"><div class="font-bold text-[15px]">Security Key</div><div class="text-xs text-gray-400 font-medium">Recovery key for emergency access</div></div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div class="list-row" onclick="toggleDevicePin()">
+                <svg class="w-5 h-5 text-gray-400 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <div class="flex-1"><div class="font-bold text-[15px]">Device PIN</div><div class="text-xs text-gray-400 font-medium" id="pinStatusText">Set a 4-digit unlock code</div></div>
+                <div class="toggle" id="pinToggle" onclick="event.stopPropagation();toggleDevicePin()"></div>
             </div>
         </div>
         <div id="securityRecoveryKeyBox" style="display:none" class="mb-4">
@@ -2499,17 +2327,6 @@
                 <p id="securityPKText" style="font-size:12px;font-family:monospace;word-break:break-all;color:#1a1a1a;user-select:all">••••••••••••••••••••••••••••••••</p>
             </div>
             <button onclick="copySecurityPK()" class="btn-outline w-full mb-2">Copy Private Key</button>
-        </div>
-        <div id="securityChangePwBox" style="display:none" class="mb-4 space-y-3">
-            <div class="input-row">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <input type="password" id="secNewPw" placeholder="New password (min 6 chars)" />
-            </div>
-            <div class="input-row">
-                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <input type="password" id="secNewPwConfirm" placeholder="Confirm new password" />
-            </div>
-            <button onclick="doChangePassword()" class="btn-primary w-full">Update Password</button>
         </div>
     </div>
 </div>
@@ -2599,43 +2416,7 @@
         </div>
         <h2 class="text-xl font-black text-[#1a1a1a] mb-3 text-center">Enable Device Lock</h2>
         <p class="text-sm text-gray-500 text-center font-medium leading-relaxed mb-10 max-w-[260px]">Enable device lock to add another layer of security to your account.</p>
-        <button class="btn-dark w-full" onclick="enableDeviceLock()">Enable Device Lock</button>
-    </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- PAGE 14: VERIFICATION COMPLETE -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div id="page-verification-complete" class="page white-bg flex-col">
-    <div class="ios-status">
-        <span class="time">9:41</span>
-        <div class="icons">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
-        </div>
-    </div>
-    <div class="flex-1 flex flex-col items-center px-6 pt-12 pb-8">
-        <div class="flex gap-3 mb-10">
-            <span class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg font-black text-[#1a1a1a]">2</span>
-            <span class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg font-black text-[#1a1a1a]">3</span>
-            <span class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg font-black text-[#1a1a1a]">7</span>
-            <span class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg font-black text-[#1a1a1a]">9</span>
-            <span class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg font-black text-[#1a1a1a]">1</span>
-            <span class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg font-black text-[#1a1a1a]">5</span>
-        </div>
-
-        <div class="w-32 h-32 rounded-full bg-green-50 flex items-center justify-center mb-6 relative">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-        </div>
-
-        <h2 class="text-2xl font-black text-[#1a1a1a] mb-2 text-center">Email Verification Complete</h2>
-        <p class="text-sm text-gray-500 font-medium mb-10">Your email has been successfully verified.</p>
-
-        <button class="btn-dark w-full" onclick="navigateTo('page-wallet')">Go To Home Screen</button>
+        <button class="btn-dark w-full" onclick="navigateTo('page-pin-setup')">Set Device PIN</button>
     </div>
 </div>
 
@@ -3227,7 +3008,7 @@
             </div>
         </div>
         <div class="card overflow-hidden mb-4">
-            <div class="list-row" onclick="navigateTo('page-backup-email')">
+            <div class="list-row" onclick="if(window.WalletEngine){window.WalletEngine.saveWalletToCloud();alert('Wallet backed up to cloud!');}">
                 <svg class="w-5 h-5 text-gray-400 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
                 <div class="flex-1"><div class="font-bold text-[15px]">Backup Wallet</div></div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -3869,7 +3650,7 @@
     </div>
 
         <div class="gv-codebox gv-rise gv-d2">
-            <span class="gv-code" id="gvSCode">CRESO-XXXX-XXXX-XXXX</span>
+            <span class="gv-code" id="gvSCode">ARCHON-XXXX-XXXX-XXXX</span>
             <button class="gv-copy" onclick="gvCopy()">COPY</button>
         </div>
 
@@ -4222,7 +4003,7 @@
 
         <div class="fx-card fx-rise fx-d4" style="padding:14px 16px;display:flex;align-items:center;gap:11px;margin-top:6px;">
             <span style="font-size:20px;">💡</span>
-            <p style="font-size:11.5px;font-weight:600;color:#8d87a0;line-height:1.45;">Gifts are delivered instantly on Botchain testnet. The recipient redeems with a <b style="color:#7c3aed;">CRESO-XXXX</b> code.</p>
+            <p style="font-size:11.5px;font-weight:600;color:#8d87a0;line-height:1.45;">Gifts are delivered instantly on Botchain testnet. The recipient redeems with a <b style="color:#7c3aed;">ARCHON-XXXX</b> code.</p>
         </div>
     </div>
 </div>
@@ -4254,7 +4035,7 @@
                     <input type="text" id="fxCode2" maxlength="4" placeholder="····" oninput="fxCodeNext(this,3)" />
                     <input type="text" id="fxCode3" maxlength="4" placeholder="····" oninput="fxCodeNext(this,0)" />
                 </div>
-                <p id="fxCodeHint" style="font-size:10.5px;font-weight:700;color:#c4bfd1;letter-spacing:.06em;">FORMAT&nbsp;&nbsp;CRESO-XXXX-XXXX-XXXX</p>
+                <p id="fxCodeHint" style="font-size:10.5px;font-weight:700;color:#c4bfd1;letter-spacing:.06em;">FORMAT&nbsp;&nbsp;ARCHON-XXXX-XXXX-XXXX</p>
             </div>
 
             <button class="fx-btn fx-teal fx-rise fx-d2" id="fxRedeemBtn" onclick="fxRedeem()" disabled style="margin-top:18px;">
@@ -4403,7 +4184,7 @@
             <div style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.75);">Invite friends, earn together</div>
             <div class="fx-display" style="font-size:20px;font-weight:700;color:#fff;margin-top:6px;line-height:1.3;">Get <span style="color:#ffd166;">500 pts</span> for every friend who joins</div>
             <div class="fx-refcode" style="background:rgba(0,0,0,.28);margin:14px 0 10px;">
-                <span class="code" id="fxRefCode">CRESO-XXXXXX</span>
+                <span class="code" id="fxRefCode">ARCHON-XXXXXX</span>
                 <button onclick="fxCopyRef()">COPY</button>
             </div>
             <button class="fx-btn" onclick="fxShareRef()" style="background:rgba(255,255,255,.92);color:#7c3aed;box-shadow:none;width:100%;">
@@ -5221,7 +5002,7 @@
     </div>
 </div>
 
-<!-- CRESO v3 token/network picker -->
+<!-- ARCHON v3 token/network picker -->
 <div class="cx-pk-mask" id="cxPickerMask" onclick="cxClosePicker()"></div>
 <div class="cx-pk" id="cxPicker">
     <div class="cx-pk-grab"></div>
@@ -5237,7 +5018,7 @@
     <div class="cx-pk-list" id="cxPickerList"></div>
 </div>
 
-<!-- CRESO v2 overlays -->
+<!-- ARCHON v2 overlays -->
 <div class="cx-toast-wrap" id="cxToastWrap"></div>
 <div class="cx-confetti" id="cxConfetti"></div>
 
@@ -5950,7 +5731,7 @@ function generateVoucherQR() {
 
 <script>
 
-/* ══ CRESO v2 — new-page logic (cx- namespaced; uses original navigateTo/goBack/showPage) ══ */
+/* ══ ARCHON v2 — new-page logic (cx- namespaced; uses original navigateTo/goBack/showPage) ══ */
 (function(){
 var IMG={bot:'https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg'};
 var TOKENS=[
@@ -6108,7 +5889,7 @@ window.cxTOKENS=TOKENS;window.cxCHAINS=CHAINS;window.cxS=S;window.cxFmt=fmt;wind
 
 
 <script>
-/* ══ CRESO v2 — feature pack: picker(fixed) + withdraw + profile + games/mining ══ */
+/* ══ ARCHON v2 — feature pack: picker(fixed) + withdraw + profile + games/mining ══ */
 (function(){
 function $(id){return document.getElementById(id);}
 var T=window.cxTOKENS, CH=window.cxCHAINS, S=window.cxS;
@@ -6398,7 +6179,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 
 <script id="gv-js">
 
-/* ══════════ CRESO v4 — GIFT VOUCHER STUDIO ENGINE ══════════
+/* ══════════ ARCHON v4 — GIFT VOUCHER STUDIO ENGINE ══════════
    Flow: page-create-voucher → page-gift-review → send overlay → page-gift-sent
    All logic namespaced gv*; only depends on global navigateTo/showPage. */
 (function () {
@@ -6590,7 +6371,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
   function set(id, attr, v) { var el = $(id); if (el) el.setAttribute(attr, v); }
 
   function genCode() {
-    var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out = 'CRESO';
+    var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out = 'ARCHON';
     for (var g = 0; g < 3; g++) {
       out += '-';
       for (var k = 0; k < 4; k++) out += A.charAt(Math.floor(Math.random() * A.length));
@@ -6661,7 +6442,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
   window._buildSent = buildSent;
 
   window.gvCopy = function () {
-    var val = GV.code || 'CRESO-GIFT';
+    var val = GV.code || 'ARCHON-GIFT';
     var done = function () { toast('Code copied ✓'); };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(val).then(done, function () { fallback(); done(); });
@@ -6701,7 +6482,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 </script>
 <script>
 /* ----------------------------------------------------------------
-   CRESO v6 � CONSOLIDATED MASTER FIX
+   ARCHON v6 � CONSOLIDATED MASTER FIX
    Chart tabs, settings pages, profile, appearance, notifications,
    currency, language, export, referrals, challenges, mystery box,
    security, voucher actions, redeem, chain addresses, all buttons.
@@ -6870,7 +6651,7 @@ window.fxDoExport=function(){
 };
 
 /* --- 8. REFERRALS PAGE --- */
-var refCode='CRESO-'+Math.random().toString(36).substring(2,8).toUpperCase();
+var refCode='ARCHON-'+Math.random().toString(36).substring(2,8).toUpperCase();
 var refStats={invited:12,joined:8,points:4000};
 var refTier={name:'Gold',icon:'\u{1F947}',mult:'2\u00D7',next:'Platinum',progress:80};
 var refHistory=[{name:'Alex_S',initials:'AS',color:'#7c3aed',status:'Joined',statusColor:'#dcfce7',statusText:'#16a34a',pts:'+500'},{name:'Mike_K',initials:'MK',color:'#65a30d',status:'Joined',statusColor:'#dcfce7',statusText:'#16a34a',pts:'+500'},{name:'Jen_R',initials:'JR',color:'#db2777',status:'Pending',statusColor:'#fef3c7',statusText:'#d97706',pts:'\u2014'},{name:'Dan_T',initials:'DT',color:'#1d4ed8',status:'Joined',statusColor:'#dcfce7',statusText:'#16a34a',pts:'+500'},{name:'Sara_M',initials:'SM',color:'#f59e0b',status:'Joined',statusColor:'#dcfce7',statusText:'#16a34a',pts:'+500'}];
@@ -6959,6 +6740,7 @@ function initSecurityPage(){
       if(toggle){toggle.classList.toggle('on');toast('Encrypted backups: '+(toggle.classList.contains('on')?'ON':'OFF'));}
     };
   }
+  updatePinToggleUI();
 }
 
 /* --- 12. ABOUT PAGE --- */
@@ -6995,7 +6777,7 @@ window.fxCodeNext=function(el,next){
   var btn=$('fxRedeemBtn'),hint=$('fxCodeHint');
   if(full.length>=12){if(btn)btn.disabled=false;if(hint){hint.textContent='Ready to redeem';hint.style.color='#16a34a';}}
   else if(full.length>0){if(btn)btn.disabled=true;if(hint){hint.textContent='Keep typing... ('+full.length+'/12)';hint.style.color='#c4bfd1';}}
-  else{if(btn)btn.disabled=true;if(hint){hint.textContent='FORMAT   CRESO-XXXX-XXXX-XXXX';hint.style.color='#c4bfd1';}}
+  else{if(btn)btn.disabled=true;if(hint){hint.textContent='FORMAT   ARCHON-XXXX-XXXX-XXXX';hint.style.color='#c4bfd1';}}
 };
 window.fxRedeem=function(){
   if(fxRedeemCode.length<12){toast('Enter a valid code');return;}
@@ -7084,7 +6866,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   CRESO v6 — FINAL FIX: Token Detail, Theme, Bottom Nav, Testnet
+   ARCHON v6 — FINAL FIX: Token Detail, Theme, Bottom Nav, Testnet
    ═══════════════════════════════════════════════════════════════ */
 (function(){
 "use strict";
@@ -7284,9 +7066,11 @@ if(document.readyState === 'loading'){
 <script>
 /* ═══ SEED PHRASE BACKUP ═══ */
 var _revealedSeed = false;
+var _pendingMnemonic = '';
+var _pendingRecoveryKey = '';
 function revealSeedPhrase(){
   if(_revealedSeed) return;
-  var m = window.WalletEngine.getMnemonic();
+  var m = _pendingMnemonic || (window.WalletEngine ? window.WalletEngine.getMnemonic() : '');
   if(!m){ alert('No wallet found'); return; }
   _revealedSeed = true;
   var words = m.split(/\s+/);
@@ -7304,7 +7088,7 @@ function revealSeedPhrase(){
   if(btn) btn.disabled = false;
 }
 function copySeedPhrase(){
-  var m = window.WalletEngine.getMnemonic();
+  var m = _pendingMnemonic || (window.WalletEngine ? window.WalletEngine.getMnemonic() : '');
   if(!m) return;
   navigator.clipboard.writeText(m).then(function(){
     var btn = document.querySelector('#seedCopyRow button');
@@ -7320,108 +7104,15 @@ function copyRecoveryKey(){
 }
 function finishSeedBackup(){
   _revealedSeed = false;
-  window.WalletEngine.autoSyncCloud();
-  window.WalletEngine.updateWalletUI();
-  showPage('page-wallet');
+  if(window.WalletEngine){
+    window.WalletEngine.saveRecoveryKey(_pendingRecoveryKey);
+    window.WalletEngine.autoSyncCloud();
+    window.WalletEngine.updateWalletUI();
+  }
+  navigateTo('page-pin-setup');
 }
 
-/* ═══ SIGNUP FLOW ═══ */
-var _signupEmail = '';
-var _signupPassword = '';
-function doSignup(){
-  if(!window.WalletEngine){ alert('Loading... Please wait and try again.'); return; }
-  var email = document.getElementById('signupEmail').value.trim();
-  var pw = document.getElementById('signupPassword').value;
-  var pw2 = document.getElementById('signupPasswordConfirm').value;
-  var btn = document.getElementById('signupBtn');
-  if(!email || !email.includes('@')){ alert('Enter a valid email'); return; }
-  if(pw.length < 6){ alert('Password must be at least 6 characters'); return; }
-  if(pw !== pw2){ alert('Passwords do not match'); return; }
-  _signupEmail = email;
-  _signupPassword = pw;
-  btn.textContent = 'Creating account...'; btn.disabled = true;
-  window.WalletEngine.authSignUp(email, pw).then(function(){
-    document.getElementById('signupStep1').style.display = 'none';
-    document.getElementById('signupStep2').style.display = '';
-    btn.textContent = 'Create Account'; btn.disabled = false;
-  }).catch(function(err){
-    var msg = err.message || '';
-    if(msg.toLowerCase().includes('already')){
-      alert('Account already exists. Please sign in instead.');
-      navigateTo('page-login');
-    } else {
-      alert('Error: ' + (window.WalletEngine.extractError ? window.WalletEngine.extractError(err) : msg));
-    }
-    btn.textContent = 'Create Account'; btn.disabled = false;
-  });
-}
-
-/* ═══ LOGIN FLOW ═══ */
-function doLogin(){
-  if(!window.WalletEngine){ alert('Loading... Please wait and try again.'); return; }
-  var email = document.getElementById('loginEmail').value.trim();
-  var pw = document.getElementById('loginPassword').value;
-  if(!email || !email.includes('@')){ alert('Enter a valid email'); return; }
-  if(pw.length < 6){ alert('Enter your password'); return; }
-  var btn = document.getElementById('loginMainBtn');
-  btn.textContent = 'Signing in...'; btn.disabled = true;
-  window.WalletEngine.authSignIn(email, pw).then(function(){
-    return window.WalletEngine.restoreFromCloud();
-  }).then(function(restored){
-    if(restored){
-      window.WalletEngine.updateWalletUI();
-      showPage('page-wallet');
-    } else {
-      navigateTo('page-signup');
-    }
-    btn.textContent = 'Sign In'; btn.disabled = false;
-  }).catch(function(err){
-    var msg = err.message || '';
-    if(msg.toLowerCase().includes('invalid login') || msg.toLowerCase().includes('invalid')){
-      alert('Invalid email or password. Please try again.');
-    } else {
-      alert('Error: ' + (window.WalletEngine.extractError ? window.WalletEngine.extractError(err) : msg));
-    }
-    btn.textContent = 'Sign In'; btn.disabled = false;
-  });
-}
-
-/* ═══ RECOVER WITH SECURITY KEY ═══ */
-function doRecoverWithKey(){
-  if(!window.WalletEngine){ alert('Loading... Please wait and try again.'); return; }
-  var key = document.getElementById('recoverKeyInput').value.trim();
-  if(!key || key.length < 10){ alert('Enter your 16-character security key'); return; }
-  var btn = document.getElementById('recoverKeyBtn');
-  btn.textContent = 'Recovering...'; btn.disabled = true;
-  window.WalletEngine.recoverWithKey(key).then(function(wallet){
-    if(wallet){
-      window.WalletEngine.updateWalletUI();
-      showPage('page-wallet');
-      alert('Wallet recovered successfully!');
-    }
-    btn.textContent = 'Recover Wallet'; btn.disabled = false;
-  }).catch(function(err){
-    alert('Recovery failed: ' + (window.WalletEngine.extractError ? window.WalletEngine.extractError(err) : err.message));
-    btn.textContent = 'Recover Wallet'; btn.disabled = false;
-  });
-}
-
-/* ═══ FORGOT PASSWORD ═══ */
-function doForgotPassword(){
-  var email = document.getElementById('forgotEmail').value.trim();
-  if(!email || !email.includes('@')){ alert('Enter a valid email'); return; }
-  var btn = document.getElementById('forgotBtn');
-  btn.textContent = 'Sending...'; btn.disabled = true;
-  window.WalletEngine.authResetPassword(email).then(function(){
-    btn.textContent = 'Email Sent! Check your inbox';
-    setTimeout(function(){ btn.textContent = 'Send Reset Link'; btn.disabled = false; }, 3000);
-  }).catch(function(err){
-    alert('Error: ' + err.message);
-    btn.textContent = 'Send Reset Link'; btn.disabled = false;
-  });
-}
-
-/* ═══ CREATE WALLET (after signup) ═══ */
+/* ═══ CREATE WALLET (from create-profile page) ═══ */
 function doCreateWallet(){
   var name = document.getElementById('createUserName').value.trim();
   var dob = document.getElementById('createUserDob').value;
@@ -7432,12 +7123,12 @@ function doCreateWallet(){
   if(!name){ alert('Enter your name'); return; }
   if(!dob){ alert('Enter your date of birth'); return; }
   if(!walletName){ alert('Enter a wallet name'); return; }
-  btn.textContent = 'Creating...'; btn.disabled = true;
+  btn.textContent = 'Generating...'; btn.disabled = true;
   try {
     window.WalletEngine.createReal(name, dob, walletName, addr);
-    window.WalletEngine.saveWalletToCloud();
     var recoveryKey = window.WalletEngine.generateRecoveryKey();
-    window.WalletEngine.saveRecoveryKey(recoveryKey);
+    _pendingRecoveryKey = recoveryKey;
+    _pendingMnemonic = window.WalletEngine.getMnemonic();
     btn.textContent = 'Created!';
     setTimeout(function(){
       _revealedSeed = false;
@@ -7452,12 +7143,34 @@ function doCreateWallet(){
       var recKeyEl = document.getElementById('recoveryKeyDisplay');
       if(recKeyEl) recKeyEl.textContent = window.WalletEngine.formatRecoveryKey(recoveryKey);
       navigateTo('page-seed-backup');
-      btn.textContent = 'Create Wallet'; btn.disabled = false;
+      btn.textContent = 'Generate Wallet'; btn.disabled = false;
     }, 400);
   } catch(e){
     alert('Failed: ' + e.message);
-    btn.textContent = 'Create Wallet'; btn.disabled = false;
+    btn.textContent = 'Generate Wallet'; btn.disabled = false;
   }
+}
+
+/* ═══ RECOVER WITH SECURITY KEY ═══ */
+function doRecoverWithKey(){
+  if(!window.WalletEngine){ alert('Loading... Please wait and try again.'); return; }
+  var key = document.getElementById('recoverKeyInput').value.trim();
+  if(!key || key.length < 10){ alert('Enter your 16-character security key'); return; }
+  var btn = document.getElementById('recoverKeyBtn');
+  btn.textContent = 'Recovering...'; btn.disabled = true;
+  window.WalletEngine.restoreFromKey(key).then(function(wallet){
+    if(wallet){
+      _pendingMnemonic = wallet.mnemonic || '';
+      _pendingRecoveryKey = localStorage.getItem('archon_recovery_key') || key;
+      window.WalletEngine.updateWalletUI();
+      navigateTo('page-pin-setup');
+      alert('Wallet recovered successfully!');
+    }
+    btn.textContent = 'Recover Wallet'; btn.disabled = false;
+  }).catch(function(err){
+    alert('Recovery failed: ' + (window.WalletEngine.extractError ? window.WalletEngine.extractError(err) : err.message));
+    btn.textContent = 'Recover Wallet'; btn.disabled = false;
+  });
 }
 
 /* ═══ IMPORT WALLET ═══ */
@@ -7471,9 +7184,11 @@ function doImportWallet(){
   var m = document.getElementById('importMnemonic').value.trim();
   try {
     window.WalletEngine.importReal(m);
+    _pendingMnemonic = window.WalletEngine.getMnemonic();
+    _pendingRecoveryKey = localStorage.getItem('archon_recovery_key') || window.WalletEngine.generateRecoveryKey();
     window.WalletEngine.saveWalletToCloud();
     window.WalletEngine.updateWalletUI();
-    showPage('page-wallet');
+    navigateTo('page-pin-setup');
   } catch(e){ alert('Failed: ' + e.message); }
 }
 function doImportPrivateKey(){
@@ -7481,29 +7196,147 @@ function doImportPrivateKey(){
   if(!pk){ alert('Enter a private key'); return; }
   try {
     window.WalletEngine.importFromPrivateKey(pk);
+    _pendingMnemonic = window.WalletEngine.getMnemonic() || '';
+    _pendingRecoveryKey = localStorage.getItem('archon_recovery_key') || window.WalletEngine.generateRecoveryKey();
     window.WalletEngine.saveWalletToCloud();
     window.WalletEngine.updateWalletUI();
-    showPage('page-wallet');
+    navigateTo('page-pin-setup');
   } catch(e){ alert('Failed: ' + e.message); }
 }
 
 /* ═══ LOGOUT ═══ */
 function doLogout(){
   if(!confirm('Log out? Your wallet data will be removed from this device.')) return;
-  if(window.WalletEngine) window.WalletEngine.authLogout();
   if(window.WalletEngine) window.WalletEngine.logoutWallet();
+  localStorage.removeItem('archon_device_pin');
+  localStorage.removeItem('archon_pin_enabled');
+  _pendingMnemonic = '';
+  _pendingRecoveryKey = '';
   historyStack.length = 0;
-  document.getElementById('loginStep1').style.display = '';
-  document.getElementById('loginMainBtn').textContent = 'Sign In';
-  document.getElementById('loginMainBtn').disabled = false;
   showPage('page-onboarding');
+}
+
+/* ═══ DEVICE PIN SETUP ═══ */
+var _pinSetupBuffer = '';
+var _pinSetupConfirm = '';
+var _pinSetupPhase = 'enter';
+function pinSetupKey(n){
+  if(_pinSetupBuffer.length >= 4) return;
+  _pinSetupBuffer += String(n);
+  _updatePinDots('pinSetupDots', _pinSetupBuffer.length);
+  document.getElementById('pinSetupError').style.display = 'none';
+  if(_pinSetupBuffer.length === 4){
+    if(_pinSetupPhase === 'enter'){
+      _pinSetupPhase = 'confirm';
+      _pinSetupConfirm = _pinSetupBuffer;
+      _pinSetupBuffer = '';
+      document.getElementById('pinSetupLabel').textContent = 'Confirm your PIN';
+      _updatePinDots('pinSetupDots', 0);
+    } else {
+      if(_pinSetupBuffer === _pinSetupConfirm){
+        if(window.WalletEngine) window.WalletEngine.setPin(_pinSetupBuffer);
+        _pinSetupBuffer = '';
+        _pinSetupPhase = 'enter';
+        document.getElementById('pinSetupLabel').textContent = 'Enter your PIN';
+        _updatePinDots('pinSetupDots', 0);
+        window.WalletEngine.autoSyncCloud();
+        showPage('page-wallet');
+      } else {
+        var errEl = document.getElementById('pinSetupError');
+        errEl.textContent = 'PINs do not match. Try again.';
+        errEl.style.display = '';
+        _pinSetupBuffer = '';
+        _pinSetupPhase = 'enter';
+        document.getElementById('pinSetupLabel').textContent = 'Enter your PIN';
+        _updatePinDots('pinSetupDots', 0);
+      }
+    }
+  }
+}
+function pinSetupBack(){
+  if(_pinSetupBuffer.length > 0){
+    _pinSetupBuffer = _pinSetupBuffer.slice(0, -1);
+    _updatePinDots('pinSetupDots', _pinSetupBuffer.length);
+  }
+}
+function pinSetupSkip(){
+  _pinSetupBuffer = '';
+  _pinSetupPhase = 'enter';
+  showPage('page-wallet');
+}
+function _updatePinDots(containerId, count){
+  var dots = document.getElementById(containerId);
+  if(!dots) return;
+  var html = '';
+  for(var i = 0; i < 4; i++){
+    if(i < count) html += '<div class="w-4 h-4 rounded-full bg-[#7c3aed]"></div>';
+    else html += '<div class="w-4 h-4 rounded-full border-2 border-gray-300"></div>';
+  }
+  dots.innerHTML = html;
+}
+
+/* ═══ DEVICE PIN LOCK ═══ */
+var _pinLockBuffer = '';
+function pinLockKey(n){
+  if(_pinLockBuffer.length >= 4) return;
+  _pinLockBuffer += String(n);
+  _updatePinDots('pinLockDots', _pinLockBuffer.length);
+  document.getElementById('pinLockError').style.display = 'none';
+  if(_pinLockBuffer.length === 4){
+    if(window.WalletEngine && window.WalletEngine.verifyPin(_pinLockBuffer)){
+      _pinLockBuffer = '';
+      _updatePinDots('pinLockDots', 0);
+      if(window.WalletEngine){
+        window.WalletEngine.autoInit();
+        window.WalletEngine.updateWalletUI();
+      }
+      showPage('page-wallet');
+    } else {
+      var errEl = document.getElementById('pinLockError');
+      errEl.style.display = '';
+      _pinLockBuffer = '';
+      setTimeout(function(){ _updatePinDots('pinLockDots', 0); }, 500);
+    }
+  }
+}
+function pinLockBack(){
+  if(_pinLockBuffer.length > 0){
+    _pinLockBuffer = _pinLockBuffer.slice(0, -1);
+    _updatePinDots('pinLockDots', _pinLockBuffer.length);
+  }
+}
+
+/* ═══ DEVICE PIN TOGGLE ═══ */
+function toggleDevicePin(){
+  if(!window.WalletEngine) return;
+  if(window.WalletEngine.isPinSet()){
+    if(window.WalletEngine.isPinEnabled()){
+      window.WalletEngine.setPinEnabled(false);
+    } else {
+      window.WalletEngine.setPinEnabled(true);
+    }
+  } else {
+    navigateTo('page-pin-setup');
+  }
+  updatePinToggleUI();
+}
+function updatePinToggleUI(){
+  if(!window.WalletEngine) return;
+  var toggle = document.getElementById('pinToggle');
+  var statusText = document.getElementById('pinStatusText');
+  if(window.WalletEngine.isPinSet() && window.WalletEngine.isPinEnabled()){
+    if(toggle) toggle.classList.add('on');
+    if(statusText) statusText.textContent = 'PIN enabled';
+  } else {
+    if(toggle) toggle.classList.remove('on');
+    if(statusText) statusText.textContent = window.WalletEngine.isPinSet() ? 'PIN disabled' : 'Set a 4-digit unlock code';
+  }
 }
 
 /* ═══ SECURITY PAGE ═══ */
 function showSecurityItem(item){
   document.getElementById('securitySeedBox').style.display = 'none';
   document.getElementById('securityPKBox').style.display = 'none';
-  document.getElementById('securityChangePwBox').style.display = 'none';
   document.getElementById('securityRecoveryKeyBox').style.display = 'none';
   if(item === 'seedphrase'){
     var m = window.WalletEngine.getMnemonic();
@@ -7518,10 +7351,9 @@ function showSecurityItem(item){
     var pk = window.WalletEngine.getPrivateKey();
     document.getElementById('securityPKText').textContent = pk || 'No wallet found';
     document.getElementById('securityPKBox').style.display = '';
-  } else if(item === 'changepw'){
-    document.getElementById('securityChangePwBox').style.display = '';
   } else if(item === 'recoverykey'){
-    document.getElementById('securityRecoveryKeyText').textContent = 'Log in again to view your key';
+    var rk = localStorage.getItem('archon_recovery_key');
+    document.getElementById('securityRecoveryKeyText').textContent = rk ? window.WalletEngine.formatRecoveryKey(rk) : 'No recovery key saved';
     document.getElementById('securityRecoveryKeyBox').style.display = '';
   }
 }
@@ -7534,23 +7366,12 @@ function copySecurityPK(){
   if(pk) navigator.clipboard.writeText(pk).then(function(){ if(window.cxToast) window.cxToast('Private key copied!','ok'); });
 }
 function copySecurityRecoveryKey(){
-  var el = document.getElementById('securityRecoveryKeyText');
-  if(el && el.textContent && el.textContent !== 'Log in again to view your key'){
-    navigator.clipboard.writeText(el.textContent).then(function(){ if(window.cxToast) window.cxToast('Security key copied!','ok'); });
+  var rk = localStorage.getItem('archon_recovery_key');
+  if(rk){
+    navigator.clipboard.writeText(window.WalletEngine.formatRecoveryKey(rk)).then(function(){ if(window.cxToast) window.cxToast('Security key copied!','ok'); });
   } else {
-    alert('Please sign in again to view your security key.');
+    alert('No recovery key saved.');
   }
-}
-function doChangePassword(){
-  var newPw = document.getElementById('secNewPw').value;
-  var newPw2 = document.getElementById('secNewPwConfirm').value;
-  if(newPw.length < 6){ alert('Password must be at least 6 characters'); return; }
-  if(newPw !== newPw2){ alert('Passwords do not match'); return; }
-  window.WalletEngine.authUpdatePassword(newPw).then(function(){
-    alert('Password updated!');
-    document.getElementById('secNewPw').value = '';
-    document.getElementById('secNewPwConfirm').value = '';
-  }).catch(function(err){ alert('Error: ' + err.message); });
 }
 
 /* ═══ BALANCE VISIBILITY ═══ */
@@ -7644,14 +7465,17 @@ function showDepositNotif(amount, from){
 
 (function(){
   var ex = localStorage.getItem('archon_wallet_v1');
-  var authSession = localStorage.getItem('archon_auth_session');
   if(ex){
     try {
       var wd = JSON.parse(ex);
       if(wd && wd.address){
         function _tryAutoLogin(){
           if(window.WalletEngine && window.WalletEngine.isInitialized && window.WalletEngine.isInitialized()){
-            showPage('page-wallet');
+            if(window.WalletEngine.isPinSet() && window.WalletEngine.isPinEnabled()){
+              showPage('page-pin-lock');
+            } else {
+              showPage('page-wallet');
+            }
           } else {
             setTimeout(_tryAutoLogin, 100);
           }
@@ -7661,17 +7485,9 @@ function showDepositNotif(amount, from){
       }
     } catch(e){}
   }
-  if(authSession){
-    try {
-      var as = JSON.parse(authSession);
-      if(as && as.user){
-        showPage('page-onboarding');
-        return;
-      }
-    } catch(e){}
-  }
+  showPage('page-onboarding');
 })();
 </script>
-<script src="wallet-engine.js?v=15"></script>
+<script src="wallet-engine.js?v=16"></script>
 </body>
 </html>
