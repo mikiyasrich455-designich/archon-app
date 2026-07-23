@@ -1194,299 +1194,59 @@
 .cx-contact:active{transform:scale(.95)}
 
 /* ═══ WALLET POCKET DESIGN ═══ */
-/* From Uiverse.io by byllzz */ 
-/* Note: this design contains two hover states 1. card hover this just shift card above 2.card hover to see full card. OK! */
+.wallet{position:relative;width:280px;height:230px;cursor:pointer;display:flex;justify-content:center;align-items:flex-end;margin:0 auto;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .4s ease}
+.wallet::after{content:"Hover to see Balance";position:absolute;bottom:-30px;font-style:italic;color:#7c3aed;font-size:12px;font-weight:600;text-decoration:underline}
 
-/* Wallet Wrapper */
-.wallet {
-  position: relative;
-  width: 280px;
-  height: 230px;
-  cursor: pointer;
-  perspective: 1000px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  transition: transform 0.4s ease;
-}
-.wallet::after {
-  content: "Hover to see Balance";
-  position: absolute;
-  bottom: -30px;
-  font-style: italic;
-  color: #003087;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: underline;
-}
-/* entry animation for card as page loads */
-@keyframes slideIntoPocket {
-  0% {
-    transform: translateY(-100px);
-    opacity: 0;
-  }
+.wallet-back{position:absolute;bottom:0;width:280px;height:200px;background:#1e341e;border-radius:22px 22px 60px 60px;z-index:5;box-shadow:inset 0 25px 35px rgba(0,0,0,.4),inset 0 5px 15px rgba(0,0,0,.5)}
 
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
+.wallet-card{position:absolute;width:260px;height:140px;left:10px;border-radius:16px;padding:18px;color:#fff;box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 -4px 15px rgba(0,0,0,.1);transition:transform .6s cubic-bezier(.34,1.56,.64,1),z-index 0s;overflow:hidden}
+.wallet-card-inner{display:flex;flex-direction:column;justify-content:space-between;height:100%;position:relative;z-index:2}
+.wallet-card-top{display:flex;justify-content:space-between;align-items:center;font-size:14px;text-transform:uppercase;letter-spacing:1px}
+.wallet-card .chip{width:32px;height:24px;background:rgba(255,255,255,.2);border-radius:4px;border:1px solid rgba(255,255,255,.1)}
+.wallet-card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
+.wallet-card-label{font-size:8px;opacity:.7;text-transform:uppercase;margin-bottom:2px;display:block}
+.wallet-card-value{font-size:10px;font-weight:500}
+.wallet-card-number-wrapper{text-align:right}
+.wallet-hidden-stars{font-size:16px;letter-spacing:2px;transition:.3s}
+.wallet-card-number{display:none;font-size:14px;letter-spacing:1px;font-family:monospace}
+.wallet-card-copy-btn{display:none;margin-top:8px;padding:8px 14px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:.2s;backdrop-filter:blur(4px)}
+.wallet-card-copy-btn:active{transform:scale(.95);background:rgba(255,255,255,.35)}
 
-/* this is wallet back */
-.wallet-back {
-  position: absolute;
-  bottom: 0;
-  width: 280px;
-  height: 200px;
-  background: #1e341e;
-  border-radius: 22px 22px 60px 60px;
-  z-index: 5;
-  box-shadow:
-    inset 0 25px 35px rgba(0, 0, 0, 0.4),
-    inset 0 5px 15px rgba(0, 0, 0, 0.5);
-}
-
-/* Cards things */
-.card {
-  position: absolute;
-  width: 260px;
-  height: 140px;
-  left: 10px;
-  border-radius: 16px;
-  padding: 18px;
-  color: white;
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.3),
-    0 -4px 15px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-    z-index 0s;
-  animation: slideIntoPocket 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-}
-
-.card-inner {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.chip {
-  width: 32px;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.card-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.label {
-  font-size: 8px;
-  opacity: 0.7;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-  display: block;
-}
-
-.value {
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.card-number-wrapper {
-  text-align: right;
-}
-
-.hidden-stars {
-  font-size: 16px;
-  letter-spacing: 2px;
-}
-
-.card-number {
-  display: none;
-  font-size: 14px;
-  letter-spacing: 1px;
-  font-family: monospace;
-}
-
-/* ─── SINGLE BOT TOKEN CARD ─── */
-.card.bot-token {
-  bottom: 40px;
-  z-index: 30;
-  animation-delay: 0.1s;
-  overflow: hidden;
-}
-.card.bot-token .card-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 16px;
-  z-index: 0;
-}
-.card.bot-token .card-scrim {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.05) 55%, rgba(0,0,0,0.45) 100%);
-  z-index: 1;
-}
-.card.bot-token .card-inner {
-  position: relative;
-  z-index: 2;
-}
-.card-copy-btn {
-  display: none;
-  margin-top: 8px;
-  padding: 8px 14px;
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 8px;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: center;
-  transition: 0.2s;
-  backdrop-filter: blur(4px);
-}
-.card-copy-btn:active {
-  transform: scale(0.95);
-  background: rgba(255,255,255,0.35);
-}
+/* BOT card: image fills as background */
+.wallet-card.bot-token{background:linear-gradient(135deg,#1a5c3a,#0d3a22);bottom:40px;z-index:30}
+.wallet-card.bot-token .card-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:16px;z-index:0}
 
 /* Pocket */
-.pocket {
-  position: absolute;
-  bottom: 0;
-  width: 280px;
-  height: 160px;
-  z-index: 40;
-  filter: drop-shadow(0 15px 25px rgba(20, 40, 20, 0.4));
-}
+.pocket{position:absolute;bottom:0;width:280px;height:160px;z-index:40;filter:drop-shadow(0 15px 25px rgba(20,40,20,.4))}
+.pocket-content{position:absolute;top:45px;width:100%;text-align:center;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px}
+.balance-stars{color:#839e7b;font-size:24px;letter-spacing:4px;transition:.3s}
+.balance-real{color:#a7c59e;font-size:22px;font-weight:600;opacity:0;position:absolute;top:0;left:50%;transform:translate(-50%,10px);transition:.3s}
+.pocket-label{color:#698263;font-size:12px;font-weight:500}
 
-.pocket-content {
-  position: absolute;
-  top: 45px;
-  width: 100%;
-  text-align: center;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
+/* Eye */
+.eye-icon-wrapper{margin-top:8px;height:20px;width:20px;position:relative;opacity:.3;transition:.3s;cursor:pointer}
+.eye-icon{position:absolute;top:0;left:0;stroke:#3be60b;transition:.3s;width:20px;height:20px}
 
-.balance-stars {
-  color: #839e7b;
-  font-size: 24px;
-  letter-spacing: 4px;
-  transition: 0.3s;
-}
+/* === HOVER EFFECTS === */
+.wallet:hover{transform:translateY(-5px)}
+.wallet:hover .eye-icon-wrapper{opacity:1}
 
-.balance-real {
-  color: #a7c59e;
-  font-size: 22px;
-  font-weight: 600;
-  opacity: 0;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, 10px);
-  transition: 0.3s;
-}
+/* card lifts on wallet hover */
+.wallet:hover .wallet-card.bot-token{transform:translateY(-10px)}
 
-/* eye Logic */
-.eye-icon-wrapper {
-  margin-top: 8px;
-  height: 20px;
-  width: 20px;
-  position: relative;
-  opacity: 0.3;
-  transition: 0.3s;
-}
+/* individual card hover */
+.wallet-card:hover{z-index:100!important;transition-delay:0s!important}
+.wallet:hover .wallet-card.bot-token:hover{transform:translateY(-60px) scale(1.05)}
 
-.eye-icon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  stroke: #3be60b;
-  transition: 0.3s;
-}
+/* reveal card details on card hover */
+.wallet-card:hover .wallet-hidden-stars{display:none}
+.wallet-card:hover .wallet-card-number,.wallet-card:hover .wallet-card-copy-btn{display:block}
 
-/* hovers works here */
-.wallet:hover {
-  transform: translateY(-5px);
-}
-
-.wallet:hover .eye-icon-wrapper {
-  opacity: 1;
-}
-
-/* hover effects on the BOT card (replaces stripe/wise/paypal) */
-.wallet:hover .card.bot-token {
-  transform: translateY(-10px);
-}
-
-/* indi card hover */
-.card:hover {
-  z-index: 100 !important;
-  transition-delay: 0s !important;
-}
-
-.wallet:hover .card.bot-token:hover {
-  transform: translateY(-60px) scale(1.05);
-}
-
-.card:hover .hidden-stars {
-  display: none;
-}
-
-.card:hover .card-number {
-  display: block;
-}
-
-.card:hover .card-copy-btn {
-  display: block;
-}
-
-.wallet:hover .balance-stars {
-  opacity: 0;
-}
-
-.wallet:hover .balance-real {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-.wallet:hover .eye-slash {
-  opacity: 0;
-  transform: scale(0.5);
-}
-
-.wallet:hover .eye-open {
-  opacity: 1;
-  transform: scale(1.1);
-}
+/* balance reveal on wallet hover */
+.wallet:hover .balance-stars{opacity:0}
+.wallet:hover .balance-real{opacity:1;transform:translate(-50%,0)}
+.wallet:hover .eye-slash{opacity:0;transform:scale(.5)}
+.wallet:hover .eye-open{opacity:1;transform:scale(1.1)}
 
 /* ═══ TYPEWRITER LOADER ═══ */
 .typewriter-loader{--tw-blue:#7c3aed;--tw-blue-dark:#6d28d9;--tw-key:#fff;--tw-paper:#f3f0ff;--tw-text:#d4ccfa;--tw-tool:#a3e635;--tw-duration:3s;position:relative;animation:tw-bounce var(--tw-duration) linear infinite}
@@ -2237,6 +1997,50 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGE: SEED PHRASE BACKUP -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="page-seed-backup" class="page flex-col">
+    <div class="ios-status">
+        <span class="time">9:41</span>
+        <div class="icons">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
+        </div>
+    </div>
+    <div class="page-header">
+        <div class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+        <h1>Backup Phrase</h1>
+        <div style="width:36px"></div>
+    </div>
+    <div class="flex-1 px-5 pt-4 pb-6 overflow-y-auto">
+        <div class="flex items-start gap-3 bg-red-50 p-4 rounded-xl mb-5">
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div>
+                <p class="text-xs text-red-700 font-bold mb-1">Save your recovery phrase!</p>
+                <p class="text-[11px] text-red-600 font-medium leading-relaxed">This is the only way to recover your wallet. Write it down and store it somewhere safe. Never share it with anyone.</p>
+            </div>
+        </div>
+
+        <div id="seedGrid" class="grid grid-cols-3 gap-2 mb-5"></div>
+
+        <div id="seedRevealBox" class="w-full bg-gray-100 rounded-xl p-4 mb-5 text-center cursor-pointer" onclick="revealSeedPhrase()">
+            <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <p class="text-sm font-bold text-gray-500">Tap to reveal phrase</p>
+        </div>
+
+        <div id="seedCopyRow" class="flex gap-3 mb-4" style="display:none">
+            <button class="btn-outline flex-1" onclick="copySeedPhrase()">
+                <svg class="w-4 h-4 inline-block mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                Copy
+            </button>
+        </div>
+
+        <button class="btn-dark w-full" id="seedContinueBtn" onclick="finishSeedBackup()" disabled>I've Saved It — Continue</button>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
 <!-- PAGE 9A: BACKUP - EMAIL -->
 <!-- ═══════════════════════════════════════════════════ -->
 <div id="page-backup-email" class="page white-bg flex-col">
@@ -2606,25 +2410,25 @@
             <h1 class="text-2xl font-extrabold tracking-tight">Botchain Testnet</h1>
         </div>
         <div class="w-full shrink-0 flex flex-col items-center" style="padding-top:8px">
-                        <div class="wallet" id="cresWallet">
+            <div class="wallet" id="cresWallet">
                 <div class="wallet-back"></div>
 
-                <div class="card bot-token" id="cresBotCard">
+                <div class="wallet-card bot-token" id="cresBotCard">
                     <img class="card-bg" src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784766076/photo_5985688276406308006_x_nj2iil.jpg" alt="BOT" draggable="false" />
-                    <div class="card-scrim"></div>
-                    <div class="card-inner">
-                        <div class="card-top">
+                    <div class="wallet-card-inner">
+                        <div class="wallet-card-top">
                             <span>BOT Chain</span>
                             <div class="chip"></div>
                         </div>
-                        <div class="card-bottom">
-                            <div class="card-info">
-                                <span class="label">Balance</span><span class="value" id="wpcBotBal">0.00 BOT</span>
+                        <div class="wallet-card-bottom">
+                            <div>
+                                <span class="wallet-card-label">Balance</span>
+                                <span class="wallet-card-value" id="wpcBotBal">0.00 BOT</span>
                             </div>
-                            <div class="card-number-wrapper">
-                                <span class="hidden-stars">**** ****</span>
-                                <span class="card-number" id="wpcBotAddr">Loading...</span>
-                                <div class="card-copy-btn" onclick="event.stopPropagation();copyWalletAddress()">Copy Address</div>
+                            <div class="wallet-card-number-wrapper">
+                                <span class="wallet-hidden-stars">**** ****</span>
+                                <span class="wallet-card-number" id="wpcBotAddr">Loading...</span>
+                                <div class="wallet-card-copy-btn" onclick="event.stopPropagation();copyWalletAddress()">Copy Address</div>
                             </div>
                         </div>
                     </div>
@@ -2632,54 +2436,18 @@
 
                 <div class="pocket">
                     <svg class="pocket-svg" viewBox="0 0 280 160" fill="none" style="width:100%;height:100%">
-                        <path
-                          d="M 0 20 C 0 10, 5 10, 10 10 C 20 10, 25 25, 40 25 L 240 25 C 255 25, 260 10, 270 10 C 275 10, 280 10, 280 20 L 280 120 C 280 155, 260 160, 240 160 L 40 160 C 20 160, 0 155, 0 120 Z"
-                          fill="#1e341e"
-                        ></path>
-                        <path
-                          d="M 8 22 C 8 16, 12 16, 15 16 C 23 16, 27 29, 40 29 L 240 29 C 253 29, 257 16, 265 16 C 268 16, 272 16, 272 22 L 272 120 C 272 150, 255 152, 240 152 L 40 152 C 25 152, 8 152, 8 120 Z"
-                          stroke="#3d5635"
-                          stroke-width="1.5"
-                          stroke-dasharray="6 4"
-                        ></path>
+                        <path d="M 0 20 C 0 10, 5 10, 10 10 C 20 10, 25 25, 40 25 L 240 25 C 255 25, 260 10, 270 10 C 275 10, 280 10, 280 20 L 280 120 C 280 155, 260 160, 240 160 L 40 160 C 20 160, 0 155, 0 120 Z" fill="#1e341e"></path>
+                        <path d="M 8 22 C 8 16, 12 16, 15 16 C 23 16, 27 29, 40 29 L 240 29 C 253 29, 257 16, 265 16 C 268 16, 272 16, 272 22 L 272 120 C 272 150, 255 152, 240 152 L 40 152 C 25 152, 8 152, 8 120 Z" stroke="#3d5635" stroke-width="1.5" stroke-dasharray="6 4"></path>
                     </svg>
                     <div class="pocket-content">
-                        <div style="position: relative; height: 24px; width: 100%;">
+                        <div style="position:relative;height:24px;width:100%">
                             <div class="balance-stars" id="cresBalStars">******</div>
                             <div class="balance-real" id="wpcTotalUsd">$0.00</div>
                         </div>
-                        <div style="color: #698263; font-size: 12px; font-weight: 500;">
-                            Total Balance
-                        </div>
+                        <div class="pocket-label">Total Balance</div>
                         <div class="eye-icon-wrapper" id="cresEyeBtn" onclick="event.stopPropagation();toggleBalanceVisibility()">
-                            <svg
-                              class="eye-icon eye-slash"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            >
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <line x1="3" y1="3" x2="21" y2="21"></line>
-                            </svg>
-                            <svg
-                              class="eye-icon eye-open"
-                              style="opacity: 0;"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            >
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
+                            <svg class="eye-icon eye-slash" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="3" y1="3" x2="21" y2="21"></line></svg>
+                            <svg class="eye-icon eye-open" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </div>
                     </div>
                 </div>
@@ -3170,8 +2938,8 @@
                 <img id="cxAcctAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" class="w-full h-full object-cover" />
             </div>
             <div class="flex-1">
-                <div class="font-black text-lg" id="cxAcctName">Samuel Hawking</div>
-                <div class="text-sm text-gray-400 font-medium" id="cxAcctEmail">Samuel.lmk@gmail.com</div>
+                <div class="font-black text-lg" id="cxAcctName">User</div>
+                <div class="text-sm text-gray-400 font-medium" id="cxAcctEmail">No email set</div>
             </div>
             <button onclick="navigateTo('page-edit-profile')" class="px-3 py-2 rounded-xl bg-[#f3f0ff] text-[#7c3aed] text-xs font-extrabold press">Edit</button>
         </div>
@@ -3273,10 +3041,10 @@
             <div class="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
             <div class="relative z-10">
                 <div class="text-white/70 text-xs font-bold uppercase tracking-wider mb-1">Total Points</div>
-                <div class="text-4xl font-black mb-1">12,450</div>
+                <div class="text-4xl font-black mb-1" id="airdropPointsTotal">0</div>
                 <div class="flex items-center gap-1 text-lime-300 text-sm font-bold">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                    +850 this week
+                    <span id="airdropWeekGain">+0 this week</span>
                 </div>
             </div>
         </div>
@@ -3284,11 +3052,11 @@
         <!-- Progress Bar -->
         <div class="card p-4 mb-5">
             <div class="flex justify-between items-center mb-2">
-                <span class="font-bold text-sm">Level 3 — Explorer</span>
-                <span class="text-xs text-gray-400 font-bold">2,450 / 5,000</span>
+                <span class="font-bold text-sm" id="airdropLevel">Level 1 — Beginner</span>
+                <span class="text-xs text-gray-400 font-bold" id="airdropProgress">0 / 500</span>
             </div>
             <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-[#7c3aed] to-[#a3e635] rounded-full" style="width:49%"></div>
+                <div class="h-full bg-gradient-to-r from-[#7c3aed] to-[#a3e635] rounded-full" id="airdropProgressBar" style="width:0%"></div>
             </div>
             <p class="text-xs text-gray-400 font-medium mt-2">Complete tasks below to earn more points and unlock rewards</p>
         </div>
@@ -4430,7 +4198,7 @@
 
         <div class="fx-label"><i></i>Account</div>
         <div class="fx-card" style="padding:4px 15px;margin-bottom:18px;">
-            <div class="fx-set-row" style="cursor:default;"><span class="fx-set-ico" style="background:#e8f0fe;">✉️</span><div><div class="t" style="font-size:13px;">Email</div><div class="d" id="fxProfEmail">Samuel.lmk@gmail.com</div></div></div>
+            <div class="fx-set-row" style="cursor:default;"><span class="fx-set-ico" style="background:#e8f0fe;">✉️</span><div><div class="t" style="font-size:13px;">Email</div><div class="d" id="fxProfEmail">No email set</div></div></div>
             <div class="fx-set-row" style="cursor:default;border-bottom:none;"><span class="fx-set-ico" style="background:#e6f7f0;">🔗</span><div><div class="t" style="font-size:13px;">Wallet address</div><div class="d fx-num" id="fxProfAddr">0xDa3a&hellip;f877</div></div></div>
         </div>
 
@@ -5280,6 +5048,14 @@ function goBack() {
 function switchTabMain(tab) {
     historyStack.length = 0;
     showPage('page-' + tab);
+    if(tab === 'account') updateAccountPage();
+}
+
+function updateAccountPage(){
+  var an=$('cxAcctName'),ae=$('cxAcctEmail'),aa=$('cxAcctAvatar');
+  if(an) an.textContent = profile.name || 'User';
+  if(ae) ae.textContent = profile.email || 'No email set';
+  if(aa) aa.src = avUrl(profile.seed);
 }
 
 // ─── QR CODE GENERATOR ───
@@ -6190,7 +5966,13 @@ window.cxWdExec=wdExec;
 
 /* ── PROFILE + AVATARS ── */
 var SEEDS=['Felix','Aneka','Zoe','Milo','Luna','Kai','Nova','Rex','Ivy','Oscar'];
-var profile={name:'User',email:'',seed:'Felix'};
+var profile=(function(){
+  try {
+    var raw = localStorage.getItem('creso_profile_v1');
+    if(raw){ var p = JSON.parse(raw); return {name:p.name||'User',email:p.email||'',seed:p.name?p.name.substring(0,6).toLowerCase():'Felix'}; }
+  } catch(e){}
+  return {name:'User',email:'',seed:'Felix'};
+})();
 function avUrl(sd){return 'https://api.dicebear.com/7.x/avataaars/svg?seed='+sd;}
 function renderAvatars(){var g=$('cxAvatarGrid');if(!g)return;g.innerHTML=SEEDS.map(function(sd){
  return '<button onclick="cxSelectAvatar(\''+sd+'\')" style="border-radius:50%;overflow:hidden;border:3px solid '+(sd===profile.seed?'#7c3aed':'#f3f4f6')+';padding:0;background:#fff;cursor:pointer" data-seed="'+sd+'"><img src="'+avUrl(sd)+'" alt="'+sd+'" style="width:100%;height:100%;object-fit:cover;display:block" /></button>';}).join('');}
@@ -6205,7 +5987,7 @@ window.cxSaveProfile=saveProfile;
 function openProfile(){$('cxEditName').value=profile.name;$('cxEditEmail').value=profile.email;$('cxEditAvatar').src=avUrl(profile.seed);renderAvatars();navigateTo('page-edit-profile');}
 
 /* ── POINTS + REAL-TIME MINING + AIRDROP ── */
-var points=1200, mined=0, hash=10, boostCost=500;
+var points=parseInt(localStorage.getItem('creso_points')||'0')||0, mined=0, hash=10, boostCost=500;
 function updatePoints(){var el;
  el=$('cxGamesPoints');if(el)el.textContent=Math.floor(points).toLocaleString('en-US');
  el=$('cxHubPoints');if(el)el.textContent=Math.floor(points).toLocaleString('en-US');
@@ -6213,7 +5995,16 @@ function updatePoints(){var el;
  el=$('cxMinerMined');if(el)el.textContent=Math.floor(mined).toLocaleString('en-US');
  el=$('cxHubHash');if(el)el.textContent=hash;
  el=$('cxMinerHash');if(el)el.textContent=hash;
- el=$('cxBoostCost');if(el)el.textContent=boostCost;}
+ el=$('cxBoostCost');if(el)el.textContent=boostCost;
+ el=$('airdropPointsTotal');if(el)el.textContent=Math.floor(points).toLocaleString('en-US');
+ var lvl=1,lvlName='Beginner',lvlNext=500;
+ if(points>=4000){lvl=5;lvlName='Master';lvlNext=10000;}else if(points>=2000){lvl=4;lvlName='Expert';lvlNext=5000;}else if(points>=1000){lvl=3;lvlName='Explorer';lvlNext=2000;}else if(points>=500){lvl=2;lvlName='Adventurer';lvlNext=1000;}
+ el=$('airdropLevel');if(el)el.textContent='Level '+lvl+' — '+lvlName;
+ el=$('airdropProgress');if(el)el.textContent=Math.floor(points)+' / '+lvlNext;
+ el=$('airdropProgressBar');if(el)el.style.width=Math.min(100,Math.floor((points/lvlNext)*100))+'%';
+ el=$('airdropWeekGain');if(el)el.textContent='+'+Math.floor(points*0.07)+' this week';
+ try{localStorage.setItem('creso_points',Math.floor(points));}catch(e){}
+}
 function addPoints(n){points+=n;updatePoints();}
 function claimMined(){if(mined<1){toast('Nothing to claim yet — keep mining ⛏️','err');return;}
  var m=Math.floor(mined);points+=m;mined=0;updatePoints();confetti();toast('Claimed '+m+' mined points ✓','ok');}
@@ -6708,7 +6499,13 @@ function initChartSwitcher(){
 
 /* --- 2. PROFILE SETTINGS --- */
 var SEEDS=['Felix','Aneka','Zoe','Milo','Luna','Kai','Nova','Rex','Ivy','Oscar','Ava','Max','Lily','Sam','Leo'];
-var profileState={name:'Samuel Hawking',email:'Samuel.lmk@gmail.com',bio:'Web3 enthusiast',seed:'Felix'};
+var profileState=(function(){
+  try {
+    var raw = localStorage.getItem('creso_profile_v1');
+    if(raw){ var p = JSON.parse(raw); return {name:p.name||'User',email:p.email||'',bio:p.bio||'Web3 enthusiast',seed:p.name?p.name.substring(0,6).toLowerCase():'Felix'}; }
+  } catch(e){}
+  return {name:'User',email:'',bio:'Web3 enthusiast',seed:'Felix'};
+})();
 function avUrl(s){return 'https://api.dicebear.com/7.x/avataaars/svg?seed='+s;}
 function renderProfileSettings(){
   var av=$('fxProfAvatar');if(av)av.src=avUrl(profileState.seed);
@@ -7223,6 +7020,41 @@ if(document.readyState === 'loading'){
 </script>
 <script src="wallet-engine.js?v=9"></script>
 <script>
+/* ═══ SEED PHRASE BACKUP ═══ */
+var _revealedSeed = false;
+function revealSeedPhrase(){
+  if(_revealedSeed) return;
+  var m = window.WalletEngine.getMnemonic();
+  if(!m){ alert('No wallet found'); return; }
+  _revealedSeed = true;
+  var words = m.split(/\s+/);
+  var grid = document.getElementById('seedGrid');
+  if(grid){
+    grid.innerHTML = words.map(function(w,i){
+      return '<div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 6px;text-align:center"><span style="font-size:10px;font-weight:700;color:#9ca3af;display:block;margin-bottom:2px">'+(i+1)+'</span><span style="font-size:13px;font-weight:800;color:#1a1a1a;word-break:break-all">'+w+'</span></div>';
+    }).join('');
+  }
+  var box = document.getElementById('seedRevealBox');
+  if(box) box.style.display = 'none';
+  var copyRow = document.getElementById('seedCopyRow');
+  if(copyRow) copyRow.style.display = 'flex';
+  var btn = document.getElementById('seedContinueBtn');
+  if(btn) btn.disabled = false;
+}
+function copySeedPhrase(){
+  var m = window.WalletEngine.getMnemonic();
+  if(!m) return;
+  navigator.clipboard.writeText(m).then(function(){
+    var btn = document.querySelector('#seedCopyRow button');
+    if(btn){ btn.textContent = 'Copied!'; setTimeout(function(){ btn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy'; }, 2000); }
+  });
+}
+function finishSeedBackup(){
+  _revealedSeed = false;
+  window.WalletEngine.updateWalletUI();
+  showPage('page-wallet');
+}
+
 function doCreateWallet(){
   var name = document.getElementById('createUserName').value.trim();
   var dob = document.getElementById('createUserDob').value;
@@ -7234,8 +7066,16 @@ function doCreateWallet(){
     window.WalletEngine.createReal(name, dob, walletName, addr);
     btn.textContent = 'Created!';
     setTimeout(function(){
-      window.WalletEngine.updateWalletUI();
-      showPage('page-wallet');
+      _revealedSeed = false;
+      var box = document.getElementById('seedRevealBox');
+      if(box) box.style.display = '';
+      var copyRow = document.getElementById('seedCopyRow');
+      if(copyRow) copyRow.style.display = 'none';
+      var grid = document.getElementById('seedGrid');
+      if(grid) grid.innerHTML = '';
+      var cBtn = document.getElementById('seedContinueBtn');
+      if(cBtn) cBtn.disabled = true;
+      navigateTo('page-seed-backup');
       btn.textContent = 'Create Wallet'; btn.disabled = false;
     }, 400);
   } catch(e){
@@ -7262,33 +7102,28 @@ function doLogout(){
 var balanceHidden = true;
 function toggleBalanceVisibility(){
   balanceHidden = !balanceHidden;
-  var starsEl = document.querySelector('.cres-bal-stars');
-  var realEl = document.querySelector('.cres-bal-real');
+  var starsEl = document.querySelector('.balance-stars');
+  var realEl = document.querySelector('.balance-real');
   if(starsEl) starsEl.style.opacity = balanceHidden ? '1' : '0';
   if(realEl){ realEl.style.opacity = balanceHidden ? '0' : '1'; realEl.style.transform = balanceHidden ? 'translate(-50%,10px)' : 'translate(-50%,0)'; }
-  var eyeSlash = document.querySelector('.cres-eye .eye-slash');
-  var eyeOpen = document.querySelector('.cres-eye .eye-open');
+  var eyeSlash = document.querySelector('.eye-icon.eye-slash');
+  var eyeOpen = document.querySelector('.eye-icon.eye-open');
   if(eyeSlash){ eyeSlash.style.opacity = balanceHidden ? '1' : '0'; eyeSlash.style.transform = balanceHidden ? 'scale(1)' : 'scale(.5)'; }
   if(eyeOpen){ eyeOpen.style.opacity = balanceHidden ? '0' : '1'; eyeOpen.style.transform = balanceHidden ? 'scale(.5)' : 'scale(1.1)'; }
 }
 function toggleWalletCard(){
   var w = document.getElementById('cresWallet');
   if(!w) return;
-  var isRevealed = w.classList.toggle('revealed');
-  balanceHidden = !isRevealed;
-  var starsEl = document.querySelector('.cres-bal-stars');
-  var realEl = document.querySelector('.cres-bal-real');
-  if(starsEl) starsEl.style.opacity = balanceHidden ? '1' : '0';
-  if(realEl){ realEl.style.opacity = balanceHidden ? '0' : '1'; realEl.style.transform = balanceHidden ? 'translate(-50%,10px)' : 'translate(-50%,0)'; }
-  var eyeSlash = document.querySelector('.cres-eye .eye-slash');
-  var eyeOpen = document.querySelector('.cres-eye .eye-open');
-  if(eyeSlash){ eyeSlash.style.opacity = balanceHidden ? '1' : '0'; eyeSlash.style.transform = balanceHidden ? 'scale(1)' : 'scale(.5)'; }
-  if(eyeOpen){ eyeOpen.style.opacity = balanceHidden ? '0' : '1'; eyeOpen.style.transform = balanceHidden ? 'scale(.5)' : 'scale(1.1)'; }
+  w.classList.toggle('revealed');
 }
 
 /* ═══ WALLET POCKET UPDATE ═══ */
 function updateWalletPocket(){
-  if(!window.WalletEngine || !window.WalletEngine.isInitialized()) return;
+  if(!window.WalletEngine) return;
+  if(!window.WalletEngine.isInitialized()){
+    if(typeof window.WalletEngine.autoInit==='function'){ try{ window.WalletEngine.autoInit(); }catch(e){} }
+    if(!window.WalletEngine.isInitialized()) return;
+  }
   var addr = window.WalletEngine.getAddress();
   var short = addr ? addr.slice(0,6)+'...'+addr.slice(-4) : 'Loading...';
   var botBal = 0;
@@ -7354,8 +7189,22 @@ function showDepositNotif(amount, from){
 
 (function(){
   var ex = localStorage.getItem('creso_wallet_v1');
-  var b = document.getElementById('existingWalletBtn');
-  if(ex && b) b.style.display = 'block';
+  if(ex){
+    try {
+      var wd = JSON.parse(ex);
+      if(wd && wd.address){
+        function _tryAutoLogin(){
+          if(window.WalletEngine && window.WalletEngine.isInitialized && window.WalletEngine.isInitialized()){
+            showPage('page-wallet');
+          } else {
+            setTimeout(_tryAutoLogin, 100);
+          }
+        }
+        _tryAutoLogin();
+        return;
+      }
+    } catch(e){}
+  }
 })();
 </script>
 </body>

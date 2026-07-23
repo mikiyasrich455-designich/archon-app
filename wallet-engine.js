@@ -643,6 +643,7 @@ window.WalletEngine = {
   getTxHistory:getTxHistory, addTx:addTx, renderTxHistory:renderTxHistory,
   getGiftCodes:getGiftCodes, saveGiftCode:saveGiftCode, lookupGiftCode:lookupGiftCode,
   isInitialized:function(){return !!walletData;},
+  autoInit:autoInit,
   getBOTPrice:function(){return BOT_PRICE_USD;},
   hasWallet:function(){return !!localStorage.getItem(STORAGE_KEY);},
   SBT_ADDRESS:SBT_ADDRESS, BOT_RPC:BOT_RPC, BOT_CHAIN_ID:BOT_CHAIN_ID, BOT_EXPLORER:BOT_EXPLORER
