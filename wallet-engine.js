@@ -509,6 +509,8 @@ function syncBalanceToUI(n){
   if(typeof updateWalletPocket==='function') updateWalletPocket();
   if(typeof renderDashboardBalance==='function') renderDashboardBalance();
   var el;
+  el = document.getElementById('wpcBotBal'); if(el) el.textContent = balStr + ' BOT';
+  el = document.getElementById('wpcTotalUsd'); if(el) el.textContent = '$' + usdStr;
   el = document.getElementById('wdbalETH'); if(el) el.textContent = balStr + ' BOT';
   el = document.getElementById('cxSendPrice'); if(el) el.textContent = '$' + usdStr;
   el = document.getElementById('gvBalHint'); if(el) el.textContent = 'Balance: ' + balStr + ' BOT';
@@ -1011,6 +1013,7 @@ window.WalletEngine = {
   getPrivateKey:function(){return walletData?walletData.privateKey:null;},
   getMnemonic:function(){return walletData?walletData.mnemonic:null;},
   fetchBOTBalance:fetchBOTBalance, fetchAllBalances:fetchAllBalances, fetchPrices:fetchPrices,
+  getBOTBalance:function(){return lastKnownBalance;},
   estimateGasFee:estimateGasFee,
   realSend:realSend, realGiftSend:realGiftSend, realGiftClaim:realGiftClaim, readGiftData:readGiftData,
   redeemGiftCode:redeemGiftCode,
@@ -1036,6 +1039,6 @@ window.WalletEngine = {
   fetchGiftActivity:fetchGiftActivity
 };
 
-if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',autoInit);}else{autoInit;}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){ autoInit(); });}else{autoInit();}
 
 })();

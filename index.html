@@ -720,6 +720,7 @@
             background: linear-gradient(135deg, #a3e635, #7c3aed, #ec4899);
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            pointer-events: none;
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             opacity: 0.5;
@@ -3674,8 +3675,8 @@
 
         <!-- Code Input -->
         <div class="mb-6">
-            <div class="code-box mb-3">
-                <input type="text" id="redeemCode" placeholder="XXXX-XXXX-XXXX" maxlength="14" class="bg-transparent border-none outline-none text-center w-full" style="font-family:inherit;color:inherit;" oninput="formatRedeemCode(this)" />
+            <div class="code-box mb-3" onclick="this.querySelector('input').focus()">
+                <input type="text" id="redeemCode" placeholder="XXXX-XXXX-XXXX" maxlength="14" class="bg-transparent border-none outline-none text-center w-full" style="font-family:inherit;color:#a3e635;caret-color:#a3e635;position:relative;z-index:2;" oninput="formatRedeemCode(this)" />
             </div>
             <p class="text-xs text-gray-400 text-center font-medium">Codes are case-insensitive</p>
         </div>
@@ -4493,8 +4494,8 @@
 
         <!-- Code Input -->
         <div class="mb-6">
-            <div class="code-box mb-3">
-                <input type="text" id="redeemCode" placeholder="XXXX-XXXX-XXXX" maxlength="14" class="bg-transparent border-none outline-none text-center w-full" style="font-family:inherit;color:inherit;" oninput="formatRedeemCode(this)" />
+            <div class="code-box mb-3" onclick="this.querySelector('input').focus()">
+                <input type="text" id="redeemCode" placeholder="XXXX-XXXX-XXXX" maxlength="14" class="bg-transparent border-none outline-none text-center w-full" style="font-family:inherit;color:#a3e635;caret-color:#a3e635;position:relative;z-index:2;" oninput="formatRedeemCode(this)" />
             </div>
             <p class="text-xs text-gray-400 text-center font-medium">Codes are case-insensitive</p>
         </div>
@@ -6785,7 +6786,8 @@ function initAll(){
         if(id==='page-security')initSecurityPage();
         if(id==='page-about')initAboutPage();
         if(id==='page-gifts')updateGiftStats();
-        if(id==='page-gift-send'){if(window.WalletEngine)window.WalletEngine.fetchAllBalances().then(function(){var b=window.WalletEngine.getBOTBalance();var el=$('gvBalHint');if(el)el.textContent='Balance: '+b+' BOT';});}
+        if(id==='page-wallet'){if(window.WalletEngine&&window.WalletEngine.isInitialized()){window.WalletEngine.fetchAllBalances().then(function(){updateWalletPocket();});}}
+        if(id==='page-create-voucher'||id==='page-gift-send'){if(window.WalletEngine&&window.WalletEngine.isInitialized()){window.WalletEngine.fetchAllBalances().then(function(){var b=window.WalletEngine.getBOTBalance();var el=$('gvBalHint');if(el)el.textContent='Balance: '+b+' BOT';});}}
         if(id==='page-pin-setup'){_pinSetupBuffer='';_pinSetupConfirm='';_pinSetupPhase='enter';var h2=document.querySelector('#page-pin-setup h2');if(h2)h2.textContent='Set Device PIN';var desc=document.querySelector('#page-pin-setup p.text-xs');if(desc)desc.textContent='Create a 4-digit code to quickly unlock your wallet on this device.';_updatePinDots('pinSetupDots',0);var keypad=document.querySelector('#page-pin-setup div[style*="grid-template-columns"]');if(keypad)keypad.style.display='';var sk=document.querySelector('#page-pin-setup button[onclick*="pinSetupSkip"]');if(sk)sk.style.display='';var err=document.getElementById('pinSetupError');if(err)err.style.display='none';document.querySelectorAll('#page-pin-setup .flex-1 > div[style*="text-align:center"]').forEach(function(el){el.remove();});}
       },50);
     };
@@ -7418,10 +7420,11 @@ function updateWalletPocket(){
   var addr = window.WalletEngine.getAddress();
   var short = addr ? addr.slice(0,6)+'...'+addr.slice(-4) : 'Loading...';
   var botBal = 0;
-  var priceBot = window.WalletEngine.getBOTPrice() || 0;
-  if(typeof chainDatabase !== 'undefined'){
-    botBal = parseFloat(chainDatabase.bot ? chainDatabase.bot.balance : 0) || 0;
+  try { botBal = parseFloat(window.WalletEngine.getBOTBalance()) || 0; } catch(e){}
+  if(botBal === 0 && typeof chainDatabase !== 'undefined' && chainDatabase.bot){
+    botBal = parseFloat(String(chainDatabase.bot.balance).replace(/,/g,'')) || 0;
   }
+  var priceBot = window.WalletEngine.getBOTPrice() || 0;
   var totalUsd = (botBal * priceBot).toFixed(2);
   var el;
   el = document.getElementById('wpcBotBal'); if(el) el.textContent = botBal.toFixed(4) + ' BOT';
@@ -7491,6 +7494,18 @@ function showDepositNotif(amount, from){
             } else {
               showPage('page-wallet');
             }
+            setTimeout(function(){
+              if(window.WalletEngine && window.WalletEngine.isInitialized()){
+                window.WalletEngine.fetchAllBalances().then(function(){
+                  updateWalletPocket();
+                  var bv = document.getElementById('wpcBotBal');
+                  if(bv && bv.textContent.indexOf('0.0000') >= 0){
+                    var bal = window.WalletEngine.getBOTBalance ? window.WalletEngine.getBOTBalance() : '0';
+                    bv.textContent = bal + ' BOT';
+                  }
+                });
+              }
+            }, 600);
           } else {
             setTimeout(_tryAutoLogin, 100);
           }
