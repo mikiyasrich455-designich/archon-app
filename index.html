@@ -3425,10 +3425,10 @@
         </div>
 
         <div class="gv-block gv-rise gv-d4b">
-            <div class="gv-label"><i></i>PIN Code<span class="gv-hint">6 digits for the gift</span></div>
+            <div class="gv-label"><i></i>PIN Code<span class="gv-hint">4+ digits for the gift</span></div>
             <div class="gv-input" id="gvPinRow">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a8a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <input type="text" id="gvPin" placeholder="123456" maxlength="6" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'');gvOnForm()" />
+                <input type="text" id="gvPin" placeholder="1234" maxlength="8" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'');gvOnForm()" />
             </div>
         </div>
 
@@ -5087,7 +5087,7 @@ function gvOnRedeemInput() {
     var pin = document.getElementById('redeemPin')?.value || '';
     var btn = document.querySelector('#page-redeem-gift .btn-dark');
     if (btn) {
-        if (code.length >= 3 && pin.length === 6) {
+        if (code.length >= 3 && pin.length >= 4) {
             btn.disabled = false;
             btn.textContent = 'Redeem Gift';
         } else {
@@ -5113,7 +5113,7 @@ async function redeemGift() {
     var code = (document.getElementById('redeemCode')?.value || '').trim().toUpperCase();
     var pin = (document.getElementById('redeemPin')?.value || '').trim();
     if (!code || code.length < 3) { toast('Enter a valid claim code'); return; }
-    if (!pin || pin.length !== 6) { toast('PIN must be 6 digits'); return; }
+    if (!pin || pin.length < 4) { toast('PIN must be at least 4 digits'); return; }
     if (!window.WalletEngine || !window.WalletEngine.isInitialized()) { toast('Create or import a wallet first'); return; }
 
     var btn = document.querySelector('#page-redeem-gift .btn-dark');
@@ -5866,7 +5866,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
   }
 
   function validate() {
-    var ok = GV.amount > 0 && GV.amount <= GV.t.bal + 1e-9 && GV.to.trim().length >= 3 && GV.pin.trim().length === 6;
+    var ok = GV.amount > 0 && GV.amount <= GV.t.bal + 1e-9 && GV.to.trim().length >= 3 && GV.pin.trim().length >= 4;
     var cta = $('gvCta'); if (cta) cta.disabled = !ok;
     return ok;
   }
@@ -5915,7 +5915,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
     if (!(GV.amount > 0)) { errPulse('gvAmtRow'); ok = false; }
     else if (GV.amount > GV.t.bal + 1e-9) { errPulse('gvAmtRow'); toast('Amount exceeds balance'); ok = false; }
     if (!GV.to.trim() || GV.to.trim().length < 3) { errPulse('gvToRow'); toast('Claim code must be at least 3 characters'); ok = false; }
-    if (!GV.pin.trim() || GV.pin.trim().length !== 6) { errPulse('gvPinRow'); toast('PIN must be 6 digits'); ok = false; }
+    if (!GV.pin.trim() || GV.pin.trim().length < 4) { errPulse('gvPinRow'); toast('PIN must be at least 4 digits'); ok = false; }
     if (!ok) return;
 
     var a = fmt(GV.amount) + ' ' + GV.t.sym;
@@ -5925,7 +5925,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
     txt('gvRAmt', a); txt('gvRUsd', u);
     txt('gvRTotal', a + ' + $' + GV_CONFIG.feeUsd.toFixed(2));
     txt('gvRToName', GV.to.trim().toUpperCase());
-    txt('gvRPin', GV.pin.trim().substring(0,2) + '****');
+    txt('gvRPin', GV.pin.trim().substring(0,2) + '*'.repeat(Math.max(0, GV.pin.trim().length - 2)));
     var q = $('gvRQuote');
     if (q) {
       if (GV.msg.trim()) { q.style.display = 'block'; q.innerHTML = '\u201c' + esc(GV.msg.trim()) + '\u201d'; }
@@ -5967,7 +5967,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
     if (!window.WalletEngine || !window.WalletEngine.isInitialized()) { toast('Connect your wallet first'); return; }
     if (GV.amount <= 0 || GV.amount > GV.t.bal + 1e-9) { toast('Invalid amount'); return; }
     if (!GV.to.trim() || GV.to.trim().length < 3) { toast('Enter a claim code'); return; }
-    if (!GV.pin.trim() || GV.pin.trim().length !== 6) { toast('PIN must be 6 digits'); return; }
+    if (!GV.pin.trim() || GV.pin.trim().length < 4) { toast('PIN must be at least 4 digits'); return; }
 
     var coin = $('gvCoinImg'); if (coin) coin.src = GV.t.img;
     ov.classList.remove('sealed'); ov.classList.add('show');
