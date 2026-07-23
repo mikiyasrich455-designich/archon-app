@@ -23,14 +23,6 @@
             --accent: #a3e635;
         }
 
-        .dark-theme {
-            --app-bg: #0f0f12;
-            --text-main: #ffffff;
-            --stripe-color: #22252a;
-            --content-text: #e5e7eb;
-            --border-subtle: #1f2937;
-        }
-
         body { background: #d4d4d4; }
 
         .app-frame {
@@ -1202,62 +1194,60 @@
 .cx-contact:active{transform:scale(.95)}
 
 /* ═══ WALLET POCKET DESIGN ═══ */
-.cres-wallet{position:relative;width:300px;height:260px;cursor:pointer;perspective:1000px;display:flex;justify-content:center;align-items:flex-end;margin:0 auto;transition:transform .4s ease}
-.cres-wallet::after{content:"Hover to see Balance";position:absolute;bottom:-26px;font-style:italic;color:#7c3aed;font-size:11px;font-weight:600;text-decoration:underline;opacity:.7}
-@keyframes slideIntoPocket{0%{transform:translateY(-100px);opacity:0}100%{transform:translateY(0);opacity:1}}
-.cres-wallet-back{position:absolute;bottom:0;width:300px;height:210px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:22px 22px 60px 60px;z-index:5;box-shadow:inset 0 25px 35px rgba(0,0,0,.4),inset 0 5px 15px rgba(0,0,0,.5)}
-.cres-card{position:absolute;width:280px;height:130px;left:10px;border-radius:16px;padding:16px;color:white;box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 -4px 15px rgba(0,0,0,.1);transition:transform .6s cubic-bezier(.34,1.56,.64,1),z-index 0s;animation:slideIntoPocket .8s cubic-bezier(.2,.8,.2,1) backwards;display:flex;flex-direction:column;justify-content:space-between}
-.cres-card-inner{display:flex;flex-direction:column;justify-content:space-between;height:100%}
-.cres-card-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
-.cres-chip{width:30px;height:22px;background:rgba(255,255,255,.2);border-radius:4px;border:1px solid rgba(255,255,255,.1)}
-.cres-card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
-.cres-card-label{font-size:8px;opacity:.7;text-transform:uppercase;margin-bottom:2px;display:block}
-.cres-card-value{font-size:10px;font-weight:600}
-.cres-card-addr{text-align:right}
-.cres-card-addr .stars{font-size:14px;letter-spacing:2px}
-.cres-card-addr .full{display:none;font-size:11px;letter-spacing:1px;font-family:monospace}
-.cres-card-bot{background:linear-gradient(135deg,#7c3aed,#6d28d9);bottom:100px;z-index:10;animation-delay:.1s}
-.cres-card-eth{background:linear-gradient(135deg,#627eea,#4361c4);bottom:75px;z-index:20;animation-delay:.2s}
-.cres-card-sol{background:linear-gradient(135deg,#9945ff,#7c3aed);bottom:50px;z-index:30;animation-delay:.3s}
-.cres-pocket{position:absolute;bottom:0;width:300px;height:170px;z-index:40;filter:drop-shadow(0 15px 25px rgba(26,26,46,.4))}
-.cres-pocket-content{position:absolute;top:42px;width:100%;text-align:center;z-index:50;display:flex;flex-direction:column;align-items:center;gap:6px}
-.cres-bal-stars{color:#6b7280;font-size:22px;letter-spacing:4px;transition:.3s}
-.cres-bal-real{color:#a3e635;font-size:20px;font-weight:700;opacity:0;position:absolute;top:0;left:50%;transform:translate(-50%,10px);transition:.3s}
-.cres-eye{margin-top:6px;height:18px;width:18px;position:relative;opacity:.3;transition:.3s;cursor:pointer}
-.cres-eye svg{position:absolute;top:0;left:0;stroke:#7c3aed;transition:.3s;width:18px;height:18px}
-.cres-eye .eye-slash{opacity:1}
-.cres-eye .eye-open{opacity:0}
-.cres-wallet:hover{transform:translateY(-5px)}
-.cres-wallet:hover .cres-eye{opacity:1}
-.cres-wallet:hover .cres-card-bot{transform:translateY(-75px) rotate(-3deg)}
-.cres-wallet:hover .cres-card-eth{transform:translateY(-45px) rotate(2deg)}
-.cres-wallet:hover .cres-card-sol{transform:translateY(-10px)}
-.cres-card:hover{z-index:100!important;transition-delay:0s!important}
-.cres-wallet:hover .cres-card-bot:hover{transform:translateY(-60px) scale(1.05) rotate(0)}
-.cres-wallet:hover .cres-card-eth:hover{transform:translateY(-70px) scale(1.05) rotate(0)}
-.cres-wallet:hover .cres-card-sol:hover{transform:translateY(-60px) scale(1.05) rotate(0)}
-.cres-card:hover .stars{display:none}
-.cres-card:hover .full{display:block}
-.cres-wallet:hover .cres-bal-stars{opacity:0}
-.cres-wallet:hover .cres-bal-real{opacity:1;transform:translate(-50%,0)}
-.cres-wallet:hover .cres-eye .eye-slash{opacity:0;transform:scale(.5)}
-.cres-wallet:hover .cres-eye .eye-open{opacity:1;transform:scale(1.1)}
-.cres-card .copy-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);border-radius:16px;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.2s}
-.cres-card:hover .copy-overlay{opacity:1;pointer-events:auto}
-.cres-card .copy-overlay span{color:#fff;font-size:12px;font-weight:700;background:rgba(255,255,255,.15);padding:8px 16px;border-radius:10px;backdrop-filter:blur(4px)}
+.wallet{position:relative;width:280px;height:230px;cursor:pointer;display:flex;justify-content:center;align-items:flex-end;margin:0 auto;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .4s ease}
+.wallet::after{content:"Hover to see Balance";position:absolute;bottom:-30px;font-style:italic;color:#7c3aed;font-size:12px;font-weight:600;text-decoration:underline}
 
-/* ═══ THEME TOGGLE ═══ */
-.bc-switch{display:inline-flex;align-items:center;cursor:pointer;user-select:none}
-.bc-switch input{position:absolute;opacity:0;width:0;height:0;margin:0}
-.bc-switch-track{position:relative;display:inline-flex;align-items:center;justify-content:space-between;width:56px;height:28px;padding:0 6px;background:var(--app-bg);border:1.5px solid #d1d5db;border-radius:999px;transition:background .22s ease}
-.bc-switch-thumb{position:absolute;z-index:1;top:50%;left:2px;width:22px;height:22px;background:#a3e635;border:1.5px solid #1a1a1a;border-radius:999px;transform:translateY(-50%);transition:left .26s ease,background .22s ease}
-.bc-switch-icon{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;color:#1a1a1a;transition:color .2s,opacity .2s}
-.bc-switch-icon svg{width:14px;height:14px;display:block}
-.bc-switch-icon--moon{opacity:.45}
-.bc-switch input:checked~.bc-switch-track{background:#1a1a1a;border-color:#1a1a1a}
-.bc-switch input:checked~.bc-switch-track .bc-switch-thumb{left:28px;background:#f5f5f5}
-.bc-switch input:checked~.bc-switch-track .bc-switch-icon--sun{color:#f5f5f5;opacity:.45}
-.bc-switch input:checked~.bc-switch-track .bc-switch-icon--moon{color:#1a1a1a;opacity:1}
+.wallet-back{position:absolute;bottom:0;width:280px;height:200px;background:#1e341e;border-radius:22px 22px 60px 60px;z-index:5;box-shadow:inset 0 25px 35px rgba(0,0,0,.4),inset 0 5px 15px rgba(0,0,0,.5)}
+
+.card{position:absolute;width:260px;height:140px;left:10px;border-radius:16px;padding:18px;color:#fff;box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 -4px 15px rgba(0,0,0,.1);transition:transform .6s cubic-bezier(.34,1.56,.64,1),z-index 0s;overflow:hidden}
+.card-inner{display:flex;flex-direction:column;justify-content:space-between;height:100%;position:relative;z-index:2}
+.card-top{display:flex;justify-content:space-between;align-items:center;font-size:14px;text-transform:uppercase;letter-spacing:1px}
+.chip{width:32px;height:24px;background:rgba(255,255,255,.2);border-radius:4px;border:1px solid rgba(255,255,255,.1)}
+.card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
+.card-label{font-size:8px;opacity:.7;text-transform:uppercase;margin-bottom:2px;display:block}
+.card-value{font-size:10px;font-weight:500}
+.card-number-wrapper{text-align:right}
+.hidden-stars{font-size:16px;letter-spacing:2px;transition:.3s}
+.card-number{display:none;font-size:14px;letter-spacing:1px;font-family:monospace}
+.card-addr{display:none;font-size:10px;font-family:monospace;opacity:.7;margin-top:4px;word-break:break-all}
+.card-copy-btn{display:none;margin-top:8px;padding:8px 14px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:.2s;backdrop-filter:blur(4px)}
+.card-copy-btn:active{transform:scale(.95);background:rgba(255,255,255,.35)}
+
+/* BOT card: image fills as background */
+.card.bot-token{background:linear-gradient(135deg,#1a5c3a,#0d3a22);bottom:40px;z-index:30}
+.card.bot-token .card-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:16px;z-index:0}
+
+/* Pocket */
+.pocket{position:absolute;bottom:0;width:280px;height:160px;z-index:40;filter:drop-shadow(0 15px 25px rgba(20,40,20,.4))}
+.pocket-content{position:absolute;top:45px;width:100%;text-align:center;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px}
+.balance-stars{color:#839e7b;font-size:24px;letter-spacing:4px;transition:.3s}
+.balance-real{color:#a7c59e;font-size:22px;font-weight:600;opacity:0;position:absolute;top:0;left:50%;transform:translate(-50%,10px);transition:.3s}
+.pocket-label{color:#698263;font-size:12px;font-weight:500}
+
+/* Eye */
+.eye-icon-wrapper{margin-top:8px;height:20px;width:20px;position:relative;opacity:.3;transition:.3s;cursor:pointer}
+.eye-icon{position:absolute;top:0;left:0;stroke:#3be60b;transition:.3s;width:20px;height:20px}
+
+/* === HOVER EFFECTS === */
+.wallet:hover{transform:translateY(-5px)}
+.wallet:hover .eye-icon-wrapper{opacity:1}
+
+/* card lifts on wallet hover */
+.wallet:hover .card.bot-token{transform:translateY(-10px)}
+
+/* individual card hover */
+.card:hover{z-index:100!important;transition-delay:0s!important}
+.wallet:hover .card.bot-token:hover{transform:translateY(-60px) scale(1.05)}
+
+/* reveal card details on card hover */
+.card:hover .hidden-stars{display:none}
+.card:hover .card-number,.card:hover .card-addr,.card:hover .card-copy-btn{display:block}
+
+/* balance reveal on wallet hover */
+.wallet:hover .balance-stars{opacity:0}
+.wallet:hover .balance-real{opacity:1;transform:translate(-50%,0)}
+.wallet:hover .eye-slash{opacity:0;transform:scale(.5)}
+.wallet:hover .eye-open{opacity:1;transform:scale(1.1)}
 
 /* ═══ TYPEWRITER LOADER ═══ */
 .typewriter-loader{--tw-blue:#7c3aed;--tw-blue-dark:#6d28d9;--tw-key:#fff;--tw-paper:#f3f0ff;--tw-text:#d4ccfa;--tw-tool:#a3e635;--tw-duration:3s;position:relative;animation:tw-bounce var(--tw-duration) linear infinite}
@@ -2367,14 +2357,6 @@
             <span class="font-black tracking-tighter text-lg">HUB</span>
         </div>
         <div class="flex items-center gap-3">
-            <label class="bc-switch" title="Toggle Theme">
-                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-                <div class="bc-switch-track">
-                    <div class="bc-switch-thumb"></div>
-                    <div class="bc-switch-icon bc-switch-icon--sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
-                    <div class="bc-switch-icon bc-switch-icon--moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
-                </div>
-            </label>
             <button onclick="navigateTo('page-tx-history')" class="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm press" title="Transaction History">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </button>
@@ -2385,50 +2367,44 @@
             <h1 class="text-2xl font-extrabold tracking-tight">Botchain Testnet</h1>
         </div>
         <div class="w-full shrink-0 flex flex-col items-center" style="padding-top:8px">
-            <div class="cres-wallet" id="cresWallet">
-                <div class="cres-wallet-back"></div>
-                <div class="cres-card cres-card-bot" onclick="event.stopPropagation()">
-                    <div class="cres-card-inner">
-                        <div class="cres-card-top"><span>BOT</span><div class="cres-chip"></div></div>
-                        <div class="cres-card-bottom">
-                            <div><span class="cres-card-label">Balance</span><span class="cres-card-value" id="wpcBotBal">0.00 BOT</span></div>
-                            <div class="cres-card-addr"><span class="stars">**** ****</span><span class="full" id="wpcBotAddr">Loading...</span></div>
+            <div class="wallet" id="cresWallet">
+                <div class="wallet-back"></div>
+
+                <div class="card bot-token" id="cresBotCard">
+                    <img class="card-bg" src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784766076/photo_5985688276406308006_x_nj2iil.jpg" alt="BOT" draggable="false" />
+                    <div class="card-inner">
+                        <div class="card-top">
+                            <span>BOT Chain</span>
+                            <div class="chip"></div>
                         </div>
-                    </div>
-                    <div class="copy-overlay" onclick="event.stopPropagation();copyWalletAddress()"><span>Click to Copy Address</span></div>
-                </div>
-                <div class="cres-card cres-card-eth" onclick="event.stopPropagation()">
-                    <div class="cres-card-inner">
-                        <div class="cres-card-top"><span>ETH</span><div class="cres-chip"></div></div>
-                        <div class="cres-card-bottom">
-                            <div><span class="cres-card-label">Balance</span><span class="cres-card-value" id="wpcEthBal">0.00 ETH</span></div>
-                            <div class="cres-card-addr"><span class="stars">**** ****</span><span class="full" id="wpcEthAddr">Testnet</span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="cres-card cres-card-sol" onclick="event.stopPropagation()">
-                    <div class="cres-card-inner">
-                        <div class="cres-card-top"><span>SOL</span><div class="cres-chip"></div></div>
-                        <div class="cres-card-bottom">
-                            <div><span class="cres-card-label">Balance</span><span class="cres-card-value" id="wpcSolBal">0.00 SOL</span></div>
-                            <div class="cres-card-addr"><span class="stars">**** ****</span><span class="full" id="wpcSolAddr">Testnet</span></div>
+                        <div class="card-bottom">
+                            <div class="card-info">
+                                <span class="card-label">Balance</span>
+                                <span class="card-value" id="wpcBotBal">0.00 BOT</span>
+                            </div>
+                            <div class="card-number-wrapper">
+                                <span class="hidden-stars">**** ****</span>
+                                <span class="card-number" id="wpcBotAddr">Loading...</span>
+                                <div class="card-copy-btn" onclick="event.stopPropagation();copyWalletAddress()">Copy Address</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="cres-pocket">
-                    <svg class="pocket-svg" viewBox="0 0 300 170" fill="none" style="width:100%;height:100%">
-                        <path d="M 0 20 C 0 10, 5 10, 10 10 C 20 10, 25 25, 40 25 L 260 25 C 275 25, 280 10, 290 10 C 295 10, 300 10, 300 20 L 300 130 C 300 165, 280 170, 260 170 L 40 170 C 20 170, 0 165, 0 130 Z" fill="#1a1a2e"></path>
-                        <path d="M 8 22 C 8 16, 12 16, 15 16 C 23 16, 27 29, 40 29 L 260 29 C 273 29, 277 16, 285 16 C 288 16, 292 16, 292 22 L 292 130 C 292 160, 275 162, 260 162 L 40 162 C 25 162, 8 162, 8 130 Z" stroke="#374151" stroke-width="1.5" stroke-dasharray="6 4"></path>
+
+                <div class="pocket">
+                    <svg class="pocket-svg" viewBox="0 0 280 160" fill="none" style="width:100%;height:100%">
+                        <path d="M 0 20 C 0 10, 5 10, 10 10 C 20 10, 25 25, 40 25 L 240 25 C 255 25, 260 10, 270 10 C 275 10, 280 10, 280 20 L 280 120 C 280 155, 260 160, 240 160 L 40 160 C 20 160, 0 155, 0 120 Z" fill="#1e341e"></path>
+                        <path d="M 8 22 C 8 16, 12 16, 15 16 C 23 16, 27 29, 40 29 L 240 29 C 253 29, 257 16, 265 16 C 268 16, 272 16, 272 22 L 272 120 C 272 150, 255 152, 240 152 L 40 152 C 25 152, 8 152, 8 120 Z" stroke="#3d5635" stroke-width="1.5" stroke-dasharray="6 4"></path>
                     </svg>
-                    <div class="cres-pocket-content">
-                        <div style="position:relative;height:28px;width:100%">
-                            <div class="cres-bal-stars">******</div>
-                            <div class="cres-bal-real" id="wpcTotalUsd">$0.00</div>
+                    <div class="pocket-content">
+                        <div style="position:relative;height:24px;width:100%">
+                            <div class="balance-stars" id="cresBalStars">******</div>
+                            <div class="balance-real" id="wpcTotalUsd">$0.00</div>
                         </div>
-                        <div style="color:#6b7280;font-size:11px;font-weight:600">Total Balance</div>
-                        <div class="cres-eye" onclick="event.stopPropagation();toggleBalanceVisibility()">
-                            <svg class="eye-slash" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="3" y1="3" x2="21" y2="21"></line></svg>
-                            <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <div class="pocket-label">Total Balance</div>
+                        <div class="eye-icon-wrapper" id="cresEyeBtn" onclick="event.stopPropagation();toggleBalanceVisibility()">
+                            <svg class="eye-icon eye-slash" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="3" y1="3" x2="21" y2="21"></line></svg>
+                            <svg class="eye-icon eye-open" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </div>
                     </div>
                 </div>
@@ -2482,7 +2458,7 @@
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;">
                         <div style="display:flex;align-items:center;gap:8px">
                             <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg" alt="BOT" style="width:20px;height:20px;border-radius:50%" />
-                            <span style="font-size:11px;font-weight:800;color:#1a1a1a">BOT / USD</span>
+                            <span style="font-size:11px;font-weight:800;color:#ffffff">BOT / USD</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:4px">
                             <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;animation:deposit-pulse 2s infinite"></span>
@@ -2490,7 +2466,7 @@
                         </div>
                     </div>
                     <div style="display:flex;flex-direction:column;padding:0 14px 10px;font-weight:500;">
-                        <p style="font-size:18px;font-weight:900;color:#1a1a1a" id="chartPriceLabel">$0.00</p>
+                        <p style="font-size:18px;font-weight:900;color:#ffffff" id="chartPriceLabel">$0.00</p>
                         <p style="font-size:11px;font-weight:700;margin-top:2px" id="chartChangeLabel"><span style="color:#9ca3af">24h:</span> —</p>
                     </div>
                     <div style="position:relative;width:100%;height:100%;">
@@ -5071,12 +5047,8 @@ function generateQR() {
 generateQR();
 
 // ─── WALLET FUNCTIONS ───
-function flipCard() {
-    /* wallet pocket replaces flip card */
-}
-function copyCardAddress() {
-    copyWalletAddress();
-}
+function flipCard() { toggleWalletCard(); }
+function copyCardAddress() { copyWalletAddress(); }
 function copyWalletAddress() {
     if(window.WalletEngine && window.WalletEngine.isInitialized()){
         var addr = window.WalletEngine.getAddress();
@@ -5084,7 +5056,6 @@ function copyWalletAddress() {
             navigator.clipboard.writeText(addr).then(function(){ if(window.cxToast) window.cxToast('Address copied!','ok'); });
         }
     }
-}
 }
 function selectNetwork(name) {
     alert(name + ' network selected');
@@ -6496,7 +6467,7 @@ function renderAppearance(){
   var tg=$('fxThemeGrid');if(tg){tg.innerHTML=themes.map(function(th){return '<div class="fx-theme'+(th.id===currentTheme?' sel':'')+'" onclick="fxSetTheme(\''+th.id+'\')"><div class="prev" style="background:linear-gradient(135deg,'+th.colors[0]+','+th.colors[1]+','+th.colors[2]+')"></div><span>'+th.name+'</span></div>';}).join('');}
   var ar=$('fxAccentRow');if(ar){ar.innerHTML=accents.map(function(a){return '<button class="fx-accent'+(a.color===currentAccent?' sel':'')+'" style="background:'+a.color+'" onclick="fxSetAccent(\''+a.color+'\')"></button>';}).join('');}
 }
-window.fxSetTheme=function(id){currentTheme=id;var frame=document.querySelector('.app-frame');if(id==='dark'||id==='midnight'){if(frame)frame.classList.add('dark-theme');document.body.style.background=id==='midnight'?'#0a0a14':'#1a1a1a';}else{if(frame)frame.classList.remove('dark-theme');document.body.style.background='#d4d4d4';}renderAppearance();toast('Theme: '+id);};
+window.fxSetTheme=function(id){currentTheme='light';var frame=document.querySelector('.app-frame');if(frame)frame.classList.remove('dark-theme');document.body.style.background='#d4d4d4';renderAppearance();toast('Theme: light');};
 window.fxSetAccent=function(color){currentAccent=color;document.documentElement.style.setProperty('--primary',color);renderAppearance();toast('Accent updated');};
 
 /* --- 4. NOTIFICATIONS SETTINGS --- */
@@ -6861,105 +6832,22 @@ window.openTokenDetail = function(sym, chainKey){
   navigateTo('page-token-detail');
 };
 
-/* ──────────────────────────────────────────────────────────────
-   2. DARK / LIGHT THEME TOGGLE
-   ────────────────────────────────────────────────────────────── */
-var currentTheme = 'light';
-
-// Override fxSetTheme to properly toggle dark-theme on app-frame
+/* ── fxSetTheme neutered: always force light ── */
 var _origFxSetTheme = window.fxSetTheme;
 window.fxSetTheme = function(id){
-  currentTheme = id;
+  currentTheme = 'light';
   var frame = document.querySelector('.app-frame');
-
-  if(id === 'dark' || id === 'midnight'){
-    if(frame) frame.classList.add('dark-theme');
-    document.body.style.background = id === 'midnight' ? '#0a0a14' : '#1a1a1a';
-  } else {
-    if(frame) frame.classList.remove('dark-theme');
-    document.body.style.background = '#d4d4d4';
-  }
-
-  // Update all page backgrounds for dark mode
-  document.querySelectorAll('.page').forEach(function(p){
-    if(id === 'dark' || id === 'midnight'){
-      p.style.background = '#0f0f12';
-      p.style.color = '#ffffff';
-    } else {
-      p.style.background = '';
-      p.style.color = '';
-    }
-  });
-
-  // Update card backgrounds for dark mode
-  document.querySelectorAll('.card').forEach(function(c){
-    if(id === 'dark' || id === 'midnight'){
-      c.style.background = '#1a1a2e';
-    } else {
-      c.style.background = '';
-    }
-  });
-
-  // Update list-row backgrounds
-  document.querySelectorAll('.list-row').forEach(function(r){
-    if(id === 'dark' || id === 'midnight'){
-      r.style.background = '#1a1a2e';
-      r.style.color = '#e5e7eb';
-    } else {
-      r.style.background = '';
-      r.style.color = '';
-    }
-  });
-
-  // Update header text colors
-  document.querySelectorAll('.page-header h1').forEach(function(h){
-    if(id === 'dark' || id === 'midnight'){
-      h.style.color = '#ffffff';
-    } else {
-      h.style.color = '';
-    }
-  });
-
-  // Update flip card front
-  document.querySelectorAll('.flip-card-front').forEach(function(fc){
-    if(id === 'dark' || id === 'midnight'){
-      fc.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #1a1a2e 45%, #a3e635 45%, #a3e635 85%, #7c3aed 85%, #7c3aed 100%)';
-    } else {
-      fc.style.background = '';
-    }
-  });
-
-  // Update input backgrounds
-  document.querySelectorAll('.input-row, .cx-field, .cx-amtcard').forEach(function(inp){
-    if(id === 'dark' || id === 'midnight'){
-      inp.style.background = '#1a1a2e';
-    } else {
-      inp.style.background = '';
-    }
-  });
-
-  // Update flip card back
-  document.querySelectorAll('.flip-card-back').forEach(function(fb){
-    if(id === 'dark' || id === 'midnight'){
-      fb.style.background = '#0a0a14';
-    } else {
-      fb.style.background = '';
-    }
-  });
-
-  // Save to localStorage
-  try { localStorage.setItem('creso-theme', id); } catch(e){}
-
-  if(_origFxSetTheme) _origFxSetTheme(id);
+  if(frame) frame.classList.remove('dark-theme');
+  document.body.style.background = '#d4d4d4';
+  document.querySelectorAll('.page').forEach(function(p){ p.style.background = ''; p.style.color = ''; });
+  document.querySelectorAll('.card').forEach(function(c){ c.style.background = ''; });
+  document.querySelectorAll('.list-row').forEach(function(r){ r.style.background = ''; r.style.color = ''; });
+  document.querySelectorAll('.page-header h1').forEach(function(h){ h.style.color = ''; });
+  document.querySelectorAll('.flip-card-front').forEach(function(fc){ fc.style.background = ''; });
+  document.querySelectorAll('.input-row, .cx-field, .cx-amtcard').forEach(function(inp){ inp.style.background = ''; });
+  document.querySelectorAll('.flip-card-back').forEach(function(fb){ fb.style.background = ''; });
+  toast('Theme: light');
 };
-
-// Restore saved theme on load
-try {
-  var saved = localStorage.getItem('creso-theme');
-  if(saved && saved !== 'light'){
-    window.fxSetTheme(saved);
-  }
-} catch(e){}
 
 /* ──────────────────────────────────────────────────────────────
    3. BOTTOM NAV — always visible, always at bottom, never scroll
@@ -7095,33 +6983,23 @@ function doLogout(){
   showPage('page-onboarding');
 }
 
-/* ═══ THEME TOGGLE ═══ */
-function toggleTheme(){
-  var isDark = document.getElementById('themeToggle').checked;
-  document.documentElement.classList.toggle('dark-theme', isDark);
-  localStorage.setItem('creso_theme', isDark ? 'dark' : 'light');
-}
-(function(){
-  var saved = localStorage.getItem('creso_theme');
-  if(saved === 'dark'){
-    document.documentElement.classList.add('dark-theme');
-    var t = document.getElementById('themeToggle');
-    if(t) t.checked = true;
-  }
-})();
-
 /* ═══ BALANCE VISIBILITY ═══ */
 var balanceHidden = true;
 function toggleBalanceVisibility(){
   balanceHidden = !balanceHidden;
-  var starsEl = document.querySelector('.cres-bal-stars');
-  var realEl = document.querySelector('.cres-bal-real');
+  var starsEl = document.querySelector('.balance-stars');
+  var realEl = document.querySelector('.balance-real');
   if(starsEl) starsEl.style.opacity = balanceHidden ? '1' : '0';
   if(realEl){ realEl.style.opacity = balanceHidden ? '0' : '1'; realEl.style.transform = balanceHidden ? 'translate(-50%,10px)' : 'translate(-50%,0)'; }
-  var eyeSlash = document.querySelector('.cres-eye .eye-slash');
-  var eyeOpen = document.querySelector('.cres-eye .eye-open');
+  var eyeSlash = document.querySelector('.eye-icon.eye-slash');
+  var eyeOpen = document.querySelector('.eye-icon.eye-open');
   if(eyeSlash){ eyeSlash.style.opacity = balanceHidden ? '1' : '0'; eyeSlash.style.transform = balanceHidden ? 'scale(1)' : 'scale(.5)'; }
   if(eyeOpen){ eyeOpen.style.opacity = balanceHidden ? '0' : '1'; eyeOpen.style.transform = balanceHidden ? 'scale(.5)' : 'scale(1.1)'; }
+}
+function toggleWalletCard(){
+  var w = document.getElementById('cresWallet');
+  if(!w) return;
+  w.classList.toggle('revealed');
 }
 
 /* ═══ WALLET POCKET UPDATE ═══ */
@@ -7129,23 +7007,16 @@ function updateWalletPocket(){
   if(!window.WalletEngine || !window.WalletEngine.isInitialized()) return;
   var addr = window.WalletEngine.getAddress();
   var short = addr ? addr.slice(0,6)+'...'+addr.slice(-4) : 'Loading...';
-  var botBal = 0, ethBal = 0, solBal = 0;
+  var botBal = 0;
   var priceBot = window.WalletEngine.getBOTPrice() || 0;
   if(typeof chainDatabase !== 'undefined'){
     botBal = parseFloat(chainDatabase.bot ? chainDatabase.bot.balance : 0) || 0;
-    ethBal = parseFloat(chainDatabase.eth ? chainDatabase.eth.balance : 0) || 0;
-    solBal = parseFloat(chainDatabase.sol ? chainDatabase.sol.balance : 0) || 0;
   }
   var totalUsd = (botBal * priceBot).toFixed(2);
   var el;
   el = document.getElementById('wpcBotBal'); if(el) el.textContent = botBal.toFixed(4) + ' BOT';
-  el = document.getElementById('wpcEthBal'); if(el) el.textContent = ethBal.toFixed(4) + ' ETH';
-  el = document.getElementById('wpcSolBal'); if(el) el.textContent = solBal.toFixed(4) + ' SOL';
   el = document.getElementById('wpcBotAddr'); if(el) el.textContent = short;
-  el = document.getElementById('wpcEthAddr'); if(el) el.textContent = 'Sepolia Testnet';
-  el = document.getElementById('wpcSolAddr'); if(el) el.textContent = 'Devnet';
   el = document.getElementById('wpcTotalUsd'); if(el) el.textContent = '$' + totalUsd;
-  /* chart price */
   el = document.getElementById('chartPriceLabel'); if(el) el.textContent = '$' + (priceBot > 0 ? priceBot.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '0.00');
   var ch = typeof chainDatabase !== 'undefined' && chainDatabase.bot ? chainDatabase.bot.change24h : null;
   var dir = typeof chainDatabase !== 'undefined' && chainDatabase.bot ? chainDatabase.bot.changeDir : null;
