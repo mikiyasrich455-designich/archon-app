@@ -1194,60 +1194,299 @@
 .cx-contact:active{transform:scale(.95)}
 
 /* ═══ WALLET POCKET DESIGN ═══ */
-.wallet{position:relative;width:280px;height:230px;cursor:pointer;display:flex;justify-content:center;align-items:flex-end;margin:0 auto;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .4s ease}
-.wallet::after{content:"Hover to see Balance";position:absolute;bottom:-30px;font-style:italic;color:#7c3aed;font-size:12px;font-weight:600;text-decoration:underline}
+/* From Uiverse.io by byllzz */ 
+/* Note: this design contains two hover states 1. card hover this just shift card above 2.card hover to see full card. OK! */
 
-.wallet-back{position:absolute;bottom:0;width:280px;height:200px;background:#1e341e;border-radius:22px 22px 60px 60px;z-index:5;box-shadow:inset 0 25px 35px rgba(0,0,0,.4),inset 0 5px 15px rgba(0,0,0,.5)}
+/* Wallet Wrapper */
+.wallet {
+  position: relative;
+  width: 280px;
+  height: 230px;
+  cursor: pointer;
+  perspective: 1000px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  transition: transform 0.4s ease;
+}
+.wallet::after {
+  content: "Hover to see Balance";
+  position: absolute;
+  bottom: -30px;
+  font-style: italic;
+  color: #003087;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+}
+/* entry animation for card as page loads */
+@keyframes slideIntoPocket {
+  0% {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
 
-.card{position:absolute;width:260px;height:140px;left:10px;border-radius:16px;padding:18px;color:#fff;box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 -4px 15px rgba(0,0,0,.1);transition:transform .6s cubic-bezier(.34,1.56,.64,1),z-index 0s;overflow:hidden}
-.card-inner{display:flex;flex-direction:column;justify-content:space-between;height:100%;position:relative;z-index:2}
-.card-top{display:flex;justify-content:space-between;align-items:center;font-size:14px;text-transform:uppercase;letter-spacing:1px}
-.chip{width:32px;height:24px;background:rgba(255,255,255,.2);border-radius:4px;border:1px solid rgba(255,255,255,.1)}
-.card-bottom{display:flex;justify-content:space-between;align-items:flex-end}
-.card-label{font-size:8px;opacity:.7;text-transform:uppercase;margin-bottom:2px;display:block}
-.card-value{font-size:10px;font-weight:500}
-.card-number-wrapper{text-align:right}
-.hidden-stars{font-size:16px;letter-spacing:2px;transition:.3s}
-.card-number{display:none;font-size:14px;letter-spacing:1px;font-family:monospace}
-.card-addr{display:none;font-size:10px;font-family:monospace;opacity:.7;margin-top:4px;word-break:break-all}
-.card-copy-btn{display:none;margin-top:8px;padding:8px 14px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:.2s;backdrop-filter:blur(4px)}
-.card-copy-btn:active{transform:scale(.95);background:rgba(255,255,255,.35)}
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
-/* BOT card: image fills as background */
-.card.bot-token{background:linear-gradient(135deg,#1a5c3a,#0d3a22);bottom:40px;z-index:30}
-.card.bot-token .card-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:16px;z-index:0}
+/* this is wallet back */
+.wallet-back {
+  position: absolute;
+  bottom: 0;
+  width: 280px;
+  height: 200px;
+  background: #1e341e;
+  border-radius: 22px 22px 60px 60px;
+  z-index: 5;
+  box-shadow:
+    inset 0 25px 35px rgba(0, 0, 0, 0.4),
+    inset 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Cards things */
+.card {
+  position: absolute;
+  width: 260px;
+  height: 140px;
+  left: 10px;
+  border-radius: 16px;
+  padding: 18px;
+  color: white;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    0 -4px 15px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    z-index 0s;
+  animation: slideIntoPocket 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.chip {
+  width: 32px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.label {
+  font-size: 8px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.value {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.card-number-wrapper {
+  text-align: right;
+}
+
+.hidden-stars {
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.card-number {
+  display: none;
+  font-size: 14px;
+  letter-spacing: 1px;
+  font-family: monospace;
+}
+
+/* ─── SINGLE BOT TOKEN CARD ─── */
+.card.bot-token {
+  bottom: 40px;
+  z-index: 30;
+  animation-delay: 0.1s;
+  overflow: hidden;
+}
+.card.bot-token .card-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  z-index: 0;
+}
+.card.bot-token .card-scrim {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.05) 55%, rgba(0,0,0,0.45) 100%);
+  z-index: 1;
+}
+.card.bot-token .card-inner {
+  position: relative;
+  z-index: 2;
+}
+.card-copy-btn {
+  display: none;
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.2s;
+  backdrop-filter: blur(4px);
+}
+.card-copy-btn:active {
+  transform: scale(0.95);
+  background: rgba(255,255,255,0.35);
+}
 
 /* Pocket */
-.pocket{position:absolute;bottom:0;width:280px;height:160px;z-index:40;filter:drop-shadow(0 15px 25px rgba(20,40,20,.4))}
-.pocket-content{position:absolute;top:45px;width:100%;text-align:center;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px}
-.balance-stars{color:#839e7b;font-size:24px;letter-spacing:4px;transition:.3s}
-.balance-real{color:#a7c59e;font-size:22px;font-weight:600;opacity:0;position:absolute;top:0;left:50%;transform:translate(-50%,10px);transition:.3s}
-.pocket-label{color:#698263;font-size:12px;font-weight:500}
+.pocket {
+  position: absolute;
+  bottom: 0;
+  width: 280px;
+  height: 160px;
+  z-index: 40;
+  filter: drop-shadow(0 15px 25px rgba(20, 40, 20, 0.4));
+}
 
-/* Eye */
-.eye-icon-wrapper{margin-top:8px;height:20px;width:20px;position:relative;opacity:.3;transition:.3s;cursor:pointer}
-.eye-icon{position:absolute;top:0;left:0;stroke:#3be60b;transition:.3s;width:20px;height:20px}
+.pocket-content {
+  position: absolute;
+  top: 45px;
+  width: 100%;
+  text-align: center;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
 
-/* === HOVER EFFECTS === */
-.wallet:hover{transform:translateY(-5px)}
-.wallet:hover .eye-icon-wrapper{opacity:1}
+.balance-stars {
+  color: #839e7b;
+  font-size: 24px;
+  letter-spacing: 4px;
+  transition: 0.3s;
+}
 
-/* card lifts on wallet hover */
-.wallet:hover .card.bot-token{transform:translateY(-10px)}
+.balance-real {
+  color: #a7c59e;
+  font-size: 22px;
+  font-weight: 600;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 10px);
+  transition: 0.3s;
+}
 
-/* individual card hover */
-.card:hover{z-index:100!important;transition-delay:0s!important}
-.wallet:hover .card.bot-token:hover{transform:translateY(-60px) scale(1.05)}
+/* eye Logic */
+.eye-icon-wrapper {
+  margin-top: 8px;
+  height: 20px;
+  width: 20px;
+  position: relative;
+  opacity: 0.3;
+  transition: 0.3s;
+}
 
-/* reveal card details on card hover */
-.card:hover .hidden-stars{display:none}
-.card:hover .card-number,.card:hover .card-addr,.card:hover .card-copy-btn{display:block}
+.eye-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  stroke: #3be60b;
+  transition: 0.3s;
+}
 
-/* balance reveal on wallet hover */
-.wallet:hover .balance-stars{opacity:0}
-.wallet:hover .balance-real{opacity:1;transform:translate(-50%,0)}
-.wallet:hover .eye-slash{opacity:0;transform:scale(.5)}
-.wallet:hover .eye-open{opacity:1;transform:scale(1.1)}
+/* hovers works here */
+.wallet:hover {
+  transform: translateY(-5px);
+}
+
+.wallet:hover .eye-icon-wrapper {
+  opacity: 1;
+}
+
+/* hover effects on the BOT card (replaces stripe/wise/paypal) */
+.wallet:hover .card.bot-token {
+  transform: translateY(-10px);
+}
+
+/* indi card hover */
+.card:hover {
+  z-index: 100 !important;
+  transition-delay: 0s !important;
+}
+
+.wallet:hover .card.bot-token:hover {
+  transform: translateY(-60px) scale(1.05);
+}
+
+.card:hover .hidden-stars {
+  display: none;
+}
+
+.card:hover .card-number {
+  display: block;
+}
+
+.card:hover .card-copy-btn {
+  display: block;
+}
+
+.wallet:hover .balance-stars {
+  opacity: 0;
+}
+
+.wallet:hover .balance-real {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.wallet:hover .eye-slash {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.wallet:hover .eye-open {
+  opacity: 1;
+  transform: scale(1.1);
+}
 
 /* ═══ TYPEWRITER LOADER ═══ */
 .typewriter-loader{--tw-blue:#7c3aed;--tw-blue-dark:#6d28d9;--tw-key:#fff;--tw-paper:#f3f0ff;--tw-text:#d4ccfa;--tw-tool:#a3e635;--tw-duration:3s;position:relative;animation:tw-bounce var(--tw-duration) linear infinite}
@@ -2367,11 +2606,12 @@
             <h1 class="text-2xl font-extrabold tracking-tight">Botchain Testnet</h1>
         </div>
         <div class="w-full shrink-0 flex flex-col items-center" style="padding-top:8px">
-            <div class="wallet" id="cresWallet">
+                        <div class="wallet" id="cresWallet">
                 <div class="wallet-back"></div>
 
                 <div class="card bot-token" id="cresBotCard">
                     <img class="card-bg" src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784766076/photo_5985688276406308006_x_nj2iil.jpg" alt="BOT" draggable="false" />
+                    <div class="card-scrim"></div>
                     <div class="card-inner">
                         <div class="card-top">
                             <span>BOT Chain</span>
@@ -2379,8 +2619,7 @@
                         </div>
                         <div class="card-bottom">
                             <div class="card-info">
-                                <span class="card-label">Balance</span>
-                                <span class="card-value" id="wpcBotBal">0.00 BOT</span>
+                                <span class="label">Balance</span><span class="value" id="wpcBotBal">0.00 BOT</span>
                             </div>
                             <div class="card-number-wrapper">
                                 <span class="hidden-stars">**** ****</span>
@@ -2393,18 +2632,54 @@
 
                 <div class="pocket">
                     <svg class="pocket-svg" viewBox="0 0 280 160" fill="none" style="width:100%;height:100%">
-                        <path d="M 0 20 C 0 10, 5 10, 10 10 C 20 10, 25 25, 40 25 L 240 25 C 255 25, 260 10, 270 10 C 275 10, 280 10, 280 20 L 280 120 C 280 155, 260 160, 240 160 L 40 160 C 20 160, 0 155, 0 120 Z" fill="#1e341e"></path>
-                        <path d="M 8 22 C 8 16, 12 16, 15 16 C 23 16, 27 29, 40 29 L 240 29 C 253 29, 257 16, 265 16 C 268 16, 272 16, 272 22 L 272 120 C 272 150, 255 152, 240 152 L 40 152 C 25 152, 8 152, 8 120 Z" stroke="#3d5635" stroke-width="1.5" stroke-dasharray="6 4"></path>
+                        <path
+                          d="M 0 20 C 0 10, 5 10, 10 10 C 20 10, 25 25, 40 25 L 240 25 C 255 25, 260 10, 270 10 C 275 10, 280 10, 280 20 L 280 120 C 280 155, 260 160, 240 160 L 40 160 C 20 160, 0 155, 0 120 Z"
+                          fill="#1e341e"
+                        ></path>
+                        <path
+                          d="M 8 22 C 8 16, 12 16, 15 16 C 23 16, 27 29, 40 29 L 240 29 C 253 29, 257 16, 265 16 C 268 16, 272 16, 272 22 L 272 120 C 272 150, 255 152, 240 152 L 40 152 C 25 152, 8 152, 8 120 Z"
+                          stroke="#3d5635"
+                          stroke-width="1.5"
+                          stroke-dasharray="6 4"
+                        ></path>
                     </svg>
                     <div class="pocket-content">
-                        <div style="position:relative;height:24px;width:100%">
+                        <div style="position: relative; height: 24px; width: 100%;">
                             <div class="balance-stars" id="cresBalStars">******</div>
                             <div class="balance-real" id="wpcTotalUsd">$0.00</div>
                         </div>
-                        <div class="pocket-label">Total Balance</div>
+                        <div style="color: #698263; font-size: 12px; font-weight: 500;">
+                            Total Balance
+                        </div>
                         <div class="eye-icon-wrapper" id="cresEyeBtn" onclick="event.stopPropagation();toggleBalanceVisibility()">
-                            <svg class="eye-icon eye-slash" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle><line x1="3" y1="3" x2="21" y2="21"></line></svg>
-                            <svg class="eye-icon eye-open" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <svg
+                              class="eye-icon eye-slash"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <line x1="3" y1="3" x2="21" y2="21"></line>
+                            </svg>
+                            <svg
+                              class="eye-icon eye-open"
+                              style="opacity: 0;"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -6987,19 +7262,28 @@ function doLogout(){
 var balanceHidden = true;
 function toggleBalanceVisibility(){
   balanceHidden = !balanceHidden;
-  var starsEl = document.querySelector('.balance-stars');
-  var realEl = document.querySelector('.balance-real');
+  var starsEl = document.querySelector('.cres-bal-stars');
+  var realEl = document.querySelector('.cres-bal-real');
   if(starsEl) starsEl.style.opacity = balanceHidden ? '1' : '0';
   if(realEl){ realEl.style.opacity = balanceHidden ? '0' : '1'; realEl.style.transform = balanceHidden ? 'translate(-50%,10px)' : 'translate(-50%,0)'; }
-  var eyeSlash = document.querySelector('.eye-icon.eye-slash');
-  var eyeOpen = document.querySelector('.eye-icon.eye-open');
+  var eyeSlash = document.querySelector('.cres-eye .eye-slash');
+  var eyeOpen = document.querySelector('.cres-eye .eye-open');
   if(eyeSlash){ eyeSlash.style.opacity = balanceHidden ? '1' : '0'; eyeSlash.style.transform = balanceHidden ? 'scale(1)' : 'scale(.5)'; }
   if(eyeOpen){ eyeOpen.style.opacity = balanceHidden ? '0' : '1'; eyeOpen.style.transform = balanceHidden ? 'scale(.5)' : 'scale(1.1)'; }
 }
 function toggleWalletCard(){
   var w = document.getElementById('cresWallet');
   if(!w) return;
-  w.classList.toggle('revealed');
+  var isRevealed = w.classList.toggle('revealed');
+  balanceHidden = !isRevealed;
+  var starsEl = document.querySelector('.cres-bal-stars');
+  var realEl = document.querySelector('.cres-bal-real');
+  if(starsEl) starsEl.style.opacity = balanceHidden ? '1' : '0';
+  if(realEl){ realEl.style.opacity = balanceHidden ? '0' : '1'; realEl.style.transform = balanceHidden ? 'translate(-50%,10px)' : 'translate(-50%,0)'; }
+  var eyeSlash = document.querySelector('.cres-eye .eye-slash');
+  var eyeOpen = document.querySelector('.cres-eye .eye-open');
+  if(eyeSlash){ eyeSlash.style.opacity = balanceHidden ? '1' : '0'; eyeSlash.style.transform = balanceHidden ? 'scale(1)' : 'scale(.5)'; }
+  if(eyeOpen){ eyeOpen.style.opacity = balanceHidden ? '0' : '1'; eyeOpen.style.transform = balanceHidden ? 'scale(.5)' : 'scale(1.1)'; }
 }
 
 /* ═══ WALLET POCKET UPDATE ═══ */
