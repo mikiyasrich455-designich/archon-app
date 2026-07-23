@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Creso Web3 Wallet</title>
+    <title>Archon Web3 Wallet</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1688,7 +1688,7 @@
         <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center mb-3">
             <div class="w-5 h-5 bg-white rounded-sm"></div>
         </div>
-        <span class="text-2xl font-black tracking-tight mb-2">creso</span>
+        <span class="text-2xl font-black tracking-tight mb-2">archon</span>
         <p class="text-sm text-gray-500 font-medium mb-8 text-center">Sign in to your account</p>
 
         <div id="loginStep1" class="w-full space-y-4">
@@ -1702,24 +1702,14 @@
             </div>
         </div>
 
-        <div id="loginStep2" class="w-full" style="display:none">
-            <p class="text-sm text-gray-500 font-medium mb-4 text-center">Enter the 6-digit code sent to<br/><span id="loginOtpEmail" class="text-[#7c3aed] font-bold"></span></p>
-            <div class="flex justify-center gap-3 mb-4">
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'login',0)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'login',1)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'login',2)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'login',3)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'login',4)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'login',5)" />
-            </div>
-        </div>
-
         <div class="w-full mt-6 space-y-3">
             <button id="loginMainBtn" onclick="doLogin()" class="btn-primary w-full shadow-lg shadow-purple-200">Sign In</button>
-            <button id="loginResendBtn" onclick="resendLoginOtp()" class="btn-outline w-full" style="display:none">Resend Code</button>
         </div>
 
-        <p class="text-xs text-gray-400 font-medium mt-6 text-center">
+        <p class="text-xs text-gray-400 font-medium mt-4 text-center">
+            <a href="#" onclick="navigateTo('page-recover-key');return false" class="text-[#7c3aed] font-bold">Recover with Security Key</a>
+        </p>
+        <p class="text-xs text-gray-400 font-medium mt-3 text-center">
             <a href="#" onclick="navigateTo('page-forgot-password');return false" class="text-[#7c3aed] font-bold">Forgot password?</a>
         </p>
         <p class="text-xs text-gray-400 font-medium mt-3 text-center">Don't have an account?<br/><a href="#" onclick="navigateTo('page-signup');return false" class="text-[#7c3aed] font-bold">Create a new one</a></p>
@@ -1742,7 +1732,7 @@
         <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center mb-3">
             <div class="w-5 h-5 bg-white rounded-sm"></div>
         </div>
-        <span class="text-2xl font-black tracking-tight mb-2">creso</span>
+        <span class="text-2xl font-black tracking-tight mb-2">archon</span>
         <p class="text-sm text-gray-500 font-medium mb-6 text-center">Create your account</p>
 
         <!-- Step 1: Email + Password -->
@@ -1762,26 +1752,8 @@
             <button id="signupBtn" onclick="doSignup()" class="btn-primary w-full shadow-lg shadow-purple-200">Create Account</button>
         </div>
 
-        <!-- Step 2: OTP Verification -->
-        <div id="signupStep2" class="w-full" style="display:none">
-            <p class="text-sm text-gray-500 font-medium mb-4 text-center">Enter the 6-digit code sent to<br/><span id="signupOtpEmail" class="text-[#7c3aed] font-bold"></span></p>
-            <div class="flex justify-center gap-3 mb-4">
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'signup',0)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'signup',1)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'signup',2)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'signup',3)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'signup',4)" />
-                <input type="text" class="digit-box" maxlength="1" oninput="moveOtpDigit(this,'signup',5)" />
-            </div>
-            <div class="text-center mb-4">
-                <button id="signupResendBtn" onclick="resendSignupOtp()" class="text-sm text-[#7c3aed] font-bold" style="display:none">Resend Code</button>
-                <span id="signupResendTimer" class="text-sm text-gray-400 font-medium">Resend in <span id="signupTimerCount">59</span>s</span>
-            </div>
-            <button id="signupVerifyBtn" onclick="verifySignupOtp()" class="btn-primary w-full shadow-lg shadow-purple-200">Verify</button>
-        </div>
-
-        <!-- Step 3: Wallet Creation -->
-        <div id="signupStep3" class="w-full space-y-4" style="display:none">
+        <!-- Step 2: Wallet Creation -->
+        <div id="signupStep2" class="w-full space-y-4" style="display:none">
             <div class="inline-flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full text-sm font-bold mb-4">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
                 Botchain Testnet
@@ -1838,7 +1810,7 @@
         <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center mb-3">
             <div class="w-5 h-5 bg-white rounded-sm"></div>
         </div>
-        <span class="text-2xl font-black tracking-tight mb-2">creso</span>
+        <span class="text-2xl font-black tracking-tight mb-2">archon</span>
         <p class="text-sm text-gray-500 font-medium mb-8 text-center">Enter your email to reset your password</p>
 
         <div class="w-full space-y-4">
@@ -1850,6 +1822,41 @@
 
         <div class="w-full mt-6 space-y-3">
             <button id="forgotBtn" onclick="doForgotPassword()" class="btn-primary w-full shadow-lg shadow-purple-200">Send Reset Link</button>
+        </div>
+
+        <p class="text-xs text-gray-400 font-medium mt-6 text-center"><a href="#" onclick="navigateTo('page-login');return false" class="text-[#7c3aed] font-bold">Back to Sign In</a></p>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGE: RECOVER WITH SECURITY KEY -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="page-recover-key" class="page white-bg flex-col">
+    <div class="ios-status">
+        <span class="time">9:41</span>
+        <div class="icons">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10v11h16V10c0-4.42-3.58-8-8-8z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+            <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="1" width="18" height="10" rx="2"/><line x1="21" y1="4" x2="21" y2="8"/></svg>
+        </div>
+    </div>
+    <div class="flex-1 flex flex-col items-center px-6 pt-8">
+        <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center mb-3">
+            <div class="w-5 h-5 bg-white rounded-sm"></div>
+        </div>
+        <span class="text-2xl font-black tracking-tight mb-2">archon</span>
+        <p class="text-sm text-gray-500 font-medium mb-2 text-center">Recover your wallet</p>
+        <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <p class="text-xs text-gray-400 font-medium mb-6 text-center">Enter your 16-character security key to recover your wallet without email or password.</p>
+
+        <div class="w-full space-y-4">
+            <div class="input-row">
+                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                <input type="text" id="recoverKeyInput" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" style="text-transform:uppercase;letter-spacing:2px;font-family:monospace" />
+            </div>
+            <button id="recoverKeyBtn" onclick="doRecoverWithKey()" class="btn-primary w-full shadow-lg shadow-purple-200">Recover Wallet</button>
         </div>
 
         <p class="text-xs text-gray-400 font-medium mt-6 text-center"><a href="#" onclick="navigateTo('page-login');return false" class="text-[#7c3aed] font-bold">Back to Sign In</a></p>
@@ -1872,7 +1879,7 @@
         <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center mb-3">
             <div class="w-5 h-5 bg-white rounded-sm"></div>
         </div>
-        <span class="text-2xl font-black tracking-tight mb-2">creso</span>
+        <span class="text-2xl font-black tracking-tight mb-2">archon</span>
         <p class="text-sm text-gray-500 font-medium mb-6 text-center">Restore your wallet using a recovery phrase or private key</p>
 
         <div class="tab-pill mb-6 w-full">
@@ -2230,6 +2237,18 @@
             </button>
         </div>
 
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+            <div class="flex items-center gap-2 mb-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <p class="text-xs text-amber-700 font-bold">Security Key (Backup Recovery)</p>
+            </div>
+            <p class="text-[11px] text-amber-600 font-medium mb-3">Save this key. You can recover your wallet even if you forget your password.</p>
+            <div class="bg-white rounded-lg p-3 flex items-center justify-between border border-amber-200">
+                <span id="recoveryKeyDisplay" style="font-family:monospace;font-size:16px;font-weight:bold;letter-spacing:2px;color:#1a1a1a">XXXX-XXXX-XXXX-XXXX</span>
+                <button onclick="copyRecoveryKey()" class="text-xs font-bold text-[#7c3aed] ml-2 flex-shrink-0">Copy</button>
+            </div>
+        </div>
+
         <button class="btn-dark w-full" id="seedContinueBtn" onclick="finishSeedBackup()" disabled>I've Saved It — Continue</button>
     </div>
 </div>
@@ -2438,6 +2457,24 @@
                 <div class="flex-1"><div class="font-bold text-[15px]">Change Password</div><div class="text-xs text-gray-400 font-medium">Update your account password</div></div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
+            <div class="list-row" onclick="showSecurityItem('recoverykey')">
+                <svg class="w-5 h-5 text-amber-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <div class="flex-1"><div class="font-bold text-[15px]">Security Key</div><div class="text-xs text-gray-400 font-medium">Recovery key for emergency access</div></div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+        </div>
+        <div id="securityRecoveryKeyBox" style="display:none" class="mb-4">
+            <div class="flex items-start gap-3 bg-amber-50 p-4 rounded-xl mb-3">
+                <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <div>
+                    <p class="text-xs text-amber-700 font-bold mb-1">Your Security Key</p>
+                    <p class="text-[11px] text-amber-600 font-medium leading-relaxed">Use this key to recover your wallet if you forget your password. Save it somewhere safe.</p>
+                </div>
+            </div>
+            <div class="bg-gray-100 rounded-xl p-4 mb-3">
+                <p id="securityRecoveryKeyText" style="font-size:16px;font-family:monospace;font-weight:bold;letter-spacing:2px;color:#1a1a1a;text-align:center">Log in again to view your key</p>
+            </div>
+            <button onclick="copySecurityRecoveryKey()" class="btn-outline w-full mb-2">Copy Security Key</button>
         </div>
         <div id="securitySeedBox" style="display:none" class="mb-4">
             <div class="flex items-start gap-3 bg-red-50 p-4 rounded-xl mb-3">
@@ -3521,7 +3558,7 @@
                     <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
                     </div>
-                    <span class="text-xs font-bold uppercase tracking-wider opacity-80">Creso Gifts</span>
+                    <span class="text-xs font-bold uppercase tracking-wider opacity-80">Archon Gifts</span>
                 </div>
                 <h2 class="text-2xl font-black mb-1">Share the Love</h2>
                 <p class="text-sm opacity-80 font-medium">Send crypto gifts & vouchers to anyone, anywhere</p>
@@ -4583,7 +4620,7 @@
                     <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
                     </div>
-                    <span class="text-xs font-bold uppercase tracking-wider opacity-80">Creso Gifts</span>
+                    <span class="text-xs font-bold uppercase tracking-wider opacity-80">Archon Gifts</span>
                 </div>
                 <h2 class="text-2xl font-black mb-1">Share the Love</h2>
                 <p class="text-sm opacity-80 font-medium">Send crypto gifts & vouchers to anyone, anywhere</p>
@@ -5837,8 +5874,8 @@ function shareVoucher() {
     const code = document.getElementById('voucherCodeDisplay')?.textContent;
     if(navigator.share) {
         navigator.share({
-            title: 'Creso Voucher Gift',
-            text: 'You received a crypto gift! Use code: ' + code + ' to redeem on Creso Wallet.',
+            title: 'Archon Voucher Gift',
+            text: 'You received a crypto gift! Use code: ' + code + ' to redeem on Archon Wallet.',
         });
     } else {
         alert('Share: You received a crypto gift! Use code: ' + code);
@@ -5902,7 +5939,7 @@ function generateVoucherQR() {
 
 // ─── INIT ───
 (function(){
-  var existing = localStorage.getItem('creso_wallet_v1');
+  var existing = localStorage.getItem('archon_wallet_v1');
   if(existing){
     showPage('page-wallet');
   } else {
@@ -6000,7 +6037,7 @@ function drawQR(el,seedStr){var seed=0;for(var i=0;i<seedStr.length;i++)seed=(se
   else{on=rnd()>0.52;cell.className=on?'on':'';}el.appendChild(cell);}}
 function copyDepAddr(){copyText(chain(S.depNet).addr,'Deposit address copied');}
 window.cxCopyDepAddr=copyDepAddr;
-function shareDepAddr(){var a=chain(S.depNet).addr;if(navigator.share){navigator.share({title:'Creso Deposit Address',text:a}).catch(function(){});}else copyText(a,'Address copied');}
+function shareDepAddr(){var a=chain(S.depNet).addr;if(navigator.share){navigator.share({title:'Archon Deposit Address',text:a}).catch(function(){});}else copyText(a,'Address copied');}
 window.cxShareDepAddr=shareDepAddr;
 function renderSendToken(){var t=tok(S.sendToken);$('cxSendTokenIco').innerHTML=ico(t,40);$('cxSendTokenSym').textContent=t.id;
  $('cxSendTokenBal').textContent='Balance: '+fmt(t.bal);$('cxSendAmtSym').textContent=t.id;}
@@ -6194,7 +6231,7 @@ window.cxWdExec=wdExec;
 var SEEDS=['Felix','Aneka','Zoe','Milo','Luna','Kai','Nova','Rex','Ivy','Oscar'];
 var profile=(function(){
   try {
-    var raw = localStorage.getItem('creso_profile_v1');
+    var raw = localStorage.getItem('archon_profile_v1');
     if(raw){ var p = JSON.parse(raw); return {name:p.name||'User',email:p.email||'',seed:p.name?p.name.substring(0,6).toLowerCase():'Felix'}; }
   } catch(e){}
   return {name:'User',email:'',seed:'Felix'};
@@ -6213,7 +6250,7 @@ window.cxSaveProfile=saveProfile;
 function openProfile(){$('cxEditName').value=profile.name;$('cxEditEmail').value=profile.email;$('cxEditAvatar').src=avUrl(profile.seed);renderAvatars();navigateTo('page-edit-profile');}
 
 /* ── POINTS + REAL-TIME MINING + AIRDROP ── */
-var points=parseInt(localStorage.getItem('creso_points')||'0')||0, mined=0, hash=10, boostCost=500;
+var points=parseInt(localStorage.getItem('archon_points')||'0')||0, mined=0, hash=10, boostCost=500;
 function updatePoints(){var el;
  el=$('cxGamesPoints');if(el)el.textContent=Math.floor(points).toLocaleString('en-US');
  el=$('cxHubPoints');if(el)el.textContent=Math.floor(points).toLocaleString('en-US');
@@ -6229,7 +6266,7 @@ function updatePoints(){var el;
  el=$('airdropProgress');if(el)el.textContent=Math.floor(points)+' / '+lvlNext;
  el=$('airdropProgressBar');if(el)el.style.width=Math.min(100,Math.floor((points/lvlNext)*100))+'%';
  el=$('airdropWeekGain');if(el)el.textContent='+'+Math.floor(points*0.07)+' this week';
- try{localStorage.setItem('creso_points',Math.floor(points));}catch(e){}
+  try{localStorage.setItem('archon_points',Math.floor(points));}catch(e){}
 }
 function addPoints(n){points+=n;updatePoints();}
 function claimMined(){if(mined<1){toast('Nothing to claim yet — keep mining ⛏️','err');return;}
@@ -6727,7 +6764,7 @@ function initChartSwitcher(){
 var SEEDS=['Felix','Aneka','Zoe','Milo','Luna','Kai','Nova','Rex','Ivy','Oscar','Ava','Max','Lily','Sam','Leo'];
 var profileState=(function(){
   try {
-    var raw = localStorage.getItem('creso_profile_v1');
+    var raw = localStorage.getItem('archon_profile_v1');
     if(raw){ var p = JSON.parse(raw); return {name:p.name||'User',email:p.email||'',bio:p.bio||'Web3 enthusiast',seed:p.name?p.name.substring(0,6).toLowerCase():'Felix'}; }
   } catch(e){}
   return {name:'User',email:'',bio:'Web3 enthusiast',seed:'Felix'};
@@ -6828,7 +6865,7 @@ window.fxDoExport=function(){
   var data={wallet:{address:addr,network:'Botchain Testnet',balance:bal+' BOT'},currency:currentCurrency,language:currentLang,exported:new Date().toISOString()};
   var content=exportFmt==='csv'?'Field,Value\nWallet,'+addr+'\nBalance,'+bal+' BOT':JSON.stringify(data,null,2);
   var blob=new Blob([content],{type:exportFmt==='csv'?'text/csv':'application/json'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='creso-export.'+exportFmt;a.click();
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='archon-export.'+exportFmt;a.click();
   toast('Export downloaded \u2713');
 };
 
@@ -6844,10 +6881,10 @@ function renderReferrals(){
   var hist=$('fxRefHistory');if(hist){hist.innerHTML=refHistory.map(function(r){return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f5f5f5"><div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,'+r.color+','+r.color+'88);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800">'+r.initials+'</div><div style="flex:1"><div style="font-weight:700;font-size:14px">'+r.name+'</div><span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:'+r.statusColor+';color:'+r.statusText+';margin-top:3px">'+r.status+'</span></div><span style="font-weight:800;color:#7c3aed">'+r.pts+'</span></div>';}).join('');}
 }
 window.fxCopyRef=function(){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(refCode).then(function(){toast('Referral code copied!');},function(){toast('Referral code: '+refCode);});}else toast('Referral code: '+refCode);};
-window.fxShareRef=function(){if(navigator.share){navigator.share({title:'Join Creso Wallet',text:'Use my referral code '+refCode+' to join Creso and earn 500 bonus points!'}).catch(function(){});}else{window.fxCopyRef();}};
+window.fxShareRef=function(){if(navigator.share){navigator.share({title:'Join Archon Wallet',text:'Use my referral code '+refCode+' to join Archon and earn 500 bonus points!'}).catch(function(){});}else{window.fxCopyRef();}};
 
 /* --- 9. CHALLENGES PAGE --- */
-var challengeData=[{id:'c1',title:'Daily Check-In',desc:'Log in to Creso every day',icon:'\u{1F4C5}',reward:50,progress:1,total:1,type:'daily',claimed:false,ready:true},{id:'c2',title:'Send a Gift',desc:'Send any token gift to a friend',icon:'\u{1F381}',reward:100,progress:0,total:1,type:'daily',claimed:false,ready:false},{id:'c3',title:'Play 3 Games',desc:'Complete 3 different mini-games',icon:'\u{1F3AE}',reward:75,progress:2,total:3,type:'daily',claimed:false,ready:false},{id:'c4',title:'Swap $50+',desc:'Swap at least $50 in one transaction',icon:'\u{1F4B1}',reward:150,progress:0,total:1,type:'daily',claimed:false,ready:false},{id:'c5',title:'Refer a Friend',desc:'Get 1 friend to join Creso',icon:'\u{1F465}',reward:200,progress:0,total:1,type:'weekly',claimed:false,ready:false},{id:'c6',title:'Trade $500 Volume',desc:'Reach $500 in weekly swap volume',icon:'\u{1F4CA}',reward:500,progress:320,total:500,type:'weekly',claimed:false,ready:false},{id:'c7',title:'Win 5 Games',desc:'Win 5 games in any mini-game',icon:'\u{1F3C6}',reward:300,progress:3,total:5,type:'weekly',claimed:false,ready:false},{id:'c8',title:'14-Day Streak',desc:'Log in 14 days in a row',icon:'\u{1F525}',reward:1000,progress:7,total:14,type:'all',claimed:false,ready:false},{id:'c9',title:'Portfolio $1K',desc:'Hold over $1,000 in your wallet',icon:'\u{1F4B0}',reward:250,progress:1,total:1,type:'all',claimed:false,ready:true},{id:'c10',title:'Explorer',desc:'Try every feature in the app',icon:'\u{1F5FA}\uFE0F',reward:750,progress:6,total:10,type:'all',claimed:false,ready:false}];
+var challengeData=[{id:'c1',title:'Daily Check-In',desc:'Log in to Archon every day',icon:'\u{1F4C5}',reward:50,progress:1,total:1,type:'daily',claimed:false,ready:true},{id:'c2',title:'Send a Gift',desc:'Send any token gift to a friend',icon:'\u{1F381}',reward:100,progress:0,total:1,type:'daily',claimed:false,ready:false},{id:'c3',title:'Play 3 Games',desc:'Complete 3 different mini-games',icon:'\u{1F3AE}',reward:75,progress:2,total:3,type:'daily',claimed:false,ready:false},{id:'c4',title:'Swap $50+',desc:'Swap at least $50 in one transaction',icon:'\u{1F4B1}',reward:150,progress:0,total:1,type:'daily',claimed:false,ready:false},{id:'c5',title:'Refer a Friend',desc:'Get 1 friend to join Archon',icon:'\u{1F465}',reward:200,progress:0,total:1,type:'weekly',claimed:false,ready:false},{id:'c6',title:'Trade $500 Volume',desc:'Reach $500 in weekly swap volume',icon:'\u{1F4CA}',reward:500,progress:320,total:500,type:'weekly',claimed:false,ready:false},{id:'c7',title:'Win 5 Games',desc:'Win 5 games in any mini-game',icon:'\u{1F3C6}',reward:300,progress:3,total:5,type:'weekly',claimed:false,ready:false},{id:'c8',title:'14-Day Streak',desc:'Log in 14 days in a row',icon:'\u{1F525}',reward:1000,progress:7,total:14,type:'all',claimed:false,ready:false},{id:'c9',title:'Portfolio $1K',desc:'Hold over $1,000 in your wallet',icon:'\u{1F4B0}',reward:250,progress:1,total:1,type:'all',claimed:false,ready:true},{id:'c10',title:'Explorer',desc:'Try every feature in the app',icon:'\u{1F5FA}\uFE0F',reward:750,progress:6,total:10,type:'all',claimed:false,ready:false}];
 var fxChTab2='daily',fxChPoints=0,fxChStreak=7;
 window.fxChTab=function(tab){fxChTab2=tab;var tabs=document.querySelectorAll('#fxChTabs .fx-tab');tabs.forEach(function(t){t.classList.toggle('active',t.getAttribute('data-tab')===tab);});renderChallenges();};
 function renderChallenges(){
@@ -7224,7 +7261,7 @@ window.addPoints = function(n){
 function initV6(){
   // Ensure theme is applied
   try {
-    var saved = localStorage.getItem('creso-theme');
+    var saved = localStorage.getItem('archon-theme');
     if(saved && saved !== 'light') window.fxSetTheme(saved);
   } catch(e){}
 
@@ -7274,32 +7311,18 @@ function copySeedPhrase(){
     if(btn){ btn.textContent = 'Copied!'; setTimeout(function(){ btn.innerHTML = '<svg class="w-4 h-4 inline-block mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy'; }, 2000); }
   });
 }
+function copyRecoveryKey(){
+  var el = document.getElementById('recoveryKeyDisplay');
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(function(){
+    alert('Security key copied!');
+  });
+}
 function finishSeedBackup(){
   _revealedSeed = false;
   window.WalletEngine.autoSyncCloud();
   window.WalletEngine.updateWalletUI();
   showPage('page-wallet');
-}
-
-/* ═══ OTP DIGIT HANDLING ═══ */
-function moveOtpDigit(el, prefix, idx){
-  if(el.value.length === 1){
-    var next = el.parentElement.children[idx + 1];
-    if(next) next.focus();
-  }
-  if(el.value.length > 1) el.value = el.value.slice(-1);
-}
-
-function getOtpCode(prefix){
-  var digits = document.querySelectorAll('#' + prefix + 'Step2 .digit-box');
-  var code = '';
-  digits.forEach(function(d){ code += d.value; });
-  return code;
-}
-
-function clearOtpDigits(prefix){
-  var digits = document.querySelectorAll('#' + prefix + 'Step2 .digit-box');
-  digits.forEach(function(d){ d.value = ''; });
 }
 
 /* ═══ SIGNUP FLOW ═══ */
@@ -7318,128 +7341,69 @@ function doSignup(){
   _signupPassword = pw;
   btn.textContent = 'Creating account...'; btn.disabled = true;
   window.WalletEngine.authSignUp(email, pw).then(function(){
-    window.WalletEngine.authSendOtp(email).then(function(){
-      document.getElementById('signupStep1').style.display = 'none';
-      document.getElementById('signupStep2').style.display = '';
-      document.getElementById('signupOtpEmail').textContent = email;
-      btn.textContent = 'Create Account'; btn.disabled = false;
-      startSignupTimer();
-    }).catch(function(err2){
-      document.getElementById('signupStep1').style.display = 'none';
-      document.getElementById('signupStep2').style.display = '';
-      document.getElementById('signupOtpEmail').textContent = email;
-      btn.textContent = 'Create Account'; btn.disabled = false;
-      startSignupTimer();
-    });
+    document.getElementById('signupStep1').style.display = 'none';
+    document.getElementById('signupStep2').style.display = '';
+    btn.textContent = 'Create Account'; btn.disabled = false;
   }).catch(function(err){
-    if(err.message && err.message.toLowerCase().includes('already')){
-      window.WalletEngine.authSendOtp(email).then(function(){
-        document.getElementById('signupStep1').style.display = 'none';
-        document.getElementById('signupStep2').style.display = '';
-        document.getElementById('signupOtpEmail').textContent = email;
-        btn.textContent = 'Create Account'; btn.disabled = false;
-        startSignupTimer();
-      }).catch(function(err3){
-        alert('Error: ' + err3.message);
-        btn.textContent = 'Create Account'; btn.disabled = false;
-      });
+    var msg = err.message || '';
+    if(msg.toLowerCase().includes('already')){
+      alert('Account already exists. Please sign in instead.');
+      navigateTo('page-login');
     } else {
-      alert('Error: ' + err.message);
-      btn.textContent = 'Create Account'; btn.disabled = false;
+      alert('Error: ' + (window.WalletEngine.extractError ? window.WalletEngine.extractError(err) : msg));
     }
-  });
-}
-var _signupTimer = null;
-function startSignupTimer(){
-  var count = 59;
-  var el = document.getElementById('signupTimerCount');
-  var timerEl = document.getElementById('signupResendTimer');
-  var resendBtn = document.getElementById('signupResendBtn');
-  if(timerEl) timerEl.parentElement.style.display = '';
-  if(resendBtn) resendBtn.style.display = 'none';
-  _signupTimer = setInterval(function(){
-    count--;
-    if(el) el.textContent = count;
-    if(count <= 0){
-      clearInterval(_signupTimer);
-      if(timerEl) timerEl.parentElement.style.display = 'none';
-      if(resendBtn) resendBtn.style.display = '';
-    }
-  }, 1000);
-}
-function resendSignupOtp(){
-  window.WalletEngine.authSendOtp(_signupEmail).then(function(){
-    startSignupTimer();
-  }).catch(function(err){ alert('Error: ' + err.message); });
-}
-function verifySignupOtp(){
-  var code = getOtpCode('signup');
-  if(code.length !== 6){ alert('Enter the 6-digit code'); return; }
-  var btn = document.getElementById('signupVerifyBtn');
-  btn.textContent = 'Verifying...'; btn.disabled = true;
-  window.WalletEngine.authVerifyOtp(_signupEmail, code).then(function(){
-    document.getElementById('signupStep2').style.display = 'none';
-    document.getElementById('signupStep3').style.display = '';
-    btn.textContent = 'Verify'; btn.disabled = false;
-  }).catch(function(err){
-    alert('Invalid code: ' + err.message);
-    clearOtpDigits('signup');
-    btn.textContent = 'Verify'; btn.disabled = false;
+    btn.textContent = 'Create Account'; btn.disabled = false;
   });
 }
 
 /* ═══ LOGIN FLOW ═══ */
-var _loginEmail = '';
-var _loginPassword = '';
-var _loginStep = 1;
 function doLogin(){
   if(!window.WalletEngine){ alert('Loading... Please wait and try again.'); return; }
-  if(_loginStep === 1){
-    var email = document.getElementById('loginEmail').value.trim();
-    var pw = document.getElementById('loginPassword').value;
-    if(!email || !email.includes('@')){ alert('Enter a valid email'); return; }
-    if(pw.length < 6){ alert('Enter your password'); return; }
-    _loginEmail = email;
-    _loginPassword = pw;
-    var btn = document.getElementById('loginMainBtn');
-    btn.textContent = 'Sending code...'; btn.disabled = true;
-    window.WalletEngine.authSendOtp(email).then(function(){
-      document.getElementById('loginStep1').style.display = 'none';
-      document.getElementById('loginStep2').style.display = '';
-      document.getElementById('loginOtpEmail').textContent = email;
-      document.getElementById('loginMainBtn').textContent = 'Verify & Sign In';
-      document.getElementById('loginResendBtn').style.display = '';
-      _loginStep = 2;
-      btn.textContent = 'Verify & Sign In'; btn.disabled = false;
-    }).catch(function(err){
-      alert('Error: ' + err.message);
-      btn.textContent = 'Sign In'; btn.disabled = false;
-    });
-  } else {
-    var code = getOtpCode('login');
-    if(code.length !== 6){ alert('Enter the 6-digit code'); return; }
-    var btn = document.getElementById('loginMainBtn');
-    btn.textContent = 'Signing in...'; btn.disabled = true;
-    window.WalletEngine.authVerifyOtp(_loginEmail, code).then(function(){
-      return window.WalletEngine.restoreFromCloud();
-    }).then(function(restored){
-      if(restored){
-        window.WalletEngine.updateWalletUI();
-        showPage('page-wallet');
-      } else {
-        navigateTo('page-signup');
-      }
-      btn.textContent = 'Verify & Sign In'; btn.disabled = false;
-      _loginStep = 1;
-    }).catch(function(err){
-      alert('Failed: ' + err.message);
-      clearOtpDigits('login');
-      btn.textContent = 'Verify & Sign In'; btn.disabled = false;
-    });
-  }
+  var email = document.getElementById('loginEmail').value.trim();
+  var pw = document.getElementById('loginPassword').value;
+  if(!email || !email.includes('@')){ alert('Enter a valid email'); return; }
+  if(pw.length < 6){ alert('Enter your password'); return; }
+  var btn = document.getElementById('loginMainBtn');
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+  window.WalletEngine.authSignIn(email, pw).then(function(){
+    return window.WalletEngine.restoreFromCloud();
+  }).then(function(restored){
+    if(restored){
+      window.WalletEngine.updateWalletUI();
+      showPage('page-wallet');
+    } else {
+      navigateTo('page-signup');
+    }
+    btn.textContent = 'Sign In'; btn.disabled = false;
+  }).catch(function(err){
+    var msg = err.message || '';
+    if(msg.toLowerCase().includes('invalid login') || msg.toLowerCase().includes('invalid')){
+      alert('Invalid email or password. Please try again.');
+    } else {
+      alert('Error: ' + (window.WalletEngine.extractError ? window.WalletEngine.extractError(err) : msg));
+    }
+    btn.textContent = 'Sign In'; btn.disabled = false;
+  });
 }
-function resendLoginOtp(){
-  window.WalletEngine.authSendOtp(_loginEmail).catch(function(err){ alert('Error: ' + err.message); });
+
+/* ═══ RECOVER WITH SECURITY KEY ═══ */
+function doRecoverWithKey(){
+  if(!window.WalletEngine){ alert('Loading... Please wait and try again.'); return; }
+  var key = document.getElementById('recoverKeyInput').value.trim();
+  if(!key || key.length < 10){ alert('Enter your 16-character security key'); return; }
+  var btn = document.getElementById('recoverKeyBtn');
+  btn.textContent = 'Recovering...'; btn.disabled = true;
+  window.WalletEngine.recoverWithKey(key).then(function(wallet){
+    if(wallet){
+      window.WalletEngine.updateWalletUI();
+      showPage('page-wallet');
+      alert('Wallet recovered successfully!');
+    }
+    btn.textContent = 'Recover Wallet'; btn.disabled = false;
+  }).catch(function(err){
+    alert('Recovery failed: ' + (window.WalletEngine.extractError ? window.WalletEngine.extractError(err) : err.message));
+    btn.textContent = 'Recover Wallet'; btn.disabled = false;
+  });
 }
 
 /* ═══ FORGOT PASSWORD ═══ */
@@ -7457,7 +7421,7 @@ function doForgotPassword(){
   });
 }
 
-/* ═══ CREATE WALLET (after signup OTP verified) ═══ */
+/* ═══ CREATE WALLET (after signup) ═══ */
 function doCreateWallet(){
   var name = document.getElementById('createUserName').value.trim();
   var dob = document.getElementById('createUserDob').value;
@@ -7472,6 +7436,8 @@ function doCreateWallet(){
   try {
     window.WalletEngine.createReal(name, dob, walletName, addr);
     window.WalletEngine.saveWalletToCloud();
+    var recoveryKey = window.WalletEngine.generateRecoveryKey();
+    window.WalletEngine.saveRecoveryKey(recoveryKey);
     btn.textContent = 'Created!';
     setTimeout(function(){
       _revealedSeed = false;
@@ -7483,6 +7449,8 @@ function doCreateWallet(){
       if(grid) grid.innerHTML = '';
       var cBtn = document.getElementById('seedContinueBtn');
       if(cBtn) cBtn.disabled = true;
+      var recKeyEl = document.getElementById('recoveryKeyDisplay');
+      if(recKeyEl) recKeyEl.textContent = window.WalletEngine.formatRecoveryKey(recoveryKey);
       navigateTo('page-seed-backup');
       btn.textContent = 'Create Wallet'; btn.disabled = false;
     }, 400);
@@ -7525,11 +7493,9 @@ function doLogout(){
   if(window.WalletEngine) window.WalletEngine.authLogout();
   if(window.WalletEngine) window.WalletEngine.logoutWallet();
   historyStack.length = 0;
-  _loginStep = 1;
   document.getElementById('loginStep1').style.display = '';
-  document.getElementById('loginStep2').style.display = 'none';
   document.getElementById('loginMainBtn').textContent = 'Sign In';
-  document.getElementById('loginResendBtn').style.display = 'none';
+  document.getElementById('loginMainBtn').disabled = false;
   showPage('page-onboarding');
 }
 
@@ -7538,6 +7504,7 @@ function showSecurityItem(item){
   document.getElementById('securitySeedBox').style.display = 'none';
   document.getElementById('securityPKBox').style.display = 'none';
   document.getElementById('securityChangePwBox').style.display = 'none';
+  document.getElementById('securityRecoveryKeyBox').style.display = 'none';
   if(item === 'seedphrase'){
     var m = window.WalletEngine.getMnemonic();
     if(!m){ alert('No wallet found'); return; }
@@ -7553,6 +7520,9 @@ function showSecurityItem(item){
     document.getElementById('securityPKBox').style.display = '';
   } else if(item === 'changepw'){
     document.getElementById('securityChangePwBox').style.display = '';
+  } else if(item === 'recoverykey'){
+    document.getElementById('securityRecoveryKeyText').textContent = 'Log in again to view your key';
+    document.getElementById('securityRecoveryKeyBox').style.display = '';
   }
 }
 function copySecuritySeed(){
@@ -7562,6 +7532,14 @@ function copySecuritySeed(){
 function copySecurityPK(){
   var pk = window.WalletEngine.getPrivateKey();
   if(pk) navigator.clipboard.writeText(pk).then(function(){ if(window.cxToast) window.cxToast('Private key copied!','ok'); });
+}
+function copySecurityRecoveryKey(){
+  var el = document.getElementById('securityRecoveryKeyText');
+  if(el && el.textContent && el.textContent !== 'Log in again to view your key'){
+    navigator.clipboard.writeText(el.textContent).then(function(){ if(window.cxToast) window.cxToast('Security key copied!','ok'); });
+  } else {
+    alert('Please sign in again to view your security key.');
+  }
 }
 function doChangePassword(){
   var newPw = document.getElementById('secNewPw').value;
@@ -7665,8 +7643,8 @@ function showDepositNotif(amount, from){
 }
 
 (function(){
-  var ex = localStorage.getItem('creso_wallet_v1');
-  var authSession = localStorage.getItem('creso_auth_session');
+  var ex = localStorage.getItem('archon_wallet_v1');
+  var authSession = localStorage.getItem('archon_auth_session');
   if(ex){
     try {
       var wd = JSON.parse(ex);
@@ -7694,6 +7672,6 @@ function showDepositNotif(amount, from){
   }
 })();
 </script>
-<script src="wallet-engine.js?v=12"></script>
+<script src="wallet-engine.js?v=14"></script>
 </body>
 </html>
