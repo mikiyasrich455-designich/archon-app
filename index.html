@@ -1303,6 +1303,8 @@
             justify-content: center;
         }
         .pin-key:active { transform: scale(0.9); background: #e5e7eb; }
+        .refresh-spin { animation: spin 0.8s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
@@ -2282,7 +2284,7 @@
             </div>
             <div class="list-row" onclick="showSecurityItem('recoverykey')">
                 <svg class="w-5 h-5 text-amber-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <div class="flex-1"><div class="font-bold text-[15px]">Security Key</div><div class="text-xs text-gray-400 font-medium">Recovery key for emergency access</div></div>
+                <div class="flex-1"><div class="font-bold text-[15px]">Security Key</div><div class="text-xs text-gray-400 font-medium">16-char recovery code for emergency access</div></div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="list-row" onclick="toggleDevicePin()">
@@ -2440,11 +2442,14 @@
             </div>
             <span class="font-black tracking-tighter text-lg">HUB</span>
         </div>
-        <div class="flex items-center gap-3">
-            <button onclick="navigateTo('page-tx-history')" class="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm press" title="Transaction History">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </button>
-        </div>
+    <div class="flex items-center gap-3">
+        <button onclick="doRefresh()" class="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm press" title="Refresh Balance" id="refreshBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        </button>
+        <button onclick="navigateTo('page-tx-history')" class="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm press" title="Transaction History">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>
+    </div>
     </header>
     <main class="flex-1 flex flex-col items-center pt-1 px-5 relative w-full space-y-3 overflow-y-auto no-scrollbar z-10" style="padding-bottom:100px;">
         <div class="w-full flex justify-between items-center px-1">
@@ -2691,75 +2696,11 @@
             </div>
         </div>
 
-        <!-- Recent Activity — scrollable mini voucher cards -->
+        <!-- Recent Activity — real on-chain data -->
         <div class="w-full mb-4">
             <h3 class="font-black text-lg mb-3">Recent Activity</h3>
-            <div id="recentGiftsScroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2" style="scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;">
-                <!-- Card 1 — Sent -->
-                <div class="flex-shrink-0" style="scroll-snap-align:start;width:160px;">
-                    <div class="relative rounded-2xl overflow-hidden" style="height:190px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.12));">
-                        <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784642709/Gemini_Generated_Image_phcoeqphcoeqphco-removebg-preview_subdk7.png" class="absolute inset-0 w-full h-full object-cover" />
-                        <div class="absolute inset-0" style="background:linear-gradient(transparent 40%,rgba(0,0,0,0.75));"></div>
-                        <div class="absolute top-2 left-2"><span class="text-[7px] font-black text-lime-300 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5 uppercase tracking-wider">Sent</span></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-2.5">
-                            <div class="text-[12px] font-black text-white leading-tight">0.5 ETH</div>
-                            <div class="text-[9px] text-white/70 font-medium">To Alex_S</div>
-                            <div class="text-[8px] text-white/50 font-medium mt-0.5">Birthday \u00b7 2h ago</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card 2 — Received -->
-                <div class="flex-shrink-0" style="scroll-snap-align:start;width:160px;">
-                    <div class="relative rounded-2xl overflow-hidden" style="height:190px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.12));">
-                        <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784642709/Gemini_Generated_Image_phcoeqphcoeqphco-removebg-preview_subdk7.png" class="absolute inset-0 w-full h-full object-cover" />
-                        <div class="absolute inset-0" style="background:linear-gradient(transparent 40%,rgba(0,0,0,0.75));"></div>
-                        <div class="absolute top-2 left-2"><span class="text-[7px] font-black text-white bg-white/20 backdrop-blur-sm rounded-full px-1.5 py-0.5 uppercase tracking-wider">Received</span></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-2.5">
-                            <div class="text-[12px] font-black text-white leading-tight">+100 USDC</div>
-                            <div class="text-[9px] text-white/70 font-medium">From Mike_K</div>
-                            <div class="text-[8px] text-white/50 font-medium mt-0.5">Thank You \u00b7 1d ago</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card 3 — Sent -->
-                <div class="flex-shrink-0" style="scroll-snap-align:start;width:160px;">
-                    <div class="relative rounded-2xl overflow-hidden" style="height:190px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.12));">
-                        <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784642709/Gemini_Generated_Image_phcoeqphcoeqphco-removebg-preview_subdk7.png" class="absolute inset-0 w-full h-full object-cover" />
-                        <div class="absolute inset-0" style="background:linear-gradient(transparent 40%,rgba(0,0,0,0.75));"></div>
-                        <div class="absolute top-2 left-2"><span class="text-[7px] font-black text-lime-300 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5 uppercase tracking-wider">Sent</span></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-2.5">
-                            <div class="text-[12px] font-black text-white leading-tight">1.0 BOT</div>
-                            <div class="text-[9px] text-white/70 font-medium">To Jen_R</div>
-                            <div class="text-[8px] text-white/50 font-medium mt-0.5">Celebration \u00b7 3d ago</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card 4 — Received -->
-                <div class="flex-shrink-0" style="scroll-snap-align:start;width:160px;">
-                    <div class="relative rounded-2xl overflow-hidden" style="height:190px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.12));">
-                        <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784642709/Gemini_Generated_Image_phcoeqphcoeqphco-removebg-preview_subdk7.png" class="absolute inset-0 w-full h-full object-cover" />
-                        <div class="absolute inset-0" style="background:linear-gradient(transparent 40%,rgba(0,0,0,0.75));"></div>
-                        <div class="absolute top-2 left-2"><span class="text-[7px] font-black text-white bg-white/20 backdrop-blur-sm rounded-full px-1.5 py-0.5 uppercase tracking-wider">Received</span></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-2.5">
-                            <div class="text-[12px] font-black text-white leading-tight">+250 USDC</div>
-                            <div class="text-[9px] text-white/70 font-medium">From Dan_T</div>
-                            <div class="text-[8px] text-white/50 font-medium mt-0.5">Holiday \u00b7 5d ago</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card 5 — Sent -->
-                <div class="flex-shrink-0" style="scroll-snap-align:start;width:160px;">
-                    <div class="relative rounded-2xl overflow-hidden" style="height:190px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.12));">
-                        <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784642709/Gemini_Generated_Image_phcoeqphcoeqphco-removebg-preview_subdk7.png" class="absolute inset-0 w-full h-full object-cover" />
-                        <div class="absolute inset-0" style="background:linear-gradient(transparent 40%,rgba(0,0,0,0.75));"></div>
-                        <div class="absolute top-2 left-2"><span class="text-[7px] font-black text-lime-300 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5 uppercase tracking-wider">Sent</span></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-2.5">
-                            <div class="text-[12px] font-black text-white leading-tight">0.1 ETH</div>
-                            <div class="text-[9px] text-white/70 font-medium">To Sara_M</div>
-                            <div class="text-[8px] text-white/50 font-medium mt-0.5">Welcome \u00b7 1w ago</div>
-                        </div>
-                    </div>
-                </div>
+            <div id="giftRecentList" class="flex gap-3 overflow-x-auto no-scrollbar pb-2" style="scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;">
+                <div style="text-align:center;padding:40px 20px;width:100%"><p style="font-size:14px;font-weight:700;color:#9ca3af">No gift activity yet</p><p style="font-size:12px;margin-top:4px;color:#d1d5db">Sent or received gifts will appear here</p></div>
             </div>
         </div>
     </main>
@@ -6721,25 +6662,6 @@ function renderBoxHistory(){
 
 /* --- 11. SECURITY PAGE --- */
 function initSecurityPage(){
-  var rows=document.querySelectorAll('#page-security .list-row');
-  if(rows[0]){
-    rows[0].onclick=function(){
-      var options=['Never','1 min','5 min','15 min','30 min'];
-      var current=rows[0].querySelector('.text-sm');
-      if(!current)return;
-      var curIdx=options.indexOf(current.textContent);
-      var nextIdx=(curIdx+1)%options.length;
-      current.textContent=options[nextIdx];
-      toast('Auto-lock: '+options[nextIdx]);
-    };
-  }
-  var rows2=document.querySelectorAll('#page-security .list-row');
-  if(rows2[2]){
-    rows2[2].onclick=function(){
-      var toggle=rows2[2].querySelector('.toggle');
-      if(toggle){toggle.classList.toggle('on');toast('Encrypted backups: '+(toggle.classList.contains('on')?'ON':'OFF'));}
-    };
-  }
   updatePinToggleUI();
 }
 
@@ -6779,6 +6701,12 @@ window.fxCodeNext=function(el,next){
   else if(full.length>0){if(btn)btn.disabled=true;if(hint){hint.textContent='Keep typing... ('+full.length+'/12)';hint.style.color='#c4bfd1';}}
   else{if(btn)btn.disabled=true;if(hint){hint.textContent='FORMAT   ARCHON-XXXX-XXXX-XXXX';hint.style.color='#c4bfd1';}}
 };
+document.addEventListener('DOMContentLoaded',function(){
+  var c1=$('fxCode1'),c2=$('fxCode2'),c3=$('fxCode3');
+  if(c1) c1.addEventListener('input',function(){ window.fxCodeNext(c1,2); });
+  if(c2) c2.addEventListener('input',function(){ window.fxCodeNext(c2,3); });
+  if(c3) c3.addEventListener('input',function(){ window.fxCodeNext(c3,0); });
+});
 window.fxRedeem=function(){
   if(fxRedeemCode.length<12){toast('Enter a valid code');return;}
   var form=$('fxRedeemForm'),result=$('fxRedeemResult'),anim=$('fxRedeemAnim');
@@ -6856,6 +6784,9 @@ function initAll(){
         if(id==='page-mystery-box'){renderBoxHistory();var bc2=$('fxBoxCount');if(bc2)bc2.textContent=boxCount;}
         if(id==='page-security')initSecurityPage();
         if(id==='page-about')initAboutPage();
+        if(id==='page-gifts')updateGiftStats();
+        if(id==='page-gift-send'){if(window.WalletEngine)window.WalletEngine.fetchAllBalances().then(function(){var b=window.WalletEngine.getBOTBalance();var el=$('gvBalHint');if(el)el.textContent='Balance: '+b+' BOT';});}
+        if(id==='page-pin-setup'){_pinSetupBuffer='';_pinSetupConfirm='';_pinSetupPhase='enter';var h2=document.querySelector('#page-pin-setup h2');if(h2)h2.textContent='Set Device PIN';var desc=document.querySelector('#page-pin-setup p.text-xs');if(desc)desc.textContent='Create a 4-digit code to quickly unlock your wallet on this device.';_updatePinDots('pinSetupDots',0);var keypad=document.querySelector('#page-pin-setup div[style*="grid-template-columns"]');if(keypad)keypad.style.display='';var sk=document.querySelector('#page-pin-setup button[onclick*="pinSetupSkip"]');if(sk)sk.style.display='';var err=document.getElementById('pinSetupError');if(err)err.style.display='none';document.querySelectorAll('#page-pin-setup .flex-1 > div[style*="text-align:center"]').forEach(function(el){el.remove();});}
       },50);
     };
   }
@@ -7216,6 +7147,61 @@ function doLogout(){
   showPage('page-onboarding');
 }
 
+/* ═══ REFRESH ═══ */
+function doRefresh(){
+  var btn = document.getElementById('refreshBtn');
+  if(btn) btn.querySelector('svg').classList.add('refresh-spin');
+  if(window.WalletEngine){
+    window.WalletEngine.refreshAllData().then(function(){
+      if(btn) setTimeout(function(){ btn.querySelector('svg').classList.remove('refresh-spin'); }, 800);
+    }).catch(function(){
+      if(btn) btn.querySelector('svg').classList.remove('refresh-spin');
+    });
+  } else {
+    if(btn) btn.querySelector('svg').classList.remove('refresh-spin');
+  }
+}
+
+/* ═══ GIFT STATS ═══ */
+function updateGiftStats(){
+  var sentCount = parseInt(localStorage.getItem('archon_gift_sent_count')) || 0;
+  var receivedCount = parseInt(localStorage.getItem('archon_gift_received_count')) || 0;
+  var el;
+  el = document.getElementById('giftSentCount'); if(el) el.textContent = sentCount;
+  el = document.getElementById('giftReceivedCount'); if(el) el.textContent = receivedCount;
+  var activities = [];
+  try { activities = JSON.parse(localStorage.getItem('archon_gift_activities') || '[]'); } catch(e){}
+  var recentEl = document.getElementById('giftRecentList');
+  if(recentEl){
+    if(activities.length === 0){
+      recentEl.innerHTML = '<div style="text-align:center;padding:40px 20px;width:100%"><p style="font-size:14px;font-weight:700;color:#9ca3af">No gift activity yet</p><p style="font-size:12px;margin-top:4px;color:#d1d5db">Sent or received gifts will appear here</p></div>';
+    } else {
+      var html = '';
+      var sorted = activities.sort(function(a,b){ return (b.timestamp||0) - (a.timestamp||0); }).slice(0,10);
+      for(var i = 0; i < sorted.length; i++){
+        var g = sorted[i];
+        var isSent = g.type === 'sent';
+        var tag = isSent ? 'Sent' : 'Received';
+        var tagColor = isSent ? 'text-lime-300 bg-black/40' : 'text-white bg-white/20';
+        var amt = fmt(g.amount) + ' BOT';
+        var addr = isSent ? (g.to ? g.to.slice(0,6)+'...'+g.to.slice(-4) : '') : (g.from ? g.from.slice(0,6)+'...'+g.from.slice(-4) : '');
+        var timeStr = g.timestamp ? formatTimeAgo(g.timestamp) : '';
+        var msg = g.message || '';
+        html += '<div class="flex-shrink-0" style="scroll-snap-align:start;width:160px;"><div class="relative rounded-2xl overflow-hidden" style="height:190px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.12))"><div style="width:100%;height:100%;background:linear-gradient(135deg,'+(isSent?'#a3e635,#65a30d':'#7c3aed,#4f46e5')+')"></div><div class="absolute inset-0" style="background:linear-gradient(transparent 40%,rgba(0,0,0,0.75))"></div><div class="absolute top-2 left-2"><span class="text-[7px] font-black '+tagColor+' rounded-full px-1.5 py-0.5 uppercase tracking-wider backdrop-blur-sm">'+tag+'</span></div><div class="absolute bottom-0 left-0 right-0 p-2.5"><div class="text-[12px] font-black text-white leading-tight">'+amt+'</div><div class="text-[9px] text-white/70 font-medium">Token #'+g.tokenId+'</div><div class="text-[8px] text-white/50 font-medium mt-0.5">'+(msg?msg+' \u00b7 ':'')+timeStr+'</div></div></div></div>';
+      }
+      recentEl.innerHTML = html;
+    }
+  }
+}
+function formatTimeAgo(ts){
+  var diff = Date.now() - ts;
+  if(diff < 60000) return 'Just now';
+  if(diff < 3600000) return Math.floor(diff/60000)+'m ago';
+  if(diff < 86400000) return Math.floor(diff/3600000)+'h ago';
+  if(diff < 604800000) return Math.floor(diff/86400000)+'d ago';
+  return new Date(ts).toLocaleDateString();
+}
+
 /* ═══ DEVICE PIN SETUP ═══ */
 var _pinSetupBuffer = '';
 var _pinSetupConfirm = '';
@@ -7230,24 +7216,34 @@ function pinSetupKey(n){
       _pinSetupPhase = 'confirm';
       _pinSetupConfirm = _pinSetupBuffer;
       _pinSetupBuffer = '';
-      document.getElementById('pinSetupLabel').textContent = 'Confirm your PIN';
+      document.querySelector('#page-pin-setup h2').textContent = 'Confirm PIN';
+      document.querySelector('#page-pin-setup p.text-xs').textContent = 'Re-enter your PIN to confirm';
       _updatePinDots('pinSetupDots', 0);
     } else {
       if(_pinSetupBuffer === _pinSetupConfirm){
         if(window.WalletEngine) window.WalletEngine.setPin(_pinSetupBuffer);
         _pinSetupBuffer = '';
         _pinSetupPhase = 'enter';
-        document.getElementById('pinSetupLabel').textContent = 'Enter your PIN';
-        _updatePinDots('pinSetupDots', 0);
-        window.WalletEngine.autoSyncCloud();
-        showPage('page-wallet');
+        document.querySelector('#page-pin-setup h2').textContent = 'PIN Set!';
+        document.querySelector('#page-pin-setup p.text-xs').textContent = 'Your device PIN has been set successfully. You will need to enter this PIN every time you open the app.';
+        _updatePinDots('pinSetupDots', 4);
+        var keypad = document.querySelector('#page-pin-setup div[style*="grid-template-columns"]');
+        if(keypad) keypad.style.display = 'none';
+        var skipBtn = document.querySelector('#page-pin-setup button[onclick*="pinSetupSkip"]');
+        if(skipBtn) skipBtn.style.display = 'none';
+        var errEl = document.getElementById('pinSetupError');
+        if(errEl){ errEl.style.display = 'none'; }
+        var successHtml = '<div style="text-align:center;margin-top:20px"><div style="width:64px;height:64px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div><p style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:16px">Device PIN activated!</p><button class="btn-dark" style="width:100%;max-width:260px" onclick="window.WalletEngine.autoSyncCloud();showPage(\'page-wallet\')">Continue to Wallet</button></div>';
+        var container = document.querySelector('#page-pin-setup .flex-1');
+        if(container) container.insertAdjacentHTML('beforeend', successHtml);
       } else {
         var errEl = document.getElementById('pinSetupError');
         errEl.textContent = 'PINs do not match. Try again.';
         errEl.style.display = '';
         _pinSetupBuffer = '';
         _pinSetupPhase = 'enter';
-        document.getElementById('pinSetupLabel').textContent = 'Enter your PIN';
+        document.querySelector('#page-pin-setup h2').textContent = 'Set Device PIN';
+        document.querySelector('#page-pin-setup p.text-xs').textContent = 'Create a 4-digit code to quickly unlock your wallet on this device.';
         _updatePinDots('pinSetupDots', 0);
       }
     }
@@ -7290,7 +7286,14 @@ function pinLockKey(n){
         window.WalletEngine.autoInit();
         window.WalletEngine.updateWalletUI();
       }
-      showPage('page-wallet');
+      if(_pendingSecurityItem){
+        var item = _pendingSecurityItem;
+        _pendingSecurityItem = null;
+        showPage('page-security');
+        _revealSecurityItem(item);
+      } else {
+        showPage('page-wallet');
+      }
     } else {
       var errEl = document.getElementById('pinLockError');
       errEl.style.display = '';
@@ -7335,6 +7338,18 @@ function updatePinToggleUI(){
 
 /* ═══ SECURITY PAGE ═══ */
 function showSecurityItem(item){
+  if(window.WalletEngine && window.WalletEngine.isPinSet() && window.WalletEngine.isPinEnabled()){
+    _pendingSecurityItem = item;
+    showPage('page-pin-lock');
+    document.getElementById('pinLockError').style.display = 'none';
+    _pinLockBuffer = '';
+    _updatePinDots('pinLockDots', 0);
+    return;
+  }
+  _revealSecurityItem(item);
+}
+var _pendingSecurityItem = null;
+function _revealSecurityItem(item){
   document.getElementById('securitySeedBox').style.display = 'none';
   document.getElementById('securityPKBox').style.display = 'none';
   document.getElementById('securityRecoveryKeyBox').style.display = 'none';
@@ -7488,6 +7503,6 @@ function showDepositNotif(amount, from){
   showPage('page-onboarding');
 })();
 </script>
-<script src="wallet-engine.js?v=16"></script>
+<script src="wallet-engine.js?v=17"></script>
 </body>
 </html>

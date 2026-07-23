@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   WALLET ENGINE v15 — Seed/Key Auth + Cloud Sync + Blockchain
+   WALLET ENGINE v17 — Seed/Key Auth + Cloud Sync + Blockchain + PIN + On-chain Txs
    ═══════════════════════════════════════════════════════════════════ */
 (function(){
 "use strict";
@@ -355,6 +355,96 @@ function addTx(tx){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   SECTION 10B: ON-CHAIN TX HISTORY FETCHING
+   ═══════════════════════════════════════════════════════════════════ */
+async function fetchOnChainTransactions(){
+  if(!walletData || !walletData.address) return [];
+  var addr = walletData.address;
+  var explorerApi = BOT_EXPLORER + '/api';
+  try {
+    var resp = await fetch(explorerApi + '?module=account&action=txlist&address=' + addr + '&startblock=0&endblock=99999999&sort=desc&page=1&offset=50');
+    var data = await resp.json();
+    if(data.status === '1' && data.result && data.result.length){
+      var txs = [];
+      for(var i = 0; i < data.result.length; i++){
+        var raw = data.result[i];
+        var isIncoming = raw.to && raw.to.toLowerCase() === addr.toLowerCase();
+        var amount = parseFloat(ethers.formatEther(raw.value || '0'));
+        if(amount === 0 && !isIncoming) continue;
+        txs.push({
+          type: isIncoming ? 'receive' : 'send',
+          amount: amount,
+          token: 'BOT',
+          to: raw.to,
+          from: raw.from,
+          hash: raw.hash,
+          timestamp: parseInt(raw.timeStamp) * 1000,
+          status: raw.isError === '0' ? 'confirmed' : 'failed',
+          gasUsed: raw.gasUsed ? parseFloat(ethers.formatEther(BigInt(raw.gasUsed) * BigInt(raw.gasPrice || '1000000000'))).toFixed(6) : null,
+          source: 'onchain'
+        });
+      }
+      return txs;
+    }
+  } catch(e){ console.log('[Archon] Explorer API unavailable, using local history'); }
+  return [];
+}
+
+async function fetchGiftActivity(){
+  if(!walletData || !walletData.address) return {sent: 0, received: 0, activities: []};
+  var sent = 0, received = 0, activities = [];
+  try {
+    if(sbtContract){
+      var counter = await sbtContract.tokenCounter();
+      var count = parseInt(counter.toString());
+      for(var i = 1; i <= count && i <= 100; i++){
+        try {
+          var data = await sbtContract.getGiftData(i);
+          var owner = await sbtContract.ownerOf(i);
+          var amt = parseFloat(ethers.formatEther(data.amount));
+          if(data.sender.toLowerCase() === walletData.address.toLowerCase()){
+            sent++;
+            activities.push({type:'sent', tokenId: i, amount: amt, to: data.recipient, message: data.message, timestamp: Number(data.timestamp)*1000});
+          }
+          if(data.recipient.toLowerCase() === walletData.address.toLowerCase()){
+            received++;
+            activities.push({type:'received', tokenId: i, amount: amt, from: data.sender, message: data.message, timestamp: Number(data.timestamp)*1000});
+          }
+        } catch(e){}
+      }
+    }
+  } catch(e){ console.log('[Archon] Gift scan error', e); }
+  return {sent: sent, received: received, activities: activities};
+}
+
+async function refreshAllData(){
+  if(!walletData) return;
+  try {
+    await fetchAllBalances();
+    var localTxs = getTxHistory();
+    var onchainTxs = await fetchOnChainTransactions();
+    var merged = {};
+    for(var i = 0; i < localTxs.length; i++){
+      if(localTxs[i].hash) merged[localTxs[i].hash] = localTxs[i];
+    }
+    for(var i = 0; i < onchainTxs.length; i++){
+      if(!merged[onchainTxs[i].hash]) merged[onchainTxs[i].hash] = onchainTxs[i];
+    }
+    var allTxs = Object.values(merged).sort(function(a,b){ return (b.timestamp||0) - (a.timestamp||0); });
+    localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(allTxs.slice(0,100)));
+    var giftData = await fetchGiftActivity();
+    localStorage.setItem('archon_gift_sent_count', String(giftData.sent));
+    localStorage.setItem('archon_gift_received_count', String(giftData.received));
+    localStorage.setItem('archon_gift_activities', JSON.stringify(giftData.activities));
+    syncBalanceToUI(parseFloat(lastKnownBalance) || 0);
+    if(typeof renderTxHistory === 'function') renderTxHistory();
+    if(typeof updateGiftStats === 'function') updateGiftStats();
+    if(typeof renderDashboardBalance === 'function') renderDashboardBalance();
+    if(typeof updateWalletPocket === 'function') updateWalletPocket();
+  } catch(e){ console.error('[Archon] refresh error', e); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    SECTION 11: GIFT CODE MAPPING
    ═══════════════════════════════════════════════════════════════════ */
 function getGiftCodes(){
@@ -418,6 +508,10 @@ function syncBalanceToUI(n){
   if(typeof window.cxS!=='undefined') window.cxS.wdFee = 0.001;
   if(typeof updateWalletPocket==='function') updateWalletPocket();
   if(typeof renderDashboardBalance==='function') renderDashboardBalance();
+  var el;
+  el = document.getElementById('wdbalETH'); if(el) el.textContent = balStr + ' BOT';
+  el = document.getElementById('cxSendPrice'); if(el) el.textContent = '$' + usdStr;
+  el = document.getElementById('gvBalHint'); if(el) el.textContent = 'Balance: ' + balStr + ' BOT';
 }
 var lastKnownBalance = '0';
 async function fetchAllBalances(){
@@ -937,7 +1031,9 @@ window.WalletEngine = {
   getPoints:getPoints, addPoints:addPoints,
   extractError:extractError,
   setPin:setPin, getPin:getPin, isPinSet:isPinSet, verifyPin:verifyPin,
-  clearPin:clearPin, setPinEnabled:setPinEnabled, isPinEnabled:isPinEnabled
+  clearPin:clearPin, setPinEnabled:setPinEnabled, isPinEnabled:isPinEnabled,
+  refreshAllData:refreshAllData, fetchOnChainTransactions:fetchOnChainTransactions,
+  fetchGiftActivity:fetchGiftActivity
 };
 
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',autoInit);}else{autoInit;}
