@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   WALLET ENGINE v2 — Real blockchain + tx history + gift codes + global sync
+   WALLET ENGINE v10 — Auth + Cloud Sync + Encryption + Blockchain
    ═══════════════════════════════════════════════════════════════════ */
 (function(){
 "use strict";
@@ -26,17 +26,335 @@ var STORAGE_KEY = 'creso_wallet_v1';
 var PROFILE_KEY = 'creso_profile_v1';
 var TX_HISTORY_KEY = 'creso_tx_history';
 var GIFT_CODES_KEY = 'creso_gift_codes';
+var POINTS_KEY = 'creso_points';
+var AUTH_SESSION_KEY = 'creso_auth_session';
+
+/* ═══ SUPABASE CONFIG ═══ */
+var SUPABASE_URL = 'https://vjljoydtwvpvhqiecbqr.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3ZwdmhxaWVjYnFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTAwMjYsImV4cCI6MjA5OTM2NjAyNn0.YFIbiUGGzGvjuvF2bsm4dQv_yzNtJr8G1La8Rtqexy8';
+var sbClient = null;
 
 var provider = null;
 var wallet = null;
 var sbtContract = null;
 var walletData = null;
+var _authUser = null;
+var _authSession = null;
 
 function $(id){ return document.getElementById(id); }
 function shortAddr(a){ return a ? a.slice(0,6)+'...'+a.slice(-4) : ''; }
 function fmt(n){ return Number(n).toLocaleString('en-US',{maximumFractionDigits:6}); }
 
-/* ═══ TX HISTORY ═══ */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 1: SUPABASE CLIENT INIT
+   ═══════════════════════════════════════════════════════════════════ */
+function initSupabase(){
+  if(typeof window.supabase !== 'undefined' && !sbClient){
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('[WalletEngine] Supabase client initialized');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 2: AUTH — SIGNUP WITH EMAIL + PASSWORD
+   ═══════════════════════════════════════════════════════════════════ */
+async function authSignUp(email, password){
+  initSupabase();
+  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
+  var { data, error } = await sbClient.auth.signUp({ email: email, password: password });
+  if(error) throw new Error(error.message);
+  _authUser = data.user;
+  _authSession = data.session;
+  saveAuthSession(data.session);
+  return { user: data.user, session: data.session };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 3: AUTH — SEND OTP TO EMAIL
+   ═══════════════════════════════════════════════════════════════════ */
+async function authSendOtp(email){
+  initSupabase();
+  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
+  var { data, error } = await sbClient.auth.signInWithOtp({ email: email });
+  if(error) throw new Error(error.message);
+  return data;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 4: AUTH — VERIFY OTP CODE
+   ═══════════════════════════════════════════════════════════════════ */
+async function authVerifyOtp(email, token){
+  initSupabase();
+  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
+  var { data, error } = await sbClient.auth.verifyOtp({ email: email, token: token, type: 'email' });
+  if(error) throw new Error(error.message);
+  _authUser = data.user;
+  _authSession = data.session;
+  saveAuthSession(data.session);
+  return { user: data.user, session: data.session };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 5: AUTH — LOGIN WITH PASSWORD
+   ═══════════════════════════════════════════════════════════════════ */
+async function authLogin(email, password){
+  initSupabase();
+  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
+  var { data, error } = await sbClient.auth.signInWithPassword({ email: email, password: password });
+  if(error) throw new Error(error.message);
+  _authUser = data.user;
+  _authSession = data.session;
+  saveAuthSession(data.session);
+  return { user: data.user, session: data.session };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 6: AUTH — RESET PASSWORD
+   ═══════════════════════════════════════════════════════════════════ */
+async function authResetPassword(email){
+  initSupabase();
+  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
+  var { data, error } = await sbClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href
+  });
+  if(error) throw new Error(error.message);
+  return data;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 7: AUTH — UPDATE PASSWORD
+   ═══════════════════════════════════════════════════════════════════ */
+async function authUpdatePassword(newPassword){
+  initSupabase();
+  if(!sbClient) throw new Error('Supabase not loaded. Please refresh.');
+  var { data, error } = await sbClient.auth.updateUser({ password: newPassword });
+  if(error) throw new Error(error.message);
+  return data;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 8: AUTH — LOGOUT
+   ═══════════════════════════════════════════════════════════════════ */
+async function authLogout(){
+  initSupabase();
+  if(sbClient){
+    try { await sbClient.auth.signOut(); } catch(e){}
+  }
+  _authUser = null;
+  _authSession = null;
+  localStorage.removeItem(AUTH_SESSION_KEY);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 9: AUTH — GET CURRENT USER
+   ═══════════════════════════════════════════════════════════════════ */
+async function authGetUser(){
+  initSupabase();
+  if(!sbClient) return null;
+  try {
+    var { data: { user } } = await sbClient.auth.getUser();
+    _authUser = user;
+    return user;
+  } catch(e){ return null; }
+}
+
+function authGetUserSync(){
+  return _authUser;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 10: SESSION PERSISTENCE
+   ═══════════════════════════════════════════════════════════════════ */
+function saveAuthSession(session){
+  if(session){
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+      user: session.user,
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      expires_at: session.expires_at
+    }));
+  }
+}
+
+function loadAuthSession(){
+  try {
+    var raw = localStorage.getItem(AUTH_SESSION_KEY);
+    if(raw){
+      var s = JSON.parse(raw);
+      if(s && s.user && s.access_token) return s;
+    }
+  } catch(e){}
+  return null;
+}
+
+async function restoreAuthSession(){
+  initSupabase();
+  if(!sbClient) return false;
+  try {
+    var { data: { session } } = await sbClient.auth.getSession();
+    if(session && session.user){
+      _authUser = session.user;
+      _authSession = session;
+      saveAuthSession(session);
+      return true;
+    }
+  } catch(e){}
+  return false;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 11: ENCRYPTION — AES-256-GCM
+   ═══════════════════════════════════════════════════════════════════ */
+async function deriveKey(password, salt){
+  var enc = new TextEncoder();
+  var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptText(plaintext, password){
+  var enc = new TextEncoder();
+  var salt = 'creso-v10-' + password.slice(0,8);
+  var key = await deriveKey(password, salt);
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  var ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(plaintext));
+  var combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return btoa(String.fromCharCode.apply(null, combined));
+}
+
+async function decryptText(encoded, password){
+  try {
+    var raw = atob(encoded);
+    var bytes = new Uint8Array(raw.length);
+    for(var i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    var iv = bytes.slice(0, 12);
+    var ciphertext = bytes.slice(12);
+    var salt = 'creso-v10-' + password.slice(0,8);
+    var key = await deriveKey(password, salt);
+    var decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+    return new TextDecoder().decode(decrypted);
+  } catch(e){
+    throw new Error('Decryption failed — wrong password or corrupted data');
+  }
+}
+
+function getEncryptionKey(userId){
+  return userId || 'creso-default-key';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 12: CLOUD SYNC — SAVE WALLET TO SUPABASE
+   ═══════════════════════════════════════════════════════════════════ */
+async function saveWalletToCloud(){
+  initSupabase();
+  if(!sbClient || !_authUser) { console.log('[WalletEngine] No auth — skipping cloud save'); return false; }
+  if(!walletData) { console.log('[WalletEngine] No wallet — skipping cloud save'); return false; }
+  try {
+    var encKey = getEncryptionKey(_authUser.id);
+    var seedEnc = await encryptText(walletData.mnemonic, encKey);
+    var pkEnc = await encryptText(walletData.privateKey, encKey);
+    var profileData = getProfile() || {};
+    var txData = getTxHistory();
+    var giftData = getGiftCodes();
+    var pointsVal = getPoints();
+    var row = {
+      id: _authUser.id,
+      email: _authUser.email,
+      wallet_address: walletData.address,
+      seed_phrase_encrypted: seedEnc,
+      private_key_encrypted: pkEnc,
+      profile: profileData,
+      tx_history: txData,
+      gift_codes: giftData,
+      points: pointsVal,
+      updated_at: new Date().toISOString()
+    };
+    var { data, error } = await sbClient
+      .from('user_wallets')
+      .upsert(row, { onConflict: 'id' });
+    if(error) throw new Error(error.message);
+    console.log('[WalletEngine] Wallet saved to cloud');
+    return true;
+  } catch(e){
+    console.error('[WalletEngine] Cloud save failed', e);
+    return false;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 13: CLOUD SYNC — LOAD WALLET FROM SUPABASE
+   ═══════════════════════════════════════════════════════════════════ */
+async function loadWalletFromCloud(){
+  initSupabase();
+  if(!sbClient || !_authUser) return null;
+  try {
+    var { data, error } = await sbClient
+      .from('user_wallets')
+      .select('*')
+      .eq('id', _authUser.id)
+      .single();
+    if(error || !data) return null;
+    var encKey = getEncryptionKey(_authUser.id);
+    var seedPhrase = await decryptText(data.seed_phrase_encrypted, encKey);
+    var privateKey = await decryptText(data.private_key_encrypted, encKey);
+    return {
+      address: data.wallet_address,
+      privateKey: privateKey,
+      mnemonic: seedPhrase,
+      profile: data.profile,
+      tx_history: data.tx_history || [],
+      gift_codes: data.gift_codes || {},
+      points: data.points || 0
+    };
+  } catch(e){
+    console.error('[WalletEngine] Cloud load failed', e);
+    return null;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 14: CLOUD SYNC — FULL RESTORE FROM CLOUD
+   ═══════════════════════════════════════════════════════════════════ */
+async function restoreFromCloud(){
+  var cloudData = await loadWalletFromCloud();
+  if(!cloudData) return false;
+  walletData = {
+    address: cloudData.address,
+    privateKey: cloudData.privateKey,
+    mnemonic: cloudData.mnemonic,
+    createdAt: Date.now()
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
+  if(cloudData.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(cloudData.profile));
+  if(cloudData.tx_history && cloudData.tx_history.length) localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(cloudData.tx_history));
+  if(cloudData.gift_codes && Object.keys(cloudData.gift_codes).length) localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(cloudData.gift_codes));
+  if(cloudData.points) localStorage.setItem(POINTS_KEY, String(cloudData.points));
+  initProvider();
+  console.log('[WalletEngine] Wallet restored from cloud:', walletData.address);
+  return true;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 15: CLOUD SYNC — AUTO-SYNC (debounced)
+   ═══════════════════════════════════════════════════════════════════ */
+var _syncTimer = null;
+function autoSyncCloud(){
+  if(_syncTimer) clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(function(){
+    saveWalletToCloud().catch(function(e){});
+  }, 3000);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 16: TX HISTORY
+   ═══════════════════════════════════════════════════════════════════ */
 function getTxHistory(){
   try { var raw = localStorage.getItem(TX_HISTORY_KEY); if(raw) return JSON.parse(raw); } catch(e){}
   return [];
@@ -48,9 +366,12 @@ function addTx(tx){
   list.unshift(tx);
   if(list.length > 100) list = list.slice(0,100);
   localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(list));
+  autoSyncCloud();
 }
 
-/* ═══ GIFT CODE MAPPING ═══ */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 17: GIFT CODE MAPPING
+   ═══════════════════════════════════════════════════════════════════ */
 function getGiftCodes(){
   try { var raw = localStorage.getItem(GIFT_CODES_KEY); if(raw) return JSON.parse(raw); } catch(e){}
   return {};
@@ -59,13 +380,29 @@ function saveGiftCode(code, tokenId, amount, recipient){
   var map = getGiftCodes();
   map[code] = { tokenId: tokenId, amount: amount, recipient: recipient, createdAt: Date.now() };
   localStorage.setItem(GIFT_CODES_KEY, JSON.stringify(map));
+  autoSyncCloud();
 }
 function lookupGiftCode(code){
   var map = getGiftCodes();
   return map[code] || null;
 }
 
-/* ── 1. WALLET CREATION / LOADING ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 18: POINTS
+   ═══════════════════════════════════════════════════════════════════ */
+function getPoints(){
+  try { return parseInt(localStorage.getItem(POINTS_KEY)) || 0; } catch(e){ return 0; }
+}
+function addPoints(n){
+  var p = getPoints() + n;
+  localStorage.setItem(POINTS_KEY, String(p));
+  autoSyncCloud();
+  return p;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 19: WALLET CREATION / LOADING
+   ═══════════════════════════════════════════════════════════════════ */
 function loadWallet(){
   try { var raw = localStorage.getItem(STORAGE_KEY); if(raw){ walletData = JSON.parse(raw); return true; } } catch(e){}
   return false;
@@ -90,9 +427,16 @@ function logoutWallet(){
   walletData = null; wallet = null; provider = null; sbtContract = null;
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(PROFILE_KEY);
+  localStorage.removeItem(TX_HISTORY_KEY);
+  localStorage.removeItem(GIFT_CODES_KEY);
+  localStorage.removeItem(POINTS_KEY);
+  localStorage.removeItem(AUTH_SESSION_KEY);
+  _authUser = null; _authSession = null;
 }
 
-/* ── 2. BALANCE FETCHING ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 20: BALANCE FETCHING
+   ═══════════════════════════════════════════════════════════════════ */
 async function fetchBOTBalance(){
   if(!provider || !walletData) return '0';
   try { var bal = await provider.getBalance(walletData.address); return ethers.formatEther(bal); }
@@ -104,7 +448,6 @@ function syncBalanceToUI(n){
   var balStr = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   var usdStr = usdVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   var priceStr = priceUsd > 0 ? priceUsd.toLocaleString('en-US') : '0';
-
   if(typeof window.cxTOKENS!=='undefined'){ for(var i=0;i<window.cxTOKENS.length;i++){ if(window.cxTOKENS[i].id==='BOT'){ window.cxTOKENS[i].bal=n; if(priceUsd>0) window.cxTOKENS[i].price=priceUsd; } } }
   if(typeof chainDatabase!=='undefined' && chainDatabase.bot){
     chainDatabase.bot.balance = balStr;
@@ -150,7 +493,9 @@ function renderDashboardBalance(){
   if(typeof updateWalletPocket==='function') updateWalletPocket();
 }
 
-/* ── 3. REAL GAS ESTIMATION ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 21: REAL GAS ESTIMATION
+   ═══════════════════════════════════════════════════════════════════ */
 async function estimateGasFee(toAddress, amountEth){
   if(!provider || !wallet) return { gasLimit: '21000', gasPrice: '0', feeBot: '0', feeUsd: '$0.00' };
   try {
@@ -174,7 +519,9 @@ async function estimateGasFee(toAddress, amountEth){
   }
 }
 
-/* ── 4. COINGECKO PRICE FETCHING ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 22: COINGECKO PRICE FETCHING
+   ═══════════════════════════════════════════════════════════════════ */
 async function fetchPrices(){
   try {
     var resp = await fetch(COINGECKO_URL);
@@ -217,13 +564,17 @@ async function fetchPrices(){
   } catch(e){ console.error('[WalletEngine] CoinGecko failed', e); }
 }
 
-/* ── 5. REAL QR CODE ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 23: REAL QR CODE
+   ═══════════════════════════════════════════════════════════════════ */
 function generateRealQR(containerId, address){
   var el = $(containerId); if(!el||!address) return;
   el.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(address)+'&bgcolor=ffffff&color=000000" alt="QR" style="width:100%;height:100%;border-radius:12px;" />';
 }
 
-/* ── 6. REAL SEND ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 24: REAL SEND
+   ═══════════════════════════════════════════════════════════════════ */
 async function realSend(toAddress, amountEth){
   if(!wallet) throw new Error('Wallet not connected');
   if(!ethers.isAddress(toAddress)) throw new Error('Invalid address');
@@ -249,161 +600,126 @@ async function realSend(toAddress, amountEth){
     token: 'BOT',
     to: toAddress,
     from: wallet.address,
-    hash: tx.hash,
-    status: receipt.status === 1 ? 'confirmed' : 'failed',
-    gasUsed: receipt.gasUsed ? ethers.formatEther(receipt.gasUsed * (feeData.gasPrice||ethers.parseUnits('1','gwei'))) : '0'
+    hash: receipt.hash,
+    gasUsed: parseFloat(ethers.formatEther(receipt.gasUsed * (receipt.gasPrice || feeData.gasPrice || ethers.parseUnits('1','gwei')))).toFixed(6),
+    status: 'confirmed'
   });
-  return { hash: tx.hash, receipt: receipt, wait: function(){ return Promise.resolve(receipt); } };
+  autoSyncCloud();
+  return receipt;
 }
 
-/* ── 7. REAL GIFT SEND (SBT) ── */
-async function realGiftSend(recipient, amountEth, message, tokenURI){
-  if(!sbtContract) throw new Error('Contract not connected');
-  if(!ethers.isAddress(recipient)) throw new Error('Invalid recipient');
-  if(typeof showTxOverlay==='function') showTxOverlay('Sending Gift', 'Minting your gift on-chain...');
-  if(typeof updateTxStep==='function') updateTxStep(1, 'active');
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 25: REAL GIFT SEND
+   ═══════════════════════════════════════════════════════════════════ */
+async function realGiftSend(toAddress, amountEth, message, tokenURI){
+  if(!wallet || !sbtContract) throw new Error('Wallet not connected');
   var amountWei = ethers.parseEther(amountEth.toString());
-  var uri = tokenURI || 'ipfs://QmDefaultGiftMetadata';
-  if(typeof updateTxStep==='function'){ updateTxStep(1, 'done'); updateTxStep(3, 'active'); }
-  var tx = await sbtContract.mintSoulboundGift(recipient, uri, message, { value: amountWei });
-  if(typeof updateTxStep==='function'){ updateTxStep(3, 'done'); updateTxStep(4, 'active'); }
+  var bal = await provider.getBalance(wallet.address);
+  var feeData = await provider.getFeeData();
+  var gasEstimate = await sbtContract.mintSoulboundGift.estimateGas(
+    toAddress, tokenURI || 'ipfs://default', message || 'Gift from Creso', { value: amountWei }
+  );
+  var gasCost = gasEstimate * (feeData.gasPrice || ethers.parseUnits('1','gwei'));
+  if(bal < amountWei + gasCost) throw new Error('Insufficient balance for gift + gas');
+  var tx = await sbtContract.mintSoulboundGift(
+    toAddress, tokenURI || 'ipfs://default', message || 'Gift from Creso', { value: amountWei }
+  );
   var receipt = await tx.wait();
-  if(typeof updateTxStep==='function') updateTxStep(4, 'done');
-  if(typeof hideTxOverlay==='function') setTimeout(hideTxOverlay, 800);
   var tokenId = null;
-  if(receipt.logs){
-    for(var i=0;i<receipt.logs.length;i++){
-      try {
-        var parsed = sbtContract.interface.parseLog({ topics: receipt.logs[i].topics, data: receipt.logs[i].data });
-        if(parsed && parsed.name === 'SoulboundGiftMinted'){
-          tokenId = parsed.args.tokenId.toString();
-          break;
-        }
-      } catch(e){}
-    }
+  for(var i = 0; i < (receipt.logs || []).length; i++){
+    try {
+      var parsed = sbtContract.interface.parseLog(receipt.logs[i]);
+      if(parsed && parsed.name === 'SoulboundGiftMinted'){
+        tokenId = parsed.args.tokenId.toString();
+        break;
+      }
+    } catch(e){}
   }
   addTx({
     type: 'gift_sent',
     amount: parseFloat(amountEth),
     token: 'BOT',
-    to: recipient,
+    to: toAddress,
     from: wallet.address,
-    hash: tx.hash,
-    tokenId: tokenId,
-    message: message || '',
-    status: receipt.status === 1 ? 'confirmed' : 'failed'
+    hash: receipt.hash,
+    gasUsed: parseFloat(ethers.formatEther(receipt.gasUsed * (receipt.gasPrice || feeData.gasPrice || ethers.parseUnits('1','gwei')))).toFixed(6),
+    status: 'confirmed',
+    tokenId: tokenId
   });
-  return { hash: tx.hash, tokenId: tokenId, receipt: receipt, wait: function(){ return Promise.resolve(receipt); } };
+  autoSyncCloud();
+  return { hash: receipt.hash, tokenId: tokenId };
 }
 
-/* ── 8. REAL GIFT CLAIM (SBT) ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 26: REAL GIFT CLAIM
+   ═══════════════════════════════════════════════════════════════════ */
 async function realGiftClaim(tokenId){
-  if(!sbtContract) throw new Error('Contract not connected');
+  if(!sbtContract) throw new Error('Wallet not connected');
   var tx = await sbtContract.convertToBot(tokenId);
   var receipt = await tx.wait();
-  var giftData = null;
-  try { giftData = await readGiftData(tokenId); } catch(e){}
   addTx({
     type: 'gift_claimed',
-    amount: giftData ? parseFloat(giftData.amount) : 0,
+    amount: 0,
     token: 'BOT',
-    from: giftData ? giftData.sender : 'unknown',
+    from: 'Gift Voucher',
     to: wallet.address,
-    hash: tx.hash,
-    tokenId: tokenId,
-    message: giftData ? giftData.message : '',
-    status: receipt.status === 1 ? 'confirmed' : 'failed'
+    hash: receipt.hash,
+    status: 'confirmed',
+    tokenId: tokenId
   });
-  await fetchAllBalances();
-  return { hash: tx.hash, receipt: receipt, wait: function(){ return Promise.resolve(receipt); } };
+  autoSyncCloud();
+  return receipt;
 }
 
-/* ── 9. READ GIFT DATA ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 27: READ GIFT DATA
+   ═══════════════════════════════════════════════════════════════════ */
 async function readGiftData(tokenId){
-  if(!sbtContract) throw new Error('Contract not connected');
-  var d = await sbtContract.getGiftData(tokenId);
-  return { sender:d.sender, recipient:d.recipient, message:d.message, amount:ethers.formatEther(d.amount), timestamp:Number(d.timestamp) };
+  if(!sbtContract) return null;
+  try {
+    var data = await sbtContract.getGiftData(tokenId);
+    return { sender: data.sender, recipient: data.recipient, message: data.message, amount: parseFloat(ethers.formatEther(data.amount)), timestamp: Number(data.timestamp) };
+  } catch(e){ return null; }
 }
 
-/* ── 10. ADD BOTCHAIN TO METAMASK ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 28: ADD BOT TO METAMASK
+   ═══════════════════════════════════════════════════════════════════ */
 async function addBotToMetaMask(){
-  if(!window.ethereum) return false;
-  try { await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:BOT_CHAIN_HEX}]}); return true; }
-  catch(e){ if(e.code===4902){ try{ await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:BOT_CHAIN_HEX,chainName:'BOT Chain Testnet',nativeCurrency:{name:'BOT',symbol:'BOT',decimals:18},rpcUrls:[BOT_RPC],blockExplorerUrls:[BOT_EXPLORER]}]}); return true;}catch(e2){return false;}} return false; }
+  if(!window.ethereum) throw new Error('MetaMask not installed');
+  try {
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: BOT_CHAIN_HEX,
+        chainName: 'BOT Chain Testnet',
+        nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
+        rpcUrls: [BOT_RPC],
+        blockExplorerUrls: [BOT_EXPLORER]
+      }]
+    });
+  } catch(e){ throw new Error('Failed to add network'); }
 }
 
-/* ── 11. REPLACE HARDCODED ADDRESSES ── */
-function replaceAddresses(){
-  if(!walletData) return;
-  var addr = walletData.address, short = shortAddr(addr);
-  if(window.cxCHAINS){ for(var i=0;i<window.cxCHAINS.length;i++){ if(window.cxCHAINS[i].id==='bot'||window.cxCHAINS[i].id==='eth') window.cxCHAINS[i].addr=addr; } }
-  if(typeof chainDatabase!=='undefined'){ if(chainDatabase.bot) chainDatabase.bot.addr=addr; if(chainDatabase.eth) chainDatabase.eth.addr=addr; }
-  var flipAddr = document.querySelector('.flip-card-back .font-mono'); if(flipAddr) flipAddr.textContent=short;
-  var walletAddrEl = document.querySelector('#page-wallet-address .font-mono'); if(walletAddrEl) walletAddrEl.textContent=addr;
-  var depAddrText = $('cxDepAddrText'); if(depAddrText) depAddrText.textContent = addr.length > 20 ? shortAddr(addr) : addr;
-  var depAddr = $('cxDepAddr'); if(depAddr) depAddr.textContent = addr;
-  var chainAddrs = document.querySelectorAll('.chain-addr');
-  for(var i=0;i<chainAddrs.length;i++) chainAddrs[i].textContent = short;
-}
-
-/* ── 12. OVERRIDE FAKE FUNCTIONS ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 29: GIFT FUNCTIONS WIRING
+   ═══════════════════════════════════════════════════════════════════ */
 function wireRealFunctions(){
-  window.copyWalletAddress = function(){
-    if(walletData&&navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(walletData.address).then(function(){ if(window.cxToast) window.cxToast('Address copied!','ok'); });
-    }
-  };
-  window.copyCardAddress = function(){
-    if(walletData&&navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(walletData.address);
-      var fb=$('copyFeedbackCard'); if(fb){fb.style.opacity='1';setTimeout(function(){fb.style.opacity='0';},1500);}
-    }
-  };
-  window.cxCopyDepAddr = function(){ if(walletData) window.cxCopy(walletData.address,'Deposit address copied'); };
-  window.cxShareDepAddr = function(){
-    if(!walletData) return;
-    if(navigator.share){navigator.share({title:'Creso Deposit Address',text:walletData.address});}
-    else window.cxCopy(walletData.address,'Address copied');
-  };
-
-  var origRenderDeposit = window.cxRenderDeposit;
-  window.cxRenderDeposit = function(){
-    try{origRenderDeposit();}catch(e){}
-    if(!walletData) return;
-    var addrEl=$('cxDepAddr'); if(addrEl) addrEl.textContent=walletData.address;
-    var depAddrText=$('cxDepAddrText'); if(depAddrText) depAddrText.textContent=walletData.address;
-    generateRealQR('cxDepQr',walletData.address);
-  };
-
-  window._origCxExecSend = window.cxExecSend;
-  window.cxExecSend = function(){
-    var t=null;
-    if(window.cxTOKENS&&window.cxS){ for(var i=0;i<window.cxTOKENS.length;i++){ if(window.cxTOKENS[i].id===window.cxS.sendToken){t=window.cxTOKENS[i];break;} } }
-    if(!t) return;
-    var amt=parseFloat($('cxSendAmt').value)||0;
-    var addr=$('cxSendAddr').value.trim();
-    var btn=$('cxCfBtn'), lbl=$('cxCfBtnLabel');
-    if(!wallet||!walletData){ if(window.cxToast) window.cxToast('Wallet not initialized','err'); return; }
-
-    if(t.id==='BOT'){
-      btn.disabled=true;
-      lbl.innerHTML='Broadcasting...';
-      realSend(addr,amt).then(function(result){
-        $('cxSuccAmt').textContent=fmt(amt)+' BOT → '+(addr.slice(0,6)+'...'+addr.slice(-4));
-        $('cxSuccHash').textContent=result.hash;
-        btn.disabled=false; $('cxCfBtnLabel').textContent='Confirm & Send';
-        $('cxSendAmt').value=''; $('cxSendAddr').value='';
-        window.cxCalcSend(); window.cxRenderSendToken();
-        showPage('page-send-success');
-        if(typeof confetti==='function') confetti();
-        globalRefresh();
-      }).catch(function(err){
-        btn.disabled=false; $('cxCfBtnLabel').textContent='Confirm & Send';
-        if(window.cxToast) window.cxToast('Send failed: '+(err.message||'Unknown'),'err');
-      });
-    } else {
-      if(window.cxToast) window.cxToast('Only BOT is supported on testnet','err');
-    }
+  window.doRealSend = function(){
+    var toAddr = $('cxSendTo') ? $('cxSendTo').value.trim() : '';
+    var amt = $('cxSendAmt') ? $('cxSendAmt').value : '';
+    var btn = $('cxSendBtn');
+    if(!toAddr){ if(window.cxToast) window.cxToast('Enter address','err'); return; }
+    if(!amt || parseFloat(amt) <= 0){ if(window.cxToast) window.cxToast('Enter amount','err'); return; }
+    btn.disabled = true;
+    realSend(toAddr, parseFloat(amt)).then(function(){
+      if(window.cxToast) window.cxToast('Sent!','ok');
+      btn.disabled = false;
+      globalRefresh();
+    }).catch(function(err){
+      btn.disabled = false;
+      if(window.cxToast) window.cxToast('Send failed: '+(err.message||'Unknown'),'err');
+    });
   };
 
   window.gvConfirm = function(){
@@ -441,7 +757,9 @@ function wireRealFunctions(){
   };
 }
 
-/* ── 13. IMPORT WALLET FROM MNEMONIC ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 30: IMPORT WALLET FROM MNEMONIC
+   ═══════════════════════════════════════════════════════════════════ */
 function importFromMnemonic(mnemonic){
   if(typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   try {
@@ -453,17 +771,36 @@ function importFromMnemonic(mnemonic){
   } catch(e){ console.error('[WalletEngine] import error', e); return null; }
 }
 
-/* ── 14. SAVE USER PROFILE ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 31: IMPORT FROM PRIVATE KEY
+   ═══════════════════════════════════════════════════════════════════ */
+function importFromPrivateKey(privateKey){
+  if(typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
+  try {
+    var w = new ethers.Wallet(privateKey.trim());
+    walletData = { address: w.address, privateKey: w.privateKey, mnemonic: null, createdAt: Date.now() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
+    initProvider();
+    return walletData;
+  } catch(e){ console.error('[WalletEngine] import PK error', e); return null; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 32: SAVE USER PROFILE
+   ═══════════════════════════════════════════════════════════════════ */
 function saveProfile(name, dob, address){
   var profile = { name:name, dob:dob, address:address, createdAt:Date.now() };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  autoSyncCloud();
 }
 function getProfile(){
   try { var raw = localStorage.getItem(PROFILE_KEY); if(raw) return JSON.parse(raw); } catch(e){}
   return null;
 }
 
-/* ── 15. CREATE REAL WALLET ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 33: CREATE REAL WALLET
+   ═══════════════════════════════════════════════════════════════════ */
 function createReal(name, dob, walletName, address){
   if(!name) throw new Error('Please enter your name');
   if(!dob) throw new Error('Please enter your date of birth');
@@ -474,7 +811,9 @@ function createReal(name, dob, walletName, address){
   return wd;
 }
 
-/* ── 16. IMPORT REAL WALLET ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 34: IMPORT REAL WALLET
+   ═══════════════════════════════════════════════════════════════════ */
 function importReal(mnemonic){
   if(!mnemonic) throw new Error('Please enter your recovery phrase');
   var words = mnemonic.split(/\s+/);
@@ -485,22 +824,24 @@ function importReal(mnemonic){
   return wd;
 }
 
-/* ── 17. UPDATE WALLET UI WITH REAL DATA ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 35: UPDATE WALLET UI
+   ═══════════════════════════════════════════════════════════════════ */
 function updateWalletUI(){
   if(!walletData) return;
   var profile = getProfile();
   var name = profile ? profile.name : 'User';
   var addr = walletData.address;
   var short = shortAddr(addr);
-
   var depAddrText = $('cxDepAddrText'); if(depAddrText) depAddrText.textContent = addr;
   var depAddr = $('cxDepAddr'); if(depAddr) depAddr.textContent = addr;
-
   generateRealQR('cxDepQr', addr);
   if(typeof updateWalletPocket==='function') updateWalletPocket();
 }
 
-/* ── 18. GLOBAL REFRESH ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 36: GLOBAL REFRESH
+   ═══════════════════════════════════════════════════════════════════ */
 function globalRefresh(){
   return Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
     if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
@@ -510,7 +851,9 @@ function globalRefresh(){
   });
 }
 
-/* ── 19. RENDER TX HISTORY ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 37: RENDER TX HISTORY
+   ═══════════════════════════════════════════════════════════════════ */
 function renderTxHistory(){
   var el = $('txHistoryList');
   if(!el) return;
@@ -525,18 +868,18 @@ function renderTxHistory(){
     var icon, typeLabel, amtPrefix, color, bg;
     var timeStr = formatTimeAgo(tx.timestamp);
     var addrStr = '';
-    if(tx.type==='send'){ icon='↑'; typeLabel='Sent'; amtPrefix='-'; color='#ef4444'; bg='#fef2f2'; addrStr=tx.to?'To '+shortAddr(tx.to):''; }
-    else if(tx.type==='receive'){ icon='↓'; typeLabel='Received'; amtPrefix='+'; color='#22c55e'; bg='#f0fdf4'; addrStr=tx.from?'From '+shortAddr(tx.from):''; }
-    else if(tx.type==='gift_sent'){ icon='🎁'; typeLabel='Gift Sent'; amtPrefix='-'; color='#a855f7'; bg='#faf5ff'; addrStr=tx.to?'To '+shortAddr(tx.to):''; }
-    else if(tx.type==='gift_claimed'){ icon='🎁'; typeLabel='Gift Claimed'; amtPrefix='+'; color='#22c55e'; bg='#f0fdf4'; addrStr=tx.from?'From '+shortAddr(tx.from):''; }
-    else { icon='•'; typeLabel='Transaction'; amtPrefix=''; color='#6b7280'; bg='#f9fafb'; }
-    var statusDot = tx.status==='confirmed' ? '<span style="color:#22c55e;font-size:10px">●</span>' : '<span style="color:#ef4444;font-size:10px">●</span>';
+    if(tx.type==='send'){ icon='&#8593;'; typeLabel='Sent'; amtPrefix='-'; color='#ef4444'; bg='#fef2f2'; addrStr=tx.to?'To '+shortAddr(tx.to):''; }
+    else if(tx.type==='receive'){ icon='&#8595;'; typeLabel='Received'; amtPrefix='+'; color='#22c55e'; bg='#f0fdf4'; addrStr=tx.from?'From '+shortAddr(tx.from):''; }
+    else if(tx.type==='gift_sent'){ icon='&#127873;'; typeLabel='Gift Sent'; amtPrefix='-'; color='#a855f7'; bg='#faf5ff'; addrStr=tx.to?'To '+shortAddr(tx.to):''; }
+    else if(tx.type==='gift_claimed'){ icon='&#127873;'; typeLabel='Gift Claimed'; amtPrefix='+'; color='#22c55e'; bg='#f0fdf4'; addrStr=tx.from?'From '+shortAddr(tx.from):''; }
+    else { icon='&#8226;'; typeLabel='Transaction'; amtPrefix=''; color='#6b7280'; bg='#f9fafb'; }
+    var statusDot = tx.status==='confirmed' ? '<span style="color:#22c55e;font-size:10px">&#9679;</span>' : '<span style="color:#ef4444;font-size:10px">&#9679;</span>';
     var hashShort = tx.hash ? tx.hash.slice(0,10)+'...' : '';
     html += '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border-radius:14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04)" onclick="window.cxOpenTxDetail && window.cxOpenTxDetail('+i+')">'+
       '<div style="width:40px;height:40px;border-radius:12px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+icon+'</div>'+
       '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700;color:#1a1a1a">'+typeLabel+'</span>'+
       '<span style="font-size:13px;font-weight:800;color:'+color+'">'+amtPrefix+fmt(tx.amount)+' '+(tx.token||'BOT')+'</span></div>'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px"><span style="font-size:11px;color:#9ca3af">'+addrStr+(hashShort?' · '+hashShort:'')+'</span>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px"><span style="font-size:11px;color:#9ca3af">'+addrStr+(hashShort?' &#183; '+hashShort:'')+'</span>'+
       '<span style="font-size:11px;color:#9ca3af">'+statusDot+' '+timeStr+'</span></div></div></div>';
   }
   el.innerHTML = html;
@@ -549,6 +892,7 @@ function formatTimeAgo(ts){
   if(diff < 604800000) return Math.floor(diff/86400000)+'d ago';
   return new Date(ts).toLocaleDateString();
 }
+
 window.cxOpenTxDetail = function(idx){
   var list = getTxHistory();
   var tx = list[idx];
@@ -558,24 +902,26 @@ window.cxOpenTxDetail = function(idx){
   var typeLabel = tx.type==='send'?'Sent':tx.type==='receive'?'Received':tx.type==='gift_sent'?'Gift Sent':tx.type==='gift_claimed'?'Gift Claimed':'Transaction';
   var color = (tx.type==='send'||tx.type==='gift_sent')?'#ef4444':'#22c55e';
   el.innerHTML = '<div style="text-align:center;padding:20px 0">'+
-    '<div style="width:56px;height:56px;border-radius:16px;background:'+(tx.type==='send'||tx.type==='gift_sent'?'#fef2f2':'#f0fdf4')+';display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px">'+(tx.type==='gift_sent'||tx.type==='gift_claimed'?'🎁':(tx.type==='send'?'↑':'↓'))+'</div>'+
+    '<div style="width:56px;height:56px;border-radius:16px;background:'+(tx.type==='send'||tx.type==='gift_sent'?'#fef2f2':'#f0fdf4')+';display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px">'+(tx.type==='gift_sent'||tx.type==='gift_claimed'?'&#127873;':(tx.type==='send'?'&#8593;':'&#8595;'))+'</div>'+
     '<div style="font-size:13px;font-weight:700;color:#9ca3af;margin-bottom:4px">'+typeLabel+'</div>'+
     '<div style="font-size:28px;font-weight:900;color:'+color+'">'+((tx.type==='send'||tx.type==='gift_sent')?'-':'+')+fmt(tx.amount)+' '+(tx.token||'BOT')+'</div>'+
-    '<div style="font-size:13px;color:#9ca3af;margin-top:4px">'+(BOT_PRICE_USD>0?'≈ $'+(tx.amount*BOT_PRICE_USD).toFixed(2):'')+'</div>'+
+    '<div style="font-size:13px;color:#9ca3af;margin-top:4px">'+(BOT_PRICE_USD>0?'&#8776; $'+(tx.amount*BOT_PRICE_USD).toFixed(2):'')+'</div>'+
     '</div>'+
     '<div style="background:#f9fafb;border-radius:14px;padding:16px;margin-top:8px">'+
     '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">Status</span><span style="font-size:12px;font-weight:700;color:'+(tx.status==='confirmed'?'#22c55e':'#ef4444')+'">'+(tx.status==='confirmed'?'Confirmed':'Failed')+'</span></div>'+
     (tx.to?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">To</span><span style="font-size:12px;font-weight:700;color:#1a1a1a;font-family:monospace">'+shortAddr(tx.to)+'</span></div>':'')+
     (tx.from?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">From</span><span style="font-size:12px;font-weight:700;color:#1a1a1a;font-family:monospace">'+shortAddr(tx.from)+'</span></div>':'')+
-    (tx.hash?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">Hash</span><span style="font-size:12px;font-weight:700;color:#7c3aed;font-family:monospace;cursor:pointer" onclick="window.cxCopy(\''+tx.hash+'\',\'Hash copied\')">'+shortAddr(tx.hash)+' ↗</span></div>':'')+
+    (tx.hash?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">Hash</span><span style="font-size:12px;font-weight:700;color:#7c3aed;font-family:monospace;cursor:pointer" onclick="window.cxCopy(\''+tx.hash+'\',\'Hash copied\')">'+shortAddr(tx.hash)+' &#8599;</span></div>':'')+
     (tx.gasUsed?'<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:12px;color:#9ca3af;font-weight:600">Gas Fee</span><span style="font-size:12px;font-weight:700;color:#1a1a1a">'+tx.gasUsed+' BOT</span></div>':'')+
     '<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:12px;color:#9ca3af;font-weight:600">Time</span><span style="font-size:12px;font-weight:700;color:#1a1a1a">'+new Date(tx.timestamp).toLocaleString()+'</span></div>'+
     '</div>'+
-    (tx.hash?'<button style="width:100%;margin-top:16px;padding:14px;background:#1a1a1a;color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer" onclick="window.open(\''+BOT_EXPLORER+'/tx/'+tx.hash+'\',\'_blank\')">View on Explorer ↗</button>':'');
+    (tx.hash?'<button style="width:100%;margin-top:16px;padding:14px;background:#1a1a1a;color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer" onclick="window.open(\''+BOT_EXPLORER+'/tx/'+tx.hash+'\',\'_blank\')">View on Explorer &#8599;</button>':'');
   navigateTo('page-tx-detail');
 };
 
-/* ── 20. REAL GIFT REDEEM ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 38: GIFT CODE REDEEM
+   ═══════════════════════════════════════════════════════════════════ */
 async function redeemGiftCode(code){
   if(!code || code.length < 5) throw new Error('Please enter a valid gift code');
   var codeUpper = code.toUpperCase().trim();
@@ -593,7 +939,9 @@ async function redeemGiftCode(code){
   return { hash: result.hash, amount: giftData.amount, sender: giftData.sender, message: giftData.message };
 }
 
-/* ── 21. AUTO-INIT ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 39: AUTO-INIT
+   ═══════════════════════════════════════════════════════════════════ */
 function autoInit(){
   try {
     var existed = loadWallet();
@@ -625,9 +973,12 @@ function autoInit(){
   } catch(e){ console.error('[WalletEngine] autoInit error', e); }
 }
 
-/* ── PUBLIC API ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION 40: PUBLIC API
+   ═══════════════════════════════════════════════════════════════════ */
 window.WalletEngine = {
   loadWallet:loadWallet, createWallet:createWallet, importFromMnemonic:importFromMnemonic,
+  importFromPrivateKey:importFromPrivateKey,
   createReal:createReal, importReal:importReal, logoutWallet:logoutWallet,
   saveProfile:saveProfile, getProfile:getProfile,
   getAddress:function(){return walletData?walletData.address:null;},
@@ -646,7 +997,21 @@ window.WalletEngine = {
   autoInit:autoInit,
   getBOTPrice:function(){return BOT_PRICE_USD;},
   hasWallet:function(){return !!localStorage.getItem(STORAGE_KEY);},
-  SBT_ADDRESS:SBT_ADDRESS, BOT_RPC:BOT_RPC, BOT_CHAIN_ID:BOT_CHAIN_ID, BOT_EXPLORER:BOT_EXPLORER
+  SBT_ADDRESS:SBT_ADDRESS, BOT_RPC:BOT_RPC, BOT_CHAIN_ID:BOT_CHAIN_ID, BOT_EXPLORER:BOT_EXPLORER,
+  /* Auth API */
+  authSignUp:authSignUp, authSendOtp:authSendOtp, authVerifyOtp:authVerifyOtp,
+  authLogin:authLogin, authResetPassword:authResetPassword, authUpdatePassword:authUpdatePassword,
+  authLogout:authLogout, authGetUser:authGetUser, authGetUserSync:authGetUserSync,
+  restoreAuthSession:restoreAuthSession,
+  /* Cloud Sync API */
+  saveWalletToCloud:saveWalletToCloud, loadWalletFromCloud:loadWalletFromCloud,
+  restoreFromCloud:restoreFromCloud, autoSyncCloud:autoSyncCloud,
+  /* Encryption API */
+  encryptText:encryptText, decryptText:decryptText,
+  /* Points API */
+  getPoints:getPoints, addPoints:addPoints,
+  /* Profile */
+  getProfile:getProfile
 };
 
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',autoInit);}else{autoInit;}
