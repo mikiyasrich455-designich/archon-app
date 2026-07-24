@@ -53,14 +53,21 @@ function extractError(err){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 1: SUPABASE CLIENT INIT
+   SECTION 1: SUPABASE CLIENT INIT (raw fetch, no CDN dependency)
    ═══════════════════════════════════════════════════════════════════ */
+function sbFetch(path, opts) {
+  var url = SUPABASE_URL + '/rest/v1/' + path;
+  var headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' };
+  if (opts && opts.headers) Object.keys(opts.headers).forEach(function(k) { headers[k] = opts.headers[k]; });
+  return fetch(url, { method: (opts && opts.method) || 'GET', headers: headers, body: (opts && opts.body) || undefined }).then(function(r) {
+    if (!r.ok) return r.text().then(function(t) { throw new Error('Supabase ' + r.status + ': ' + t); });
+    if (r.status === 204) return null;
+    return r.json();
+  });
+}
 function initSupabase(){
-  if(typeof window.supabase !== 'undefined' && !sbClient){
-    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window._sbClient = sbClient;
-    console.log('[Archon] Supabase client initialized');
-  }
+  window._sbFetch = sbFetch;
+  console.log('[Archon] Supabase raw fetch initialized');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -175,7 +182,7 @@ async function decryptText(encoded, password){
    ═══════════════════════════════════════════════════════════════════ */
 async function saveWalletToCloud(){
   initSupabase();
-  if(!sbClient || !walletData) { console.log('[Archon] No wallet — skipping cloud save'); return false; }
+  if(!walletData) { console.log('[Archon] No wallet — skipping cloud save'); return false; }
   if(!walletData.mnemonic) { console.log('[Archon] No seed phrase — skipping cloud save'); return false; }
   try {
     var seedHash = await getSeedHash(walletData.mnemonic);
@@ -210,10 +217,11 @@ async function saveWalletToCloud(){
       points: pointsVal,
       updated_at: new Date().toISOString()
     };
-    var { data, error } = await sbClient
-      .from('wallets')
-      .upsert(row, { onConflict: 'seed_hash' });
-    if(error) throw new Error(extractError(error));
+    await sbFetch('wallets', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify(row)
+    });
     console.log('[Archon] Wallet saved to cloud');
     return true;
   } catch(e){
@@ -227,16 +235,12 @@ async function saveWalletToCloud(){
    ═══════════════════════════════════════════════════════════════════ */
 async function restoreFromSeed(mnemonic){
   initSupabase();
-  if(!sbClient) throw new Error('Supabase not loaded');
   if(!mnemonic || !mnemonic.trim()) throw new Error('Enter your seed phrase');
   try {
     var seedHash = await getSeedHash(mnemonic);
-    var { data, error } = await sbClient
-      .from('wallets')
-      .select('*')
-      .eq('seed_hash', seedHash)
-      .single();
-    if(error || !data) throw new Error('No wallet found with this seed phrase');
+    var rows = await sbFetch('wallets?select=*&seed_hash=eq.' + encodeURIComponent(seedHash) + '&limit=1');
+    if(!rows || !rows.length) throw new Error('No wallet found with this seed phrase');
+    var data = rows[0];
     var seedPhrase = await decryptText(data.encrypted_seed, mnemonic);
     var privateKey = await decryptText(data.encrypted_pk, mnemonic);
     walletData = { address: data.wallet_address, privateKey: privateKey, mnemonic: seedPhrase, createdAt: Date.now() };
@@ -258,17 +262,13 @@ async function restoreFromSeed(mnemonic){
    ═══════════════════════════════════════════════════════════════════ */
 async function restoreFromKey(recoveryKey){
   initSupabase();
-  if(!sbClient) throw new Error('Supabase not loaded');
   try {
     var cleanKey = normalizeRecoveryKey(recoveryKey);
     if(cleanKey.length !== 16) throw new Error('Security key must be 16 characters');
     var keyHash = await hashString(cleanKey);
-    var { data, error } = await sbClient
-      .from('wallets')
-      .select('*')
-      .eq('recovery_key_hash', keyHash)
-      .single();
-    if(error || !data) throw new Error('No wallet found with this security key');
+    var rows = await sbFetch('wallets?select=*&recovery_key_hash=eq.' + encodeURIComponent(keyHash) + '&limit=1');
+    if(!rows || !rows.length) throw new Error('No wallet found with this security key');
+    var data = rows[0];
     var encKey = 'archon-recovery-' + cleanKey;
     var seedPhrase, privateKey;
     if(data.encrypted_seed_rk && data.encrypted_pk_rk){
