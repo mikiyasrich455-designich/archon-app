@@ -5229,9 +5229,9 @@ function redeemGift() {
       setProgress(15, 'Looking up gift\u2026');
       console.log('[GV] Looking up code:', code);
 
-      var sgDB = window._sbClient || null;
-      if (!sgDB && window.supabase) {
-        try { sgDB = window.supabase.createClient('https://vjljoydtwvpvhqiecbqr.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'); } catch(e){}
+      var sgDB = null;
+      if (window.supabase) {
+        try { sgDB = window.supabase.createClient(SB_URL, SB_KEY); } catch(e) {}
       }
       if (sgDB) {
         try {
@@ -5982,6 +5982,8 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
   var GV = { t: GVT[0], amount: 0, to: '', msg: '', code: '', pin: '' };
   window._GV = GV;
   window._GVT = GVT;
+  var SB_URL = 'https://vjljoydtwvpvhqiecbqr.supabase.co';
+  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3ZwdmhxaWVjYnFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTAwMjYsImV4cCI6MjA5OTM2NjAyNn0.YFIbiUGGzGvjuvF2bsm4dQv_yzNtJr8G1La8Rtqexy8';
 
   /* â”€â”€ â•â•â• TESTNET INTEGRATION POINT â•â•â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
      Swap onConfirm for a real call, e.g.:
@@ -6253,14 +6255,9 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 
           function saveToSupabase(attempt) {
             return new Promise(function(resolve) {
-              var sgDB = window._sbClient || window.WalletEngine?.sbClient;
-              if (!sgDB && window.supabase) {
-                try {
-                  sgDB = window.supabase.createClient(
-                    'https://vjljoydtwvpvhqiecbqr.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
-                  );
-                } catch(e) {}
+              var sgDB = null;
+              if (window.supabase) {
+                try { sgDB = window.supabase.createClient(SB_URL, SB_KEY); } catch(e) {}
               }
               if (!sgDB) { console.warn('[GV] No Supabase client available'); resolve(false); return; }
               sgDB.from('archon_vouchers').insert({
