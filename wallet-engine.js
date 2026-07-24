@@ -58,6 +58,7 @@ function extractError(err){
 function initSupabase(){
   if(typeof window.supabase !== 'undefined' && !sbClient){
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window._sbClient = sbClient;
     console.log('[Archon] Supabase client initialized');
   }
 }

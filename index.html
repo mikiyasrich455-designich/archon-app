@@ -5229,12 +5229,12 @@ function redeemGift() {
       setProgress(15, 'Looking up gift\u2026');
       console.log('[GV] Looking up code:', code);
 
-      if (window.supabase) {
+      var sgDB = window._sbClient || null;
+      if (!sgDB && window.supabase) {
+        try { sgDB = window.supabase.createClient('https://vjljoydtwvpvhqiecbqr.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'); } catch(e){}
+      }
+      if (sgDB) {
         try {
-          var sgDB = window.supabase.createClient(
-            'https://vjljoydtwvpvhqiecbqr.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
-          );
           var result = await rpcTimeout(
             sgDB.from('archon_vouchers').select('*').eq('code', code).single(),
             8000, 'Supabase lookup'
@@ -5245,7 +5245,7 @@ function redeemGift() {
           console.warn('[GV] Supabase lookup failed:', e.message || e);
         }
       } else {
-        console.warn('[GV] Supabase not loaded');
+        console.warn('[GV] No Supabase client available');
       }
 
       if (!gift) {
@@ -5325,12 +5325,8 @@ function redeemGift() {
 
       setProgress(90, 'Updating records\u2026');
       try {
-        if (window.supabase) {
-          var sgDB2 = window.supabase.createClient(
-            'https://vjljoydtwvpvhqiecbqr.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
-          );
-          await sgDB2.from('archon_vouchers').update({ claimed: true, claimed_by: claimerAddress, claimed_at: new Date().toISOString() }).eq('code', code);
+        if (sgDB) {
+          await sgDB.from('archon_vouchers').update({ claimed: true, claimed_by: claimerAddress, claimed_at: new Date().toISOString() }).eq('code', code);
         }
       } catch (e) {
         console.warn('[GV] Failed to mark claimed in Supabase:', e);
@@ -6257,13 +6253,17 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 
           function saveToSupabase(attempt) {
             return new Promise(function(resolve) {
-              if (!window.supabase) { console.warn('[GV] Supabase not loaded'); resolve(false); return; }
-              try {
-                var sgDB = window.supabase.createClient(
-                  'https://vjljoydtwvpvhqiecbqr.supabase.co',
-                  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
-                );
-                sgDB.from('archon_vouchers').insert({
+              var sgDB = window._sbClient || window.WalletEngine?.sbClient;
+              if (!sgDB && window.supabase) {
+                try {
+                  sgDB = window.supabase.createClient(
+                    'https://vjljoydtwvpvhqiecbqr.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
+                  );
+                } catch(e) {}
+              }
+              if (!sgDB) { console.warn('[GV] No Supabase client available'); resolve(false); return; }
+              sgDB.from('archon_vouchers').insert({
                   code: claimCode,
                   amount: GV.amount,
                   token_sym: GV.t.sym,
@@ -6287,10 +6287,6 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
                   if (attempt < 2) { setTimeout(function() { saveToSupabase(attempt+1).then(resolve); }, 2000); }
                   else resolve(false);
                 });
-              } catch (e) {
-                console.error('[GV] Supabase init error:', e);
-                resolve(false);
-              }
             });
           }
 
@@ -7153,6 +7149,7 @@ function doRefresh(){
 }
 
 /* â•â•â• GIFT STATS â•â•â• */
+function fmt(n,d){if(d===undefined)d=(n>=1000?2:(n>=1?4:6));return Number(n).toLocaleString('en-US',{minimumFractionDigits:Math.min(d,2),maximumFractionDigits:d});}
 function updateGiftStats(){
   var sentCount = parseInt(localStorage.getItem('archon_gift_sent_count')) || 0;
   var receivedCount = parseInt(localStorage.getItem('archon_gift_received_count')) || 0;
