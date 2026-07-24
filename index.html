@@ -1457,6 +1457,29 @@
 @keyframes gvRise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 #gvToast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(16px);background:#17121f;color:#fff;font-size:12px;font-weight:700;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:all .3s;z-index:300;box-shadow:0 10px 24px rgba(0,0,0,.35);}
 #gvToast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* claim overlay */
+#claimOverlay{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 20%,#1a3a1a 0%,#0e2010 60%,#060e08 100%);flex-direction:column;}
+#claimOverlay.show{display:flex;animation:gvFade .3s ease;}
+.claim-inner{display:flex;flex-direction:column;align-items:center;gap:24px;padding:0 34px;width:100%;}
+.claim-vault{position:relative;width:140px;height:140px;display:grid;place-items:center;}
+.claim-vault-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(163,230,53,.25);animation:claimPulse 1.8s ease-in-out infinite;}
+.claim-vault-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a3e635);display:grid;place-items:center;box-shadow:0 0 40px rgba(163,230,53,.35);animation:claimBob 1.4s ease-in-out infinite;}
+@keyframes claimPulse{0%,100%{transform:scale(1);opacity:.4;}50%{transform:scale(1.12);opacity:.8;}}
+@keyframes claimBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.claim-check{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:scale(.4);transition:all .5s cubic-bezier(.34,1.56,.64,1);}
+#claimOverlay.done .claim-check{opacity:1;transform:scale(1);}
+#claimOverlay.done .claim-vault-ring{animation:none;opacity:0;}
+#claimOverlay.done .claim-vault-icon{animation:none;transform:scale(0);opacity:0;}
+.claim-title{font-family:'Unbounded',Inter,sans-serif;color:#fff;font-size:15.5px;font-weight:700;text-align:center;min-height:22px;}
+.claim-sub{color:#a3e635;font-size:11.5px;font-weight:600;text-align:center;margin-top:-14px;}
+.claim-bar{width:76%;height:6px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden;}
+.claim-bar i{display:block;height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#7c3aed,#a3e635);transition:width .9s cubic-bezier(.4,0,.2,1);}
+#claimConfetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+
+/* claim button glow */
+.btn-glow{animation:btnGlow 1.5s ease-in-out infinite alternate;}
+@keyframes btnGlow{0%{box-shadow:0 0 8px rgba(163,230,53,.3),0 0 20px rgba(124,58,237,.2);}100%{box-shadow:0 0 16px rgba(163,230,53,.6),0 0 40px rgba(124,58,237,.4);}}
 @media (prefers-reduced-motion:reduce){.gv-page *,#gvSendOverlay *{animation:none !important;transition:none !important;}}
 
 </style>
@@ -3426,7 +3449,7 @@
         </div>
 
         <div class="gv-block gv-rise gv-d4b">
-            <div class="gv-label"><i></i>PIN Code<span class="gv-hint">4+ digits for the gift</span></div>
+            <div class="gv-label"><i></i>Voucher Password<span class="gv-hint">4+ digits for the gift</span></div>
             <div class="gv-input" id="gvPinRow">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a8a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 <input type="text" id="gvPin" placeholder="1234" maxlength="8" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'');gvOnForm()" />
@@ -3512,7 +3535,7 @@
             </div>
             <div class="gv-row">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span class="k">PIN Code</span>
+                <span class="k">Password</span>
                 <span class="v" id="gvRPin" style="font-family:monospace;letter-spacing:2px;">******</span>
             </div>
         </div>
@@ -3656,9 +3679,9 @@
                 <input type="text" id="redeemCode" placeholder="CLAIM CODE" maxlength="20" class="bg-transparent border-none outline-none text-center w-full" style="font-family:inherit;color:#a3e635;caret-color:#a3e635;position:relative;z-index:2;text-transform:uppercase" oninput="gvOnRedeemInput()" />
             </div>
             <div class="code-box mb-3" onclick="this.querySelector('input').focus()" style="margin-top:8px">
-                <input type="text" id="redeemPin" placeholder="PIN CODE" maxlength="6" inputmode="numeric" pattern="[0-9]*" class="bg-transparent border-none outline-none text-center w-full" style="font-family:inherit;color:#a3e635;caret-color:#a3e635;position:relative;z-index:2;letter-spacing:4px" oninput="this.value=this.value.replace(/[^0-9]/g,'');gvOnRedeemInput()" />
+                <input type="text" id="redeemPin" placeholder="PASSWORD" maxlength="8" inputmode="numeric" pattern="[0-9]*" class="bg-transparent border-none outline-none text-center w-full" style="font-family:inherit;color:#a3e635;caret-color:#a3e635;position:relative;z-index:2;letter-spacing:4px" oninput="this.value=this.value.replace(/[^0-9]/g,'');gvOnRedeemInput()" />
             </div>
-            <p class="text-xs text-gray-400 text-center font-medium">Enter the claim code and PIN you received</p>
+            <p class="text-xs text-gray-400 text-center font-medium">Enter the claim code and password you received</p>
         </div>
 
         <!-- Scan Option -->
@@ -3667,8 +3690,28 @@
             Scan QR Code Instead
         </button>
 
-        <button class="btn-dark w-full mt-auto" onclick="redeemGift()" disabled style="opacity:0.5">Enter code &amp; PIN</button>
+        <button class="btn-dark w-full mt-auto" onclick="redeemGift()" disabled style="opacity:0.5" id="redeemClaimBtn">Enter code &amp; password</button>
     </div>
+</div>
+
+<div id="claimOverlay">
+    <div class="claim-inner">
+        <div class="claim-vault">
+            <div class="claim-vault-ring"></div>
+            <div class="claim-vault-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+            </div>
+            <div class="claim-check">
+                <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#10b981);display:grid;place-items:center;box-shadow:0 0 30px rgba(34,197,94,.5);">
+                    <svg width="36" height="36" viewBox="0 0 52 52" fill="none"><path d="M14 27l8 8 16-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+            </div>
+        </div>
+        <div class="claim-title" id="claimTitle">Unlocking vault&hellip;</div>
+        <div class="claim-bar"><i id="claimBar"></i></div>
+        <div class="claim-sub">Sweeping funds on Botchain testnet &middot; do not close</div>
+    </div>
+    <div id="claimConfetti"></div>
 </div>
 
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
@@ -5085,10 +5128,16 @@ function gvOnRedeemInput() {
     if (btn) {
         if (code.length >= 3 && pin.length >= 4) {
             btn.disabled = false;
-            btn.textContent = 'Redeem Gift';
+            btn.textContent = 'Claim Gift';
+            btn.style.background = 'linear-gradient(135deg,#7c3aed,#a3e635)';
+            btn.style.color = '#fff';
+            btn.classList.add('btn-glow');
         } else {
             btn.disabled = true;
-            btn.textContent = 'Enter code & PIN';
+            btn.textContent = 'Enter code & password';
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.classList.remove('btn-glow');
         }
     }
 }
@@ -5109,11 +5158,22 @@ async function redeemGift() {
     var code = (document.getElementById('redeemCode')?.value || '').trim().toUpperCase();
     var pin = (document.getElementById('redeemPin')?.value || '').trim();
     if (!code || code.length < 3) { toast('Enter a valid claim code'); return; }
-    if (!pin || pin.length < 4) { toast('PIN must be at least 4 digits'); return; }
+    if (!pin || pin.length < 4) { toast('Password must be at least 4 digits'); return; }
     if (!window.WalletEngine || !window.WalletEngine.isInitialized()) { toast('Create or import a wallet first'); return; }
 
     var btn = document.querySelector('#page-redeem-gift .btn-dark');
-    if (btn) { btn.textContent = 'Claiming...'; btn.disabled = true; }
+    if (btn) { btn.disabled = true; btn.classList.remove('btn-glow'); }
+
+    var ov = document.getElementById('claimOverlay');
+    var bar = document.getElementById('claimBar');
+    var titleEl = document.getElementById('claimTitle');
+    if (ov) { ov.classList.remove('done'); ov.classList.add('show'); }
+    if (bar) bar.style.width = '0%';
+
+    function setProgress(pct, msg) {
+      if (bar) bar.style.width = pct + '%';
+      if (titleEl) titleEl.textContent = msg;
+    }
 
     function rpcTimeout(promise, ms, label) {
       return Promise.race([
@@ -5127,6 +5187,7 @@ async function redeemGift() {
       var CHAIN_ID = 968;
       var CHAIN_ID_HEX = '0x3C8';
 
+      setProgress(5, 'Switching to Botchain\u2026');
       try {
         if(window.ethereum && window.ethereum.request) {
           await Promise.race([
@@ -5152,7 +5213,7 @@ async function redeemGift() {
       var provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
       var gift = null;
 
-      if (btn) btn.textContent = 'Looking up gift...';
+      setProgress(15, 'Looking up gift\u2026');
 
       try {
         var sgDB = window.supabase.createClient(
@@ -5181,28 +5242,28 @@ async function redeemGift() {
       if (gift.claimed) throw new Error('This gift has already been claimed!');
 
       var storedPinHash = gift.pin_hash || '';
-      if (storedPinHash && storedPinHash !== btoa(pin)) throw new Error('Wrong PIN code.');
+      if (storedPinHash && storedPinHash !== btoa(pin)) throw new Error('Wrong password.');
 
       var claimerAddress = window.WalletEngine.getAddress();
       var combinedPassword = code + '-' + pin;
 
       if (gift.encrypted_pk) {
-        if (btn) btn.textContent = 'Decrypting vault...';
+        setProgress(30, 'Decrypting vault\u2026');
         var vaultPrivateKey;
         try {
           vaultPrivateKey = await gvDecryptAES(gift.encrypted_pk, combinedPassword);
         } catch (e) {
-          throw new Error('Wrong claim code or PIN - could not decrypt vault.');
+          throw new Error('Wrong claim code or password — could not decrypt vault.');
         }
         if (!vaultPrivateKey || !vaultPrivateKey.startsWith('0x')) throw new Error('Invalid vault key.');
 
-        if (btn) btn.textContent = 'Checking vault balance...';
+        setProgress(50, 'Checking vault balance\u2026');
         var vaultWallet = new ethers.Wallet(vaultPrivateKey, provider);
         var vaultBalance = await rpcTimeout(provider.getBalance(vaultWallet.address), 15000, 'Balance check');
         console.log('[GV] Vault balance:', ethers.formatEther(vaultBalance), 'BOT');
-        if (vaultBalance === 0n) throw new Error('Vault is empty - funds may have already been swept.');
+        if (vaultBalance === 0n) throw new Error('Vault is empty — funds may have already been swept.');
 
-        if (btn) btn.textContent = 'Sending sweep transaction...';
+        setProgress(65, 'Sending sweep transaction\u2026');
         var feeData = await rpcTimeout(provider.getFeeData(), 15000, 'Fee data');
         var gasPrice = feeData.gasPrice || ethers.parseUnits('1', 'gwei');
         var gasLimit = 21000n;
@@ -5217,9 +5278,10 @@ async function redeemGift() {
         );
         console.log('[GV] Sweep TX hash:', sweepTx.hash);
 
-        if (btn) btn.textContent = 'Confirming (waiting for block)...';
+        setProgress(80, 'Confirming on-chain\u2026');
         var sweepReceipt = await rpcTimeout(sweepTx.wait(), 60000, 'TX confirmation');
 
+        setProgress(90, 'Updating records\u2026');
         try {
           var sgDB2 = window.supabase.createClient(
             'https://vjljoydtwvpvhqiecbqr.supabase.co',
@@ -5238,24 +5300,33 @@ async function redeemGift() {
           localStorage.setItem('archon_voucher_gifts', JSON.stringify(gifts));
         } catch (e) {}
 
+        setProgress(100, 'Gift claimed!');
+        if (ov) ov.classList.add('done');
+        spawnClaimConfetti();
+
         var priceUsd = window.WalletEngine.getBOTPrice ? window.WalletEngine.getBOTPrice() : 0;
         var amt = parseFloat(gift.amount) || 0;
         document.getElementById('redeemedAmount').textContent = fmt(amt) + ' BOT';
         document.getElementById('redeemedFiat').textContent = priceUsd > 0 ? '~ $' + (amt * priceUsd).toFixed(2) : '';
         document.getElementById('redeemedMessage').textContent = gift.message ? '"' + gift.message + '"' : 'Gift claimed successfully!';
         document.getElementById('redeemSenderName').textContent = gift.sender ? gift.sender.slice(0,6)+'...'+gift.sender.slice(-4) : 'Someone';
-        if (btn) { btn.textContent = 'Redeem Gift'; btn.disabled = false; }
-        navigateTo('page-redeem-success');
-        setTimeout(function(){ spawnConfetti(); }, 300);
-        window.WalletEngine.globalRefresh();
-        setTimeout(function(){ try { window.WalletEngine.globalRefresh(); } catch(e){} }, 2500);
+
+        setTimeout(function () {
+          if (ov) ov.classList.remove('show');
+          if (btn) { btn.textContent = 'Claim Gift'; btn.disabled = false; }
+          navigateTo('page-redeem-success');
+          setTimeout(function(){ spawnConfetti(); }, 300);
+          window.WalletEngine.globalRefresh();
+          setTimeout(function(){ try { window.WalletEngine.globalRefresh(); } catch(e){} }, 2500);
+        }, 1400);
       } else {
         throw new Error('No vault key found for this gift.');
       }
     } catch(err) {
       console.error('[GV] Redeem failed:', err);
-      if (btn) { btn.textContent = 'Redeem Gift'; btn.disabled = false; }
-      toast(err.message || 'Redeem failed');
+      if (ov) ov.classList.remove('show');
+      if (btn) { btn.textContent = 'Claim Gift'; btn.disabled = false; btn.classList.add('btn-glow'); }
+      toast(err.message || 'Claim failed');
     }
 }
 function spawnConfetti() {
@@ -5272,6 +5343,25 @@ function spawnConfetti() {
         piece.style.animationDuration = (2 + Math.random() * 2) + 's';
         piece.style.width = (4 + Math.random() * 8) + 'px';
         piece.style.height = (4 + Math.random() * 8) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        container.appendChild(piece);
+    }
+}
+
+function spawnClaimConfetti() {
+    var container = document.getElementById('claimConfetti');
+    if(!container) return;
+    container.innerHTML = '';
+    var colors = ['#a3e635', '#7c3aed', '#22c55e', '#ffd166', '#ec4899'];
+    for(var i=0; i<60; i++) {
+        var piece = document.createElement('div');
+        piece.className = 'gv-cf';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+        piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+        piece.style.animationDelay = Math.random() * 1.5 + 's';
+        piece.style.width = (5 + Math.random() * 8) + 'px';
+        piece.style.height = (5 + Math.random() * 12) + 'px';
         piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
         container.appendChild(piece);
     }
@@ -5995,7 +6085,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
     if (!(GV.amount > 0)) { errPulse('gvAmtRow'); ok = false; }
     else if (GV.amount > GV.t.bal + 1e-9) { errPulse('gvAmtRow'); toast('Amount exceeds balance'); ok = false; }
     if (!GV.to.trim() || GV.to.trim().length < 3) { errPulse('gvToRow'); toast('Claim code must be at least 3 characters'); ok = false; }
-    if (!GV.pin.trim() || GV.pin.trim().length < 4) { errPulse('gvPinRow'); toast('PIN must be at least 4 digits'); ok = false; }
+    if (!GV.pin.trim() || GV.pin.trim().length < 4) { errPulse('gvPinRow'); toast('Password must be at least 4 digits'); ok = false; }
     if (!ok) return;
 
     var a = fmt(GV.amount) + ' ' + GV.t.sym;
@@ -6052,7 +6142,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
     if (GV.amount <= 0) { toast('Enter an amount'); return; }
     if (GV.amount > GV.t.bal + 1e-9) { toast('Insufficient balance'); return; }
     if (!GV.to.trim() || GV.to.trim().length < 3) { toast('Claim code must be 3+ chars'); return; }
-    if (!GV.pin.trim() || GV.pin.trim().length < 4) { toast('PIN must be 4+ digits'); return; }
+    if (!GV.pin.trim() || GV.pin.trim().length < 4) { toast('Password must be 4+ digits'); return; }
 
     var claimCode = GV.to.trim().toUpperCase();
     var pinCode = GV.pin.trim();
@@ -6262,7 +6352,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
   /* â”€â”€ init: move overlay+toast into the app frame, paint defaults â”€â”€ */
   function init() {
     var frame = $('appFrame');
-    ['gvSendOverlay', 'gvToast'].forEach(function (id) {
+    ['gvSendOverlay', 'gvToast', 'claimOverlay'].forEach(function (id) {
       var el = $(id);
       if (el && frame && el.parentNode !== frame) frame.appendChild(el);
     });
