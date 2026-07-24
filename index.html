@@ -1471,6 +1471,10 @@
 #claimOverlay.done .claim-check{opacity:1;transform:scale(1);}
 #claimOverlay.done .claim-vault-ring{animation:none;opacity:0;}
 #claimOverlay.done .claim-vault-icon{animation:none;transform:scale(0);opacity:0;}
+#claimOverlay.error .claim-vault-ring{animation:none;opacity:0;border-color:rgba(239,68,68,.4);}
+#claimOverlay.error .claim-vault-icon{animation:none;}
+#claimOverlay.error .claim-title{color:#fca5a5;}
+#claimOverlay.error .claim-sub{color:#f87171;}
 .claim-title{font-family:'Unbounded',Inter,sans-serif;color:#fff;font-size:15.5px;font-weight:700;text-align:center;min-height:22px;}
 .claim-sub{color:#a3e635;font-size:11.5px;font-weight:600;text-align:center;margin-top:-14px;}
 .claim-bar{width:76%;height:6px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden;}
@@ -5154,7 +5158,7 @@ function formatRedeemCode(input) {
     input.value = formatted;
 }
 
-async function redeemGift() {
+function redeemGift() {
     var code = (document.getElementById('redeemCode')?.value || '').trim().toUpperCase();
     var pin = (document.getElementById('redeemPin')?.value || '').trim();
     if (!code || code.length < 3) { toast('Enter a valid claim code'); return; }
@@ -5167,7 +5171,8 @@ async function redeemGift() {
     var ov = document.getElementById('claimOverlay');
     var bar = document.getElementById('claimBar');
     var titleEl = document.getElementById('claimTitle');
-    if (ov) { ov.classList.remove('done'); ov.classList.add('show'); }
+    var vaultEl = document.querySelector('.claim-vault');
+    if (ov) { ov.classList.remove('done','error'); ov.classList.add('show'); }
     if (bar) bar.style.width = '0%';
 
     function setProgress(pct, msg) {
@@ -5175,14 +5180,31 @@ async function redeemGift() {
       if (titleEl) titleEl.textContent = msg;
     }
 
+    function showError(msg) {
+      console.error('[GV] Claim error:', msg);
+      if (ov) ov.classList.add('error');
+      if (titleEl) titleEl.textContent = msg;
+      if (bar) bar.style.display = 'none';
+      var sub = ov ? ov.querySelector('.claim-sub') : null;
+      if (sub) sub.textContent = 'Something went wrong \u2022 tap to retry';
+      if (vaultEl) {
+        vaultEl.innerHTML = '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);display:grid;place-items:center;box-shadow:0 0 30px rgba(239,68,68,.5);"><svg width="36" height="36" viewBox="0 0 52 52" fill="none"><path d="M16 16l20 20M36 16L16 36" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg></div>';
+      }
+      setTimeout(function () {
+        if (ov) ov.classList.remove('show');
+        if (bar) bar.style.display = '';
+        if (btn) { btn.textContent = 'Claim Gift'; btn.disabled = false; btn.classList.add('btn-glow'); }
+      }, 2200);
+    }
+
     function rpcTimeout(promise, ms, label) {
       return Promise.race([
         promise,
-        new Promise(function(_, reject) { setTimeout(function() { reject(new Error((label || 'RPC') + ' timed out after ' + (ms/1000) + 's — try again')); }, ms); })
+        new Promise(function(_, reject) { setTimeout(function() { reject(new Error((label || 'RPC') + ' timed out \u2014 try again')); }, ms); })
       ]);
     }
 
-    try {
+    (async function () {
       var RPC_URL = 'https://rpc.bohr.life';
       var CHAIN_ID = 968;
       var CHAIN_ID_HEX = '0x3C8';
@@ -5207,127 +5229,153 @@ async function redeemGift() {
               blockExplorerUrls: ['https://scan.bohr.life']
             }]
           });
-        } else if (!swErr.message || !swErr.message.includes('timed out')) { throw swErr; }
+        } else if (!swErr.message || !swErr.message.includes('timed out')) { console.warn('[GV] Chain switch:', swErr); }
       }
 
       var provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
       var gift = null;
 
       setProgress(15, 'Looking up gift\u2026');
+      console.log('[GV] Looking up code:', code);
 
-      try {
-        var sgDB = window.supabase.createClient(
-          'https://vjljoydtwvpvhqiecbqr.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
-        );
-        var result = await rpcTimeout(
-          sgDB.from('archon_vouchers').select('*').eq('code', code).single(),
-          10000, 'Supabase lookup'
-        );
-        if (result.data) gift = result.data;
-      } catch (e) {
-        console.warn('[GV] Supabase lookup failed, trying localStorage:', e);
+      if (window.supabase) {
+        try {
+          var sgDB = window.supabase.createClient(
+            'https://vjljoydtwvpvhqiecbqr.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
+          );
+          var result = await rpcTimeout(
+            sgDB.from('archon_vouchers').select('*').eq('code', code).single(),
+            8000, 'Supabase lookup'
+          );
+          if (result.data) { gift = result.data; console.log('[GV] Found in Supabase:', gift.code); }
+          else { console.log('[GV] Not found in Supabase'); }
+        } catch (e) {
+          console.warn('[GV] Supabase lookup failed:', e.message || e);
+        }
+      } else {
+        console.warn('[GV] Supabase not loaded');
       }
 
       if (!gift) {
         try {
           var gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
+          console.log('[GV] localStorage gifts count:', gifts.length, 'codes:', gifts.map(function(g){return g.code}));
           for (var i = 0; i < gifts.length; i++) {
-            if (gifts[i].code === code) { gift = gifts[i]; break; }
+            if (gifts[i].code === code) { gift = gifts[i]; console.log('[GV] Found in localStorage'); break; }
           }
-        } catch (e) {}
+          if (!gift) console.log('[GV] Not found in localStorage');
+        } catch (e) { console.warn('[GV] localStorage read error:', e); }
       }
 
-      if (!gift) throw new Error('Invalid claim code. Check the code and try again.');
-      if (gift.claimed) throw new Error('This gift has already been claimed!');
+      if (!gift) { showError('Gift not found \u2014 check the code and try again'); return; }
+      if (gift.claimed) { showError('This gift was already claimed!'); return; }
 
       var storedPinHash = gift.pin_hash || '';
-      if (storedPinHash && storedPinHash !== btoa(pin)) throw new Error('Wrong password.');
+      if (storedPinHash && storedPinHash !== btoa(pin)) { showError('Wrong password \u2014 try again'); return; }
 
       var claimerAddress = window.WalletEngine.getAddress();
       var combinedPassword = code + '-' + pin;
 
-      if (gift.encrypted_pk) {
-        setProgress(30, 'Decrypting vault\u2026');
-        var vaultPrivateKey;
-        try {
-          vaultPrivateKey = await gvDecryptAES(gift.encrypted_pk, combinedPassword);
-        } catch (e) {
-          throw new Error('Wrong claim code or password — could not decrypt vault.');
-        }
-        if (!vaultPrivateKey || !vaultPrivateKey.startsWith('0x')) throw new Error('Invalid vault key.');
+      if (!gift.encrypted_pk) { showError('No vault key for this gift'); return; }
 
-        setProgress(50, 'Checking vault balance\u2026');
-        var vaultWallet = new ethers.Wallet(vaultPrivateKey, provider);
-        var vaultBalance = await rpcTimeout(provider.getBalance(vaultWallet.address), 15000, 'Balance check');
-        console.log('[GV] Vault balance:', ethers.formatEther(vaultBalance), 'BOT');
-        if (vaultBalance === 0n) throw new Error('Vault is empty — funds may have already been swept.');
+      setProgress(30, 'Decrypting vault\u2026');
+      var vaultPrivateKey;
+      try {
+        vaultPrivateKey = await gvDecryptAES(gift.encrypted_pk, combinedPassword);
+      } catch (e) {
+        console.error('[GV] Decrypt failed:', e);
+        showError('Wrong password \u2014 could not decrypt vault'); return;
+      }
+      if (!vaultPrivateKey || !vaultPrivateKey.startsWith('0x')) { showError('Invalid vault key'); return; }
 
-        setProgress(65, 'Sending sweep transaction\u2026');
-        var feeData = await rpcTimeout(provider.getFeeData(), 15000, 'Fee data');
-        var gasPrice = feeData.gasPrice || ethers.parseUnits('1', 'gwei');
-        var gasLimit = 21000n;
-        var gasCost = gasLimit * gasPrice;
-        var sendable = vaultBalance - gasCost;
-        if (sendable <= 0n) throw new Error('Vault balance too low to cover gas.');
-        console.log('[GV] Sweeping', ethers.formatEther(sendable), 'BOT to', claimerAddress);
+      setProgress(50, 'Checking vault balance\u2026');
+      var vaultWallet = new ethers.Wallet(vaultPrivateKey, provider);
+      var vaultBalance;
+      try {
+        vaultBalance = await rpcTimeout(provider.getBalance(vaultWallet.address), 15000, 'Balance check');
+      } catch (e) {
+        console.error('[GV] Balance check failed:', e);
+        showError('Could not check vault balance \u2014 try again'); return;
+      }
+      console.log('[GV] Vault balance:', ethers.formatEther(vaultBalance), 'BOT');
+      if (vaultBalance === 0n) { showError('Vault is empty \u2014 funds may have been swept'); return; }
 
-        var sweepTx = await rpcTimeout(
+      setProgress(65, 'Sending sweep transaction\u2026');
+      var feeData, gasPrice, gasLimit, gasCost, sendable;
+      try {
+        feeData = await rpcTimeout(provider.getFeeData(), 15000, 'Fee data');
+        gasPrice = feeData.gasPrice || ethers.parseUnits('1', 'gwei');
+        gasLimit = 21000n;
+        gasCost = gasLimit * gasPrice;
+        sendable = vaultBalance - gasCost;
+      } catch (e) {
+        showError('Could not get gas data \u2014 try again'); return;
+      }
+      if (sendable <= 0n) { showError('Vault balance too low to cover gas'); return; }
+      console.log('[GV] Sweeping', ethers.formatEther(sendable), 'BOT to', claimerAddress);
+
+      var sweepTx;
+      try {
+        sweepTx = await rpcTimeout(
           vaultWallet.sendTransaction({ to: claimerAddress, value: sendable, gasLimit: gasLimit, gasPrice: gasPrice }),
           20000, 'Sweep transaction'
         );
-        console.log('[GV] Sweep TX hash:', sweepTx.hash);
+      } catch (e) {
+        console.error('[GV] Sweep tx failed:', e);
+        showError('Sweep transaction failed \u2014 try again'); return;
+      }
+      console.log('[GV] Sweep TX hash:', sweepTx.hash);
 
-        setProgress(80, 'Confirming on-chain\u2026');
-        var sweepReceipt = await rpcTimeout(sweepTx.wait(), 60000, 'TX confirmation');
+      setProgress(80, 'Confirming on-chain\u2026');
+      try {
+        await rpcTimeout(sweepTx.wait(), 60000, 'TX confirmation');
+      } catch (e) {
+        console.error('[GV] TX confirmation failed:', e);
+        showError('TX not confirmed \u2014 check your wallet'); return;
+      }
 
-        setProgress(90, 'Updating records\u2026');
-        try {
+      setProgress(90, 'Updating records\u2026');
+      try {
+        if (window.supabase) {
           var sgDB2 = window.supabase.createClient(
             'https://vjljoydtwvpvhqiecbqr.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
           );
           await sgDB2.from('archon_vouchers').update({ claimed: true, claimed_by: claimerAddress, claimed_at: new Date().toISOString() }).eq('code', code);
-        } catch (e) {
-          console.warn('[GV] Failed to mark claimed in Supabase:', e);
         }
-
-        try {
-          var gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
-          for (var i = 0; i < gifts.length; i++) {
-            if (gifts[i].code === code) { gifts[i].claimed = true; gifts[i].claimed_by = claimerAddress; break; }
-          }
-          localStorage.setItem('archon_voucher_gifts', JSON.stringify(gifts));
-        } catch (e) {}
-
-        setProgress(100, 'Gift claimed!');
-        if (ov) ov.classList.add('done');
-        spawnClaimConfetti();
-
-        var priceUsd = window.WalletEngine.getBOTPrice ? window.WalletEngine.getBOTPrice() : 0;
-        var amt = parseFloat(gift.amount) || 0;
-        document.getElementById('redeemedAmount').textContent = fmt(amt) + ' BOT';
-        document.getElementById('redeemedFiat').textContent = priceUsd > 0 ? '~ $' + (amt * priceUsd).toFixed(2) : '';
-        document.getElementById('redeemedMessage').textContent = gift.message ? '"' + gift.message + '"' : 'Gift claimed successfully!';
-        document.getElementById('redeemSenderName').textContent = gift.sender ? gift.sender.slice(0,6)+'...'+gift.sender.slice(-4) : 'Someone';
-
-        setTimeout(function () {
-          if (ov) ov.classList.remove('show');
-          if (btn) { btn.textContent = 'Claim Gift'; btn.disabled = false; }
-          navigateTo('page-redeem-success');
-          setTimeout(function(){ spawnConfetti(); }, 300);
-          window.WalletEngine.globalRefresh();
-          setTimeout(function(){ try { window.WalletEngine.globalRefresh(); } catch(e){} }, 2500);
-        }, 1400);
-      } else {
-        throw new Error('No vault key found for this gift.');
+      } catch (e) {
+        console.warn('[GV] Failed to mark claimed in Supabase:', e);
       }
-    } catch(err) {
-      console.error('[GV] Redeem failed:', err);
-      if (ov) ov.classList.remove('show');
-      if (btn) { btn.textContent = 'Claim Gift'; btn.disabled = false; btn.classList.add('btn-glow'); }
-      toast(err.message || 'Claim failed');
-    }
+
+      try {
+        var gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
+        for (var i = 0; i < gifts.length; i++) {
+          if (gifts[i].code === code) { gifts[i].claimed = true; gifts[i].claimed_by = claimerAddress; break; }
+        }
+        localStorage.setItem('archon_voucher_gifts', JSON.stringify(gifts));
+      } catch (e) {}
+
+      setProgress(100, 'Gift claimed!');
+      if (ov) ov.classList.add('done');
+      spawnClaimConfetti();
+
+      var priceUsd = window.WalletEngine.getBOTPrice ? window.WalletEngine.getBOTPrice() : 0;
+      var amt = parseFloat(gift.amount) || 0;
+      document.getElementById('redeemedAmount').textContent = fmt(amt) + ' BOT';
+      document.getElementById('redeemedFiat').textContent = priceUsd > 0 ? '~ $' + (amt * priceUsd).toFixed(2) : '';
+      document.getElementById('redeemedMessage').textContent = gift.message ? '"' + gift.message + '"' : 'Gift claimed successfully!';
+      document.getElementById('redeemSenderName').textContent = gift.sender ? gift.sender.slice(0,6)+'...'+gift.sender.slice(-4) : 'Someone';
+
+      setTimeout(function () {
+        if (ov) ov.classList.remove('show');
+        if (btn) { btn.textContent = 'Claim Gift'; btn.disabled = false; }
+        navigateTo('page-redeem-success');
+        setTimeout(function(){ spawnConfetti(); }, 300);
+        window.WalletEngine.globalRefresh();
+        setTimeout(function(){ try { window.WalletEngine.globalRefresh(); } catch(e){} }, 2500);
+      }, 1400);
+    })();
 }
 function spawnConfetti() {
     const container = document.getElementById('confettiContainer');
