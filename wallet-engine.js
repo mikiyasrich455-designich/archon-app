@@ -4,10 +4,10 @@
 (function(){
 "use strict";
 
-var BOT_RPC = 'https://rpc.botchain.ai';
-var BOT_CHAIN_ID = 677;
-var BOT_CHAIN_HEX = '0x2A5';
-var BOT_EXPLORER = 'https://scan.botchain.ai';
+var BOT_RPC = 'https://rpc.bohr.life';
+var BOT_CHAIN_ID = 968;
+var BOT_CHAIN_HEX = '0x3C8';
+var BOT_EXPLORER = 'https://scan.bohr.life';
 var SBT_ADDRESS = '0x740e1ce98364EfF4d5e3d89b2b1fa513e0F75b16';
 var SBT_ABI = [
   'function mintSoulboundGift(address _recipient, string _tokenURI, string _message) payable returns (uint256)',
@@ -485,7 +485,7 @@ async function fetchBOTBalance(){
   try {
     var bal = await Promise.race([
       provider.getBalance(walletData.address),
-      new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('RPC timeout (8s)')); }, 8000); })
+      new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('RPC timeout (15s)')); }, 15000); })
     ]);
     var formatted = ethers.formatEther(bal);
     console.log('[Archon] Balance for', walletData.address.slice(0,10)+'...'+walletData.address.slice(-4), '=', formatted, 'BOT');
