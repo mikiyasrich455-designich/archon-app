@@ -4583,7 +4583,7 @@ function showPage(id) {
         }
     }
     if(id==='page-wallet' && window.WalletEngine && window.WalletEngine.isInitialized()){
-      setTimeout(function(){ window.WalletEngine.fetchAllBalances().then(function(){ updateWalletPocket(); }); }, 200);
+      setTimeout(function(){ window.WalletEngine.globalRefresh(); }, 200);
     }
     if((id==='page-create-voucher'||id==='page-gift-send') && window.WalletEngine && window.WalletEngine.isInitialized()){
       setTimeout(function(){ window.WalletEngine.fetchAllBalances().then(function(){ var b=window.WalletEngine.getBOTBalance(); var el2=$('gvBalHint'); if(el2) el2.textContent='Balance: '+b+' BOT'; }); }, 200);
@@ -6606,7 +6606,7 @@ function initAll(){
         if(id==='page-security')initSecurityPage();
         if(id==='page-about')initAboutPage();
         if(id==='page-gifts')updateGiftStats();
-        if(id==='page-wallet'){if(window.WalletEngine&&window.WalletEngine.isInitialized()){window.WalletEngine.fetchAllBalances().then(function(){updateWalletPocket();});}}
+        if(id==='page-wallet'){if(window.WalletEngine&&window.WalletEngine.isInitialized()){window.WalletEngine.globalRefresh();}}
         if(id==='page-create-voucher'||id==='page-gift-send'){if(window.WalletEngine&&window.WalletEngine.isInitialized()){window.WalletEngine.fetchAllBalances().then(function(){var b=window.WalletEngine.getBOTBalance();var el=$('gvBalHint');if(el)el.textContent='Balance: '+b+' BOT';});}}
         if(id==='page-pin-setup'){_pinSetupBuffer='';_pinSetupConfirm='';_pinSetupPhase='enter';var h2=document.querySelector('#page-pin-setup h2');if(h2)h2.textContent='Set Device PIN';var lbl=document.getElementById('pinSetupLabel');if(lbl)lbl.textContent='Enter your PIN';_updatePinDots('pinSetupDots',0);var keypad=document.querySelector('#page-pin-setup .pin-keypad');if(keypad)keypad.style.display='';var sk=document.querySelector('#page-pin-setup button[onclick*="pinSetupSkip"]');if(sk)sk.style.display='';var err=document.getElementById('pinSetupError');if(err)err.style.display='none';document.querySelectorAll('#page-pin-setup .flex-1 > div[style*="text-align:center"]').forEach(function(el){el.remove();});}
       },50);
@@ -6962,11 +6962,17 @@ function doLogout(){
 function doRefresh(){
   var btn = document.getElementById('refreshBtn');
   if(btn) btn.querySelector('svg').classList.add('refresh-spin');
+  var wpcBal = document.getElementById('wpcBotBal');
+  var wpcUsd = document.getElementById('wpcTotalUsd');
+  if(wpcBal) wpcBal.textContent = 'Refreshing...';
+  if(wpcUsd) wpcUsd.textContent = '...';
   if(window.WalletEngine){
-    window.WalletEngine.refreshAllData().then(function(){
+    window.WalletEngine.globalRefresh().then(function(){
       if(btn) setTimeout(function(){ btn.querySelector('svg').classList.remove('refresh-spin'); }, 800);
     }).catch(function(){
       if(btn) btn.querySelector('svg').classList.remove('refresh-spin');
+      if(wpcBal) wpcBal.textContent = 'Error - tap to retry';
+      if(wpcUsd) wpcUsd.textContent = '$0.00';
     });
   } else {
     if(btn) btn.querySelector('svg').classList.remove('refresh-spin');
@@ -7311,7 +7317,7 @@ function showDepositNotif(amount, from){
       } catch(e){}
       if(window.WalletEngine && window.WalletEngine.isInitialized()){
         showPage('page-wallet');
-        setTimeout(function(){ window.WalletEngine.fetchAllBalances().then(function(){ updateWalletPocket(); }); }, 300);
+        setTimeout(function(){ window.WalletEngine.globalRefresh(); }, 300);
         return;
       }
     }

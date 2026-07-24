@@ -481,9 +481,29 @@ function addPoints(n){
    SECTION 13: BALANCE FETCHING
    ═══════════════════════════════════════════════════════════════════ */
 async function fetchBOTBalance(){
-  if(!provider || !walletData) return '0';
-  try { var bal = await provider.getBalance(walletData.address); return ethers.formatEther(bal); }
-  catch(e){ console.error('[Archon] balance error', e); return '0'; }
+  if(!provider || !walletData) { console.warn('[Archon] fetchBOTBalance: provider or walletData missing', {provider:!!provider, walletData:!!walletData}); return '0'; }
+  try {
+    var bal = await Promise.race([
+      provider.getBalance(walletData.address),
+      new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('RPC timeout (8s)')); }, 8000); })
+    ]);
+    var formatted = ethers.formatEther(bal);
+    console.log('[Archon] Balance for', walletData.address.slice(0,10)+'...'+walletData.address.slice(-4), '=', formatted, 'BOT');
+    return formatted;
+  }
+  catch(e){
+    console.error('[Archon] Balance fetch error (will retry in 3s):', e.message || e);
+    await new Promise(function(r){ setTimeout(r, 3000); });
+    try {
+      var bal2 = await provider.getBalance(walletData.address);
+      var formatted2 = ethers.formatEther(bal2);
+      console.log('[Archon] Balance retry succeeded:', formatted2, 'BOT');
+      return formatted2;
+    } catch(e2){
+      console.error('[Archon] Balance retry also failed:', e2.message || e2);
+      return '0';
+    }
+  }
 }
 function syncBalanceToUI(n){
   var priceUsd = BOT_PRICE_USD;
@@ -842,8 +862,9 @@ function globalRefresh(){
     if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
     updateWalletUI();
     if(typeof renderTxHistory==='function') renderTxHistory();
+    if(typeof updateGiftStats==='function') updateGiftStats();
     if(typeof updateWalletPocket==='function') updateWalletPocket();
-  });
+  }).catch(function(e){ console.error('[Archon] globalRefresh error:', e); });
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -964,10 +985,11 @@ function autoInit(){
         Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
           if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
           updateWalletUI();
+          if(typeof renderTxHistory==='function') renderTxHistory();
           if(typeof updateGiftStats==='function') updateGiftStats();
         });
       }
-    },30000);
+    },10000);
   } catch(e){ console.error('[Archon] autoInit error', e); }
 }
 
