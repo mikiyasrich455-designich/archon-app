@@ -981,6 +981,17 @@ function autoInit(){
           if(typeof renderTxHistory==='function') renderTxHistory();
           if(typeof updateGiftStats==='function') updateGiftStats();
           if(typeof updateWalletPocket==='function') updateWalletPocket();
+          fetchOnChainTransactions().then(function(onchainTxs){
+            if(onchainTxs.length > 0){
+              var localTxs = getTxHistory();
+              var merged = {};
+              for(var i=0;i<localTxs.length;i++){ if(localTxs[i].hash) merged[localTxs[i].hash]=localTxs[i]; }
+              for(var i=0;i<onchainTxs.length;i++){ if(!merged[onchainTxs[i].hash]) merged[onchainTxs[i].hash]=onchainTxs[i]; }
+              var all = Object.values(merged).sort(function(a,b){return (b.timestamp||0)-(a.timestamp||0);});
+              localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(all.slice(0,100)));
+              if(typeof renderTxHistory==='function') renderTxHistory();
+            }
+          }).catch(function(){});
         });
       }
     },500);
@@ -994,6 +1005,21 @@ function autoInit(){
         });
       }
     },10000);
+    setInterval(function(){
+      if(walletData){
+        fetchOnChainTransactions().then(function(onchainTxs){
+          if(onchainTxs.length > 0){
+            var localTxs = getTxHistory();
+            var merged = {};
+            for(var i=0;i<localTxs.length;i++){ if(localTxs[i].hash) merged[localTxs[i].hash]=localTxs[i]; }
+            for(var i=0;i<onchainTxs.length;i++){ if(!merged[onchainTxs[i].hash]) merged[onchainTxs[i].hash]=onchainTxs[i]; }
+            var all = Object.values(merged).sort(function(a,b){return (b.timestamp||0)-(a.timestamp||0);});
+            localStorage.setItem(TX_HISTORY_KEY, JSON.stringify(all.slice(0,100)));
+            if(typeof renderTxHistory==='function') renderTxHistory();
+          }
+        }).catch(function(){});
+      }
+    },60000);
   } catch(e){ console.error('[Archon] autoInit error', e); }
 }
 
