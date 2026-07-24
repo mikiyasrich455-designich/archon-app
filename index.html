@@ -4599,6 +4599,19 @@
 <script>
 // â”€â”€â”€ GLOBAL HELPERS â”€â”€â”€
 function $(id){return document.getElementById(id);}
+var SB_URL = 'https://vjljoydtwvpvhqiecbqr.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3ZwdmhxaWVjYnFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTAwMjYsImV4cCI6MjA5OTM2NjAyNn0.YFIbiUGGzGvjuvF2bsm4dQv_yzNtJr8G1La8Rtqexy8';
+function sbFetch(path, opts) {
+  var url = SB_URL + '/rest/v1/' + path;
+  var headers = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+  if (opts && opts.headers) Object.keys(opts.headers).forEach(function(k) { headers[k] = opts.headers[k]; });
+  return fetch(url, { method: (opts && opts.method) || 'GET', headers: headers, body: (opts && opts.body) || undefined }).then(function(r) {
+    if (!r.ok) return r.text().then(function(t) { throw new Error('Supabase ' + r.status + ': ' + t); });
+    if (r.status === 204) return null;
+    return r.json();
+  });
+}
+
 
 // â”€â”€â”€ NAVIGATION ENGINE â”€â”€â”€
 const historyStack = [];
@@ -5976,18 +5989,6 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
   var GV = { t: GVT[0], amount: 0, to: '', msg: '', code: '', pin: '' };
   window._GV = GV;
   window._GVT = GVT;
-  var SB_URL = 'https://vjljoydtwvpvhqiecbqr.supabase.co';
-  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3ZwdmhxaWVjYnFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTAwMjYsImV4cCI6MjA5OTM2NjAyNn0.YFIbiUGGzGvjuvF2bsm4dQv_yzNtJr8G1La8Rtqexy8';
-  function sbFetch(path, opts) {
-    var url = SB_URL + '/rest/v1/' + path;
-    var headers = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
-    if (opts && opts.headers) Object.keys(opts.headers).forEach(function(k) { headers[k] = opts.headers[k]; });
-    return fetch(url, { method: (opts && opts.method) || 'GET', headers: headers, body: (opts && opts.body) || undefined }).then(function(r) {
-      if (!r.ok) return r.text().then(function(t) { throw new Error('Supabase ' + r.status + ': ' + t); });
-      if (r.status === 204) return null;
-      return r.json();
-    });
-  }
 
   /* â”€â”€ â•â•â• TESTNET INTEGRATION POINT â•â•â• â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
      Swap onConfirm for a real call, e.g.:
