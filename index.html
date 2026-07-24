@@ -6254,29 +6254,49 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 
         return gvEncryptAES(vaultPrivateKey, combinedPassword).then(function (encryptedPK) {
           setProgress(85, 'Saving to database...');
-          try {
-            var sgDB = window.supabase.createClient(
-              'https://vjljoydtwvpvhqiecbqr.supabase.co',
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
-            );
-            sgDB.from('archon_vouchers').insert({
-              code: claimCode,
-              amount: GV.amount,
-              token_sym: GV.t.sym,
-              sender: senderAddr,
-              message: GV.msg.trim() || '',
-              encrypted_pk: encryptedPK,
-              vault_address: vaultAddress,
-              claimed: false,
-              created_at: new Date().toISOString()
-            }).then(function () {
-              console.log('[GV] Saved to Supabase ✓ code:', claimCode);
-            }).catch(function (e) {
-              console.error('[GV] Supabase save FAILED:', e.message || e);
+
+          function saveToSupabase(attempt) {
+            return new Promise(function(resolve) {
+              if (!window.supabase) { console.warn('[GV] Supabase not loaded'); resolve(false); return; }
+              try {
+                var sgDB = window.supabase.createClient(
+                  'https://vjljoydtwvpvhqiecbqr.supabase.co',
+                  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
+                );
+                sgDB.from('archon_vouchers').insert({
+                  code: claimCode,
+                  amount: GV.amount,
+                  token_sym: GV.t.sym,
+                  sender: senderAddr,
+                  message: GV.msg.trim() || '',
+                  encrypted_pk: encryptedPK,
+                  vault_address: vaultAddress,
+                  claimed: false,
+                  created_at: new Date().toISOString()
+                }).then(function (res) {
+                  if (res.error) {
+                    console.error('[GV] Supabase insert error:', res.error.message);
+                    if (attempt < 2) { setTimeout(function() { saveToSupabase(attempt+1).then(resolve); }, 2000); }
+                    else resolve(false);
+                  } else {
+                    console.log('[GV] Saved to Supabase OK code:', claimCode);
+                    resolve(true);
+                  }
+                }).catch(function (e) {
+                  console.error('[GV] Supabase insert failed attempt ' + attempt + ':', e.message || e);
+                  if (attempt < 2) { setTimeout(function() { saveToSupabase(attempt+1).then(resolve); }, 2000); }
+                  else resolve(false);
+                });
+              } catch (e) {
+                console.error('[GV] Supabase init error:', e);
+                resolve(false);
+              }
             });
-          } catch (e) {
-            console.warn('[GV] Supabase init failed:', e);
           }
+
+          saveToSupabase(0).then(function(ok) {
+            if (!ok) console.warn('[GV] Gift saved to localStorage only — will not work on other devices');
+          });
 
           var gifts = [];
           try { gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]'); } catch (e) {}
