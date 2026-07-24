@@ -2469,6 +2469,7 @@
                                 <span class="wallet-hidden-stars">**** ****</span>
                                 <span class="wallet-card-number" id="wpcBotAddr">Loading...</span>
                                 <div class="wallet-card-copy-btn" onclick="event.stopPropagation();copyWalletAddress()">Copy Address</div>
+                                <div class="wallet-card-copy-btn" style="margin-top:4px" onclick="event.stopPropagation();openAddressOnExplorer()">View on Explorer</div>
                             </div>
                         </div>
                     </div>
@@ -4669,6 +4670,12 @@ function copyWalletAddress() {
         if(navigator.clipboard && navigator.clipboard.writeText){
             navigator.clipboard.writeText(addr).then(function(){ if(window.cxToast) window.cxToast('Address copied!','ok'); });
         }
+    }
+}
+function openAddressOnExplorer() {
+    if(window.WalletEngine && window.WalletEngine.isInitialized()){
+        var addr = window.WalletEngine.getAddress();
+        window.open('https://scan.botchain.ai/address/' + addr, '_blank');
     }
 }
 function selectNetwork(name) {

@@ -971,6 +971,10 @@ function autoInit(){
     wireRealFunctions();
     setTimeout(function(){
       if(walletData){
+        console.log('[Archon] ═══════════════════════════════════════');
+        console.log('[Archon] WALLET ADDRESS:', walletData.address);
+        console.log('[Archon] Compare with MetaMask — they must match!');
+        console.log('[Archon] ═══════════════════════════════════════');
         Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
           if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
           updateWalletUI();
