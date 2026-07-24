@@ -5463,8 +5463,9 @@ function execSend(){var t=tok(S.sendToken);var amt=parseFloat($('cxSendAmt').val
    t.bal-=amt;$('cxSuccAmt').textContent=fmt(amt)+' BOT â†’ '+(addr.slice(0,6)+'...'+addr.slice(-4));
    $('cxSuccHash').textContent=result.hash;
    btn.disabled=false;$('cxCfBtnLabel').textContent='Confirm & Send';$('cxSendAmt').value='';$('cxSendAddr').value='';calcSend();renderSendToken();
-   showPage('page-send-success');confetti();toast('Sent '+fmt(amt)+' BOT successfully','ok');
-   WalletEngine.fetchAllBalances().then(function(){ WalletEngine.updateWalletPocket(); WalletEngine.renderTxHistory(); });
+    showPage('page-send-success');confetti();toast('Sent '+fmt(amt)+' BOT successfully','ok');
+   WalletEngine.globalRefresh();
+   setTimeout(function(){ WalletEngine.globalRefresh(); }, 2500);
   }).catch(function(err){
    btn.disabled=false;$('cxCfBtnLabel').textContent='Confirm & Send';
    toast('Send failed: '+(err.message||'Unknown'),'err');
@@ -6152,10 +6153,11 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
       ov.classList.add('sealed');
       confetti('gvConfetti', GV.t.g[0]);
 
+      var _vaultAddr = result.vaultAddress || '';
       if (window.WalletEngine && window.WalletEngine.addTx) {
         window.WalletEngine.addTx({
           type: 'gift_sent', amount: GV.amount, token: 'BOT',
-          to: vaultAddress, from: senderAddr, hash: result.txHash,
+          to: _vaultAddr, from: senderAddr, hash: result.txHash,
           status: 'confirmed'
         });
       }
@@ -6164,11 +6166,12 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
         localStorage.setItem('archon_gift_sent_count', String(sc + 1));
         var acts = [];
         try { acts = JSON.parse(localStorage.getItem('archon_gift_activities') || '[]'); } catch(e){}
-        acts.push({ type: 'sent', amount: GV.amount, to: vaultAddress, code: claimCode, message: GV.msg.trim(), timestamp: Date.now() });
+        acts.push({ type: 'sent', amount: GV.amount, to: _vaultAddr, code: claimCode, message: GV.msg.trim(), timestamp: Date.now() });
         localStorage.setItem('archon_gift_activities', JSON.stringify(acts));
       } catch(e){}
-      if (window.WalletEngine && window.WalletEngine.globalRefresh) {
+      if (window.WalletEngine) {
         window.WalletEngine.globalRefresh();
+        setTimeout(function(){ window.WalletEngine.globalRefresh(); }, 2500);
       }
 
       setTimeout(function () {
