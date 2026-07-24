@@ -4,14 +4,14 @@
 (function(){
 "use strict";
 
-var BOT_RPC = 'https://rpc.bohr.life';
-var BOT_CHAIN_ID = 968;
-var BOT_CHAIN_HEX = '0x3C8';
-var BOT_EXPLORER = 'https://scan.bohr.life';
+var BOT_RPC = 'https://rpc.botchain.ai';
+var BOT_CHAIN_ID = 677;
+var BOT_CHAIN_HEX = '0x2A5';
+var BOT_EXPLORER = 'https://scan.botchain.ai';
 var SBT_ADDRESS = '0x740e1ce98364EfF4d5e3d89b2b1fa513e0F75b16';
 var SBT_ABI = [
   'function mintSoulboundGift(address _recipient, string _tokenURI, string _message) payable returns (uint256)',
-  'function convertToBot(uint256 _tokenId) nonpayable',
+  'function convertToBot(uint256 _tokenId)',
   'function getGiftData(uint256 _tokenId) view returns (address sender, address recipient, string message, uint256 amount, uint256 timestamp)',
   'function tokenURI(uint256 tokenId) view returns (string)',
   'function ownerOf(uint256 tokenId) view returns (address)',
@@ -20,7 +20,7 @@ var SBT_ABI = [
   'event SoulboundGiftMinted(uint256 indexed tokenId, address indexed sender, address indexed recipient, string tokenURI, uint256 amount)',
   'event GiftConverted(uint256 indexed tokenId, address indexed recipient, uint256 amount)'
 ];
-var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,wrapped-bot&vs_currencies=usd&include_24hr_change=true';
+var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bot&vs_currencies=usd&include_24hr_change=true';
 var BOT_PRICE_USD = 0;
 var STORAGE_KEY = 'archon_wallet_v1';
 var PROFILE_KEY = 'archon_profile_v1';
@@ -323,7 +323,9 @@ function initProvider(){
   try {
     provider = new ethers.JsonRpcProvider(BOT_RPC, BOT_CHAIN_ID);
     wallet = new ethers.Wallet(walletData.privateKey, provider);
-    sbtContract = new ethers.Contract(SBT_ADDRESS, SBT_ABI, wallet);
+    try {
+      sbtContract = new ethers.Contract(SBT_ADDRESS, SBT_ABI, wallet);
+    } catch(e){ console.warn('[Archon] SBT contract init skipped:', e.message); sbtContract = null; }
   } catch(e){ console.error('[Archon] init error', e); }
 }
 function logoutWallet(){
@@ -573,7 +575,10 @@ async function estimateGasFee(toAddress, amountEth){
    ═══════════════════════════════════════════════════════════════════ */
 async function fetchPrices(){
   try {
-    var resp = await fetch(COINGECKO_URL);
+    var ctrl = new AbortController();
+    var timer = setTimeout(function(){ ctrl.abort(); }, 5000);
+    var resp = await fetch(COINGECKO_URL, { signal: ctrl.signal });
+    clearTimeout(timer);
     var data = await resp.json();
     var map = { ETH: data.ethereum, BTC: data.bitcoin, SOL: data.solana, BNB: data.binancecoin, XRP: data.ripple, BOT: data['wrapped-bot'] };
     if(map.BOT && map.BOT.usd){
@@ -596,12 +601,6 @@ async function fetchPrices(){
     if(window.cxTOKENS){ for(var i=0;i<window.cxTOKENS.length;i++){ var t=window.cxTOKENS[i]; if(map[t.id]&&map[t.id].usd) t.price=map[t.id].usd; } }
     if(window.GVT){ for(var i=0;i<window.GVT.length;i++){ var s=window.GVT[i].sym.replace('\\$',''); if(map[s]&&map[s].usd){ window.GVT[i].price=map[s].usd; } } }
     if(typeof chainDatabase!=='undefined'){
-      var pairs=[['ETH','eth'],['BTC','btc'],['SOL','sol'],['BNB','bnb'],['XRP','xrp']];
-      for(var p=0;p<pairs.length;p++){ var cg=pairs[p][0],db=pairs[p][1];
-        if(map[cg]&&map[cg].usd){ chainDatabase[db].price=map[cg].usd.toLocaleString('en-US');
-          if(map[cg].usd_24h_change!=null){ chainDatabase[db].change24h=(map[cg].usd_24h_change>0?'+':'')+map[cg].usd_24h_change.toFixed(2)+'%'; chainDatabase[db].changeDir=map[cg].usd_24h_change>0?'up':'down'; }
-        }
-      }
       if(map.BOT && map.BOT.usd){
         chainDatabase.bot.price = map.BOT.usd.toLocaleString('en-US');
         if(map.BOT.usd_24h_change != null){
@@ -753,39 +752,6 @@ function wireRealFunctions(){
       btn.disabled = false;
       if(window.cxToast) window.cxToast('Send failed: '+(err.message||'Unknown'),'err');
     });
-  };
-
-  window.gvConfirm = function(){
-    var GV=window._GV, genCodeFn=window._genCode, buildSentFn=window._buildSent;
-    if(!GV||!genCodeFn||!buildSentFn){ console.error('[Archon] Gift functions not loaded'); return; }
-    var ov=$('gvOverlay'); if(ov) ov.classList.add('show');
-    var coin=$('gvOvCoin'); if(coin) coin.src=GV.t.img;
-    var bar=$('gvOvBar'); if(bar) bar.style.width='0%';
-    var pct=$('gvOvPct'); if(pct) pct.textContent='0%';
-    var status=$('gvOvStatus'); if(status) status.textContent='Preparing gift...';
-    var progress=0;
-    var iv=setInterval(function(){ progress+=Math.random()*15+5; if(progress>90) progress=90; if(bar) bar.style.width=progress+'%'; if(pct) pct.textContent=Math.round(progress)+'%'; },300);
-    var code=genCodeFn();
-    var usdVal=GV.amount*GV.t.price;
-    var payload={sym:GV.t.sym,name:GV.t.name,amount:GV.amount,usd:usdVal,to:GV.to,message:GV.msg,code:code,testnet:true};
-    if(wallet&&walletData&&GV.t.sym==='$BOT'){
-      if(status) status.textContent='Sending on-chain gift...';
-      realGiftSend(GV.to,GV.amount,GV.msg||'Gift from Archon',null).then(function(result){
-        clearInterval(iv); if(bar) bar.style.width='100%'; if(pct) pct.textContent='100%';
-        if(status) status.textContent='Gift sealed on-chain!';
-        payload.txHash=result.hash;
-        if(result.tokenId) saveGiftCode(code, result.tokenId, GV.amount, GV.to);
-        setTimeout(function(){ if(ov) ov.classList.remove('show'); buildSentFn(payload); showPage('page-gift-sent'); if(typeof confetti==='function') confetti(); },1200);
-        globalRefresh();
-      }).catch(function(err){
-        clearInterval(iv); if(bar) bar.style.width='100%'; if(pct) pct.textContent='100%';
-        if(status) status.textContent='Gift failed: '+(err.message||'Unknown');
-        setTimeout(function(){ if(ov) ov.classList.remove('show'); },2000);
-      });
-    } else {
-      if(window.cxToast) window.cxToast('Only BOT gifts supported on testnet','err');
-      clearInterval(iv); if(ov) ov.classList.remove('show');
-    }
   };
 }
 
