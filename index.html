@@ -6724,9 +6724,7 @@ setTimeout(ensurePagePadding, 200);
    4. TESTNET READINESS â€” modular chain config with testnet support
    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 // Botchain is the only supported network
-
-// Expose testnet data globally for future integration
-window.TESTNET_CHAINS = TESTNET_CHAINS;
+window.TESTNET_CHAINS = {};
 window.isTestnet = function(chainKey){
   return !!(chainKey && (chainKey.indexOf('testnet')>-1 || chainKey.indexOf('sepolia')>-1 || chainKey.indexOf('devnet')>-1));
 };
