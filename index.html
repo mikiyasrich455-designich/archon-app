@@ -5115,6 +5115,13 @@ async function redeemGift() {
     var btn = document.querySelector('#page-redeem-gift .btn-dark');
     if (btn) { btn.textContent = 'Claiming...'; btn.disabled = true; }
 
+    function rpcTimeout(promise, ms, label) {
+      return Promise.race([
+        promise,
+        new Promise(function(_, reject) { setTimeout(function() { reject(new Error((label || 'RPC') + ' timed out after ' + (ms/1000) + 's — try again')); }, ms); })
+      ]);
+    }
+
     try {
       var RPC_URL = 'https://rpc.bohr.life';
       var CHAIN_ID = 968;
@@ -5122,10 +5129,10 @@ async function redeemGift() {
 
       try {
         if(window.ethereum && window.ethereum.request) {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: CHAIN_ID_HEX }]
-          });
+          await Promise.race([
+            window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_ID_HEX }] }),
+            new Promise(function(_, rej) { setTimeout(function() { rej(new Error('Chain switch timed out')); }, 10000); })
+          ]);
         }
       } catch (swErr) {
         if (swErr.code === 4902) {
@@ -5133,24 +5140,29 @@ async function redeemGift() {
             method: 'wallet_addEthereumChain',
             params: [{
               chainId: CHAIN_ID_HEX,
-              chainName: 'BOHR Chain Mainnet',
+              chainName: 'BOHR Chain Testnet',
               nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
               rpcUrls: [RPC_URL],
               blockExplorerUrls: ['https://scan.bohr.life']
             }]
           });
-        } else { throw swErr; }
+        } else if (!swErr.message || !swErr.message.includes('timed out')) { throw swErr; }
       }
 
       var provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
       var gift = null;
+
+      if (btn) btn.textContent = 'Looking up gift...';
 
       try {
         var sgDB = window.supabase.createClient(
           'https://vjljoydtwvpvhqiecbqr.supabase.co',
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
         );
-        var result = await sgDB.from('archon_vouchers').select('*').eq('code', code).single();
+        var result = await rpcTimeout(
+          sgDB.from('archon_vouchers').select('*').eq('code', code).single(),
+          10000, 'Supabase lookup'
+        );
         if (result.data) gift = result.data;
       } catch (e) {
         console.warn('[GV] Supabase lookup failed, trying localStorage:', e);
@@ -5184,21 +5196,29 @@ async function redeemGift() {
         }
         if (!vaultPrivateKey || !vaultPrivateKey.startsWith('0x')) throw new Error('Invalid vault key.');
 
-        if (btn) btn.textContent = 'Sweeping funds from vault...';
+        if (btn) btn.textContent = 'Checking vault balance...';
         var vaultWallet = new ethers.Wallet(vaultPrivateKey, provider);
-        var vaultBalance = await provider.getBalance(vaultWallet.address);
+        var vaultBalance = await rpcTimeout(provider.getBalance(vaultWallet.address), 15000, 'Balance check');
+        console.log('[GV] Vault balance:', ethers.formatEther(vaultBalance), 'BOT');
         if (vaultBalance === 0n) throw new Error('Vault is empty - funds may have already been swept.');
 
-        var feeData = await provider.getFeeData();
+        if (btn) btn.textContent = 'Sending sweep transaction...';
+        var feeData = await rpcTimeout(provider.getFeeData(), 15000, 'Fee data');
         var gasPrice = feeData.gasPrice || ethers.parseUnits('1', 'gwei');
         var gasLimit = 21000n;
         var gasCost = gasLimit * gasPrice;
         var sendable = vaultBalance - gasCost;
         if (sendable <= 0n) throw new Error('Vault balance too low to cover gas.');
+        console.log('[GV] Sweeping', ethers.formatEther(sendable), 'BOT to', claimerAddress);
 
-        var sweepTx = await vaultWallet.sendTransaction({ to: claimerAddress, value: sendable, gasLimit: gasLimit, gasPrice: gasPrice });
-        if (btn) btn.textContent = 'Confirming...';
-        var sweepReceipt = await sweepTx.wait();
+        var sweepTx = await rpcTimeout(
+          vaultWallet.sendTransaction({ to: claimerAddress, value: sendable, gasLimit: gasLimit, gasPrice: gasPrice }),
+          20000, 'Sweep transaction'
+        );
+        console.log('[GV] Sweep TX hash:', sweepTx.hash);
+
+        if (btn) btn.textContent = 'Confirming (waiting for block)...';
+        var sweepReceipt = await rpcTimeout(sweepTx.wait(), 60000, 'TX confirmation');
 
         try {
           var sgDB2 = window.supabase.createClient(
@@ -5227,7 +5247,8 @@ async function redeemGift() {
         if (btn) { btn.textContent = 'Redeem Gift'; btn.disabled = false; }
         navigateTo('page-redeem-success');
         setTimeout(function(){ spawnConfetti(); }, 300);
-        window.WalletEngine.fetchAllBalances();
+        window.WalletEngine.globalRefresh();
+        setTimeout(function(){ try { window.WalletEngine.globalRefresh(); } catch(e){} }, 2500);
       } else {
         throw new Error('No vault key found for this gift.');
       }
@@ -6145,6 +6166,8 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
             sender: senderAddr,
             message: GV.msg.trim() || '',
             vault_address: vaultAddress,
+            encrypted_pk: encryptedPK,
+            pin_hash: btoa(pinCode),
             txHash: receipt.hash,
             claimed: false,
             created_at: new Date().toISOString()
