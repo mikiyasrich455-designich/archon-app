@@ -5120,65 +5120,125 @@ async function redeemGift() {
     if (btn) { btn.textContent = 'Claiming...'; btn.disabled = true; }
 
     try {
+      var RPC_URL = 'https://rpc.botchain.ai';
+      var CHAIN_ID = 677;
+      var CHAIN_ID_HEX = '0x2A5';
+
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: CHAIN_ID_HEX }]
+        });
+      } catch (swErr) {
+        if (swErr.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: CHAIN_ID_HEX,
+              chainName: 'BOT Chain Mainnet',
+              nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
+              rpcUrls: [RPC_URL],
+              blockExplorerUrls: ['https://scan.botchain.ai']
+            }]
+          });
+        } else { throw swErr; }
+      }
+
+      var provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
+      var gift = null;
+
+      try {
         var sgDB = window.supabase.createClient(
-            'https://vjljoydtwvpvhqiecbqr.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
+          'https://vjljoydtwvpvhqiecbqr.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
         );
         var result = await sgDB.from('archon_vouchers').select('*').eq('code', code).single();
-        if (!result.data) { throw new Error('Invalid claim code. Check the code and try again.'); }
-        var gift = result.data;
-        if (gift.claimed) { throw new Error('This gift has already been claimed!'); }
-        if (gift.pin_hash !== btoa(pin)) { throw new Error('Wrong PIN code.'); }
+        if (result.data) gift = result.data;
+      } catch (e) {
+        console.warn('[GV] Supabase lookup failed, trying localStorage:', e);
+      }
 
-        var claimerAddress = window.WalletEngine.getAddress();
-        var combinedPassword = code + '-' + pin;
+      if (!gift) {
+        try {
+          var gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
+          for (var i = 0; i < gifts.length; i++) {
+            if (gifts[i].code === code) { gift = gifts[i]; break; }
+          }
+        } catch (e) {}
+      }
 
-        if (gift.encrypted_pk) {
-            if (btn) btn.textContent = 'Decrypting vault...';
-            var vaultPrivateKey;
-            try {
-                vaultPrivateKey = await gvDecryptAES(gift.encrypted_pk, combinedPassword);
-            } catch(e) {
-                throw new Error('Wrong claim code or PIN - could not decrypt vault.');
-            }
-            if (!vaultPrivateKey || !vaultPrivateKey.startsWith('0x')) throw new Error('Invalid vault key.');
+      if (!gift) throw new Error('Invalid claim code. Check the code and try again.');
+      if (gift.claimed) throw new Error('This gift has already been claimed!');
 
-            if (btn) btn.textContent = 'Sweeping funds...';
-            var provider = new ethers.JsonRpcProvider('https://rpc.botchain.ai');
-            var vaultWallet = new ethers.Wallet(vaultPrivateKey, provider);
-            var vaultBalance = await provider.getBalance(vaultWallet.address);
-            if (vaultBalance === 0n) throw new Error('Vault is empty - funds may have already been swept.');
+      var storedPinHash = gift.pin_hash || '';
+      if (storedPinHash && storedPinHash !== btoa(pin)) throw new Error('Wrong PIN code.');
 
-            var feeData = await provider.getFeeData();
-            var gasPrice = feeData.gasPrice || ethers.parseUnits('1', 'gwei');
-            var gasLimit = 21000n;
-            var gasCost = gasLimit * gasPrice;
-            var sendable = vaultBalance - gasCost;
-            if (sendable <= 0n) throw new Error('Vault balance too low to cover gas.');
+      var claimerAddress = window.WalletEngine.getAddress();
+      var combinedPassword = code + '-' + pin;
 
-            var sweepTx = await vaultWallet.sendTransaction({ to: claimerAddress, value: sendable, gasLimit: gasLimit, gasPrice: gasPrice });
-            var sweepReceipt = await sweepTx.wait();
-
-            await sgDB.from('archon_vouchers').update({ claimed: true, claimed_by: claimerAddress, claimed_at: new Date().toISOString() }).eq('code', code);
-
-            var priceUsd = window.WalletEngine.getBOTPrice ? window.WalletEngine.getBOTPrice() : 0;
-            var amt = parseFloat(gift.amount) || 0;
-            document.getElementById('redeemedAmount').textContent = fmt(amt) + ' BOT';
-            document.getElementById('redeemedFiat').textContent = priceUsd > 0 ? '~ $' + (amt * priceUsd).toFixed(2) : '';
-            document.getElementById('redeemedMessage').textContent = gift.message ? '"' + gift.message + '"' : 'Gift claimed successfully!';
-            document.getElementById('redeemSenderName').textContent = gift.sender ? gift.sender.slice(0,6)+'...'+gift.sender.slice(-4) : 'Someone';
-            if (btn) { btn.textContent = 'Redeem Gift'; btn.disabled = false; }
-            navigateTo('page-redeem-success');
-            setTimeout(function(){ spawnConfetti(); }, 300);
-            window.WalletEngine.fetchAllBalances();
-        } else {
-            throw new Error('No vault key found for this gift.');
+      if (gift.encrypted_pk) {
+        if (btn) btn.textContent = 'Decrypting vault...';
+        var vaultPrivateKey;
+        try {
+          vaultPrivateKey = await gvDecryptAES(gift.encrypted_pk, combinedPassword);
+        } catch (e) {
+          throw new Error('Wrong claim code or PIN - could not decrypt vault.');
         }
-    } catch(err) {
-        console.error('[GV] Redeem failed:', err);
+        if (!vaultPrivateKey || !vaultPrivateKey.startsWith('0x')) throw new Error('Invalid vault key.');
+
+        if (btn) btn.textContent = 'Sweeping funds from vault...';
+        var vaultWallet = new ethers.Wallet(vaultPrivateKey, provider);
+        var vaultBalance = await provider.getBalance(vaultWallet.address);
+        if (vaultBalance === 0n) throw new Error('Vault is empty - funds may have already been swept.');
+
+        var feeData = await provider.getFeeData();
+        var gasPrice = feeData.gasPrice || ethers.parseUnits('1', 'gwei');
+        var gasLimit = 21000n;
+        var gasCost = gasLimit * gasPrice;
+        var sendable = vaultBalance - gasCost;
+        if (sendable <= 0n) throw new Error('Vault balance too low to cover gas.');
+
+        var sweepTx = await vaultWallet.sendTransaction({ to: claimerAddress, value: sendable, gasLimit: gasLimit, gasPrice: gasPrice });
+        if (btn) btn.textContent = 'Confirming...';
+        var sweepReceipt = await sweepTx.wait();
+
+        try {
+          var sgDB2 = window.supabase.createClient(
+            'https://vjljoydtwvpvhqiecbqr.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
+          );
+          await sgDB2.from('archon_vouchers').update({ claimed: true, claimed_by: claimerAddress, claimed_at: new Date().toISOString() }).eq('code', code);
+        } catch (e) {
+          console.warn('[GV] Failed to mark claimed in Supabase:', e);
+        }
+
+        try {
+          var gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
+          for (var i = 0; i < gifts.length; i++) {
+            if (gifts[i].code === code) { gifts[i].claimed = true; gifts[i].claimed_by = claimerAddress; break; }
+          }
+          localStorage.setItem('archon_voucher_gifts', JSON.stringify(gifts));
+        } catch (e) {}
+
+        var priceUsd = window.WalletEngine.getBOTPrice ? window.WalletEngine.getBOTPrice() : 0;
+        var amt = parseFloat(gift.amount) || 0;
+        document.getElementById('redeemedAmount').textContent = fmt(amt) + ' BOT';
+        document.getElementById('redeemedFiat').textContent = priceUsd > 0 ? '~ $' + (amt * priceUsd).toFixed(2) : '';
+        document.getElementById('redeemedMessage').textContent = gift.message ? '"' + gift.message + '"' : 'Gift claimed successfully!';
+        document.getElementById('redeemSenderName').textContent = gift.sender ? gift.sender.slice(0,6)+'...'+gift.sender.slice(-4) : 'Someone';
         if (btn) { btn.textContent = 'Redeem Gift'; btn.disabled = false; }
-        toast(err.message || 'Redeem failed');
+        navigateTo('page-redeem-success');
+        setTimeout(function(){ spawnConfetti(); }, 300);
+        window.WalletEngine.fetchAllBalances();
+      } else {
+        throw new Error('No vault key found for this gift.');
+      }
+    } catch(err) {
+      console.error('[GV] Redeem failed:', err);
+      if (btn) { btn.textContent = 'Redeem Gift'; btn.disabled = false; }
+      toast(err.message || 'Redeem failed');
     }
+}
 }function spawnConfetti() {
     const container = document.getElementById('confettiContainer');
     if(!container) return;
@@ -5963,86 +6023,157 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
   }
 
   window.gvConfirm = function () {
-    var ov = $('gvSendOverlay'); if (!ov) return;
-    if (!window.WalletEngine || !window.WalletEngine.isInitialized()) { toast('Connect your wallet first'); return; }
-    if (GV.amount <= 0 || GV.amount > GV.t.bal + 1e-9) { toast('Invalid amount'); return; }
-    if (!GV.to.trim() || GV.to.trim().length < 3) { toast('Enter a claim code'); return; }
-    if (!GV.pin.trim() || GV.pin.trim().length < 4) { toast('PIN must be at least 4 digits'); return; }
+    var ov = document.getElementById('gvSendOverlay');
+    if (!ov) { console.error('[GV] Overlay not found'); return; }
 
-    var coin = $('gvCoinImg'); if (coin) coin.src = GV.t.img;
-    ov.classList.remove('sealed'); ov.classList.add('show');
-    var bar = $('gvSendBar'); if (bar) bar.style.width = '0%';
-    txt('gvSendTitle', 'Generating vault wallet...');
-    if (bar) bar.style.width = '15%';
+    if (!window.WalletEngine || !window.WalletEngine.isInitialized()) {
+      toast('Connect your wallet first'); return;
+    }
+    if (GV.amount <= 0) { toast('Enter an amount'); return; }
+    if (GV.amount > GV.t.bal + 1e-9) { toast('Insufficient balance'); return; }
+    if (!GV.to.trim() || GV.to.trim().length < 3) { toast('Claim code must be 3+ chars'); return; }
+    if (!GV.pin.trim() || GV.pin.trim().length < 4) { toast('PIN must be 4+ digits'); return; }
 
     var claimCode = GV.to.trim().toUpperCase();
     var pinCode = GV.pin.trim();
     var combinedPassword = claimCode + '-' + pinCode;
+    var senderAddr = window.WalletEngine.getAddress();
+    var pk = window.WalletEngine.getPrivateKey();
+    if (!pk) { toast('Wallet not available'); return; }
 
-    setTimeout(function () {
-      txt('gvSendTitle', 'Sending BOT to vault...');
-      if (bar) bar.style.width = '40%';
+    var coin = document.getElementById('gvCoinImg');
+    if (coin) coin.src = GV.t.img;
+    ov.classList.remove('sealed');
+    ov.classList.add('show');
+    var bar = document.getElementById('gvSendBar');
+    if (bar) bar.style.width = '0%';
 
+    function setProgress(pct, msg) {
+      if (bar) bar.style.width = pct + '%';
+      var titleEl = document.getElementById('gvSendTitle');
+      if (titleEl) titleEl.textContent = msg;
+    }
+
+    setProgress(10, 'Switching to BOT Chain...');
+
+    var RPC_URL = 'https://rpc.botchain.ai';
+    var CHAIN_ID = 677;
+    var CHAIN_ID_HEX = '0x2A5';
+    var provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
+
+    window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: CHAIN_ID_HEX }]
+    }).catch(function (err) {
+      if (err.code === 4902) {
+        return window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: CHAIN_ID_HEX,
+            chainName: 'BOT Chain Mainnet',
+            nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
+            rpcUrls: [RPC_URL],
+            blockExplorerUrls: ['https://scan.botchain.ai']
+          }]
+        });
+      }
+      throw err;
+    }).then(function () {
+      setProgress(25, 'Creating vault wallet...');
       var vaultWallet = ethers.Wallet.createRandom();
       var vaultAddress = vaultWallet.address;
       var vaultPrivateKey = vaultWallet.privateKey;
 
+      setProgress(40, 'Sending BOT to vault...');
       var amountWei = ethers.parseEther(String(GV.amount));
       var gasBuffer = ethers.parseEther('0.001');
       var totalToSend = amountWei + gasBuffer;
 
-      var pk = window.WalletEngine.getPrivateKey();
-      if (!pk) { ov.classList.remove('show'); toast('Wallet private key not available'); return; }
-      var provider = new ethers.JsonRpcProvider('https://rpc.botchain.ai');
-      var signer = new ethers.Wallet(pk, provider);
-
-      signer.sendTransaction({
+      var senderWallet = new ethers.Wallet(pk, provider);
+      return senderWallet.sendTransaction({
         to: vaultAddress,
-        value: totalToSend
+        value: totalToSend,
+        chainId: CHAIN_ID
       }).then(function (tx) {
-        txt('gvSendTitle', 'Encrypting vault...');
-        if (bar) bar.style.width = '65%';
+        setProgress(60, 'Confirming on-chain...');
+        console.log('[GV] TX sent:', tx.hash);
         return tx.wait();
       }).then(function (receipt) {
-        if (receipt.status !== 1) throw new Error('Transaction failed on-chain');
-        txt('gvSendTitle', 'Saving gift...');
-        if (bar) bar.style.width = '80%';
+        if (!receipt || receipt.status !== 1) throw new Error('Transaction failed on-chain');
+        console.log('[GV] TX confirmed in block:', receipt.blockNumber);
+        setProgress(75, 'Encrypting vault key...');
 
         return gvEncryptAES(vaultPrivateKey, combinedPassword).then(function (encryptedPK) {
-          var sgDB = window.supabase.createClient(
-            'https://vjljoydtwvpvhqiecbqr.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
-          );
-          return sgDB.from('archon_vouchers').insert({
+          setProgress(85, 'Saving to database...');
+          try {
+            var sgDB = window.supabase.createClient(
+              'https://vjljoydtwvpvhqiecbqr.supabase.co',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3Z2aGhpZWNxYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTM2NTI4OSwiZXhwIjoyMDU0OTQxMjg5fQ.0zMvYkGlR4Jm_M0jNlUjh1sNtTgHh6tPvQ1c0p1pUO4'
+            );
+            sgDB.from('archon_vouchers').insert({
+              code: claimCode,
+              pin_hash: btoa(pinCode),
+              amount: GV.amount,
+              token_sym: GV.t.sym,
+              sender: senderAddr,
+              message: GV.msg.trim() || '',
+              encrypted_pk: encryptedPK,
+              vault_address: vaultAddress,
+              claimed: false,
+              created_at: new Date().toISOString()
+            }).then(function () {
+              console.log('[GV] Saved to Supabase');
+            }).catch(function (e) {
+              console.warn('[GV] Supabase save failed (gift still on-chain):', e);
+            });
+          } catch (e) {
+            console.warn('[GV] Supabase init failed:', e);
+          }
+
+          var gifts = [];
+          try { gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]'); } catch (e) {}
+          gifts.push({
             code: claimCode,
-            pin_hash: btoa(pinCode),
             amount: GV.amount,
             token_sym: GV.t.sym,
-            sender: window.WalletEngine.getAddress(),
+            sender: senderAddr,
             message: GV.msg.trim() || '',
-            encrypted_pk: encryptedPK,
             vault_address: vaultAddress,
+            txHash: receipt.hash,
             claimed: false,
             created_at: new Date().toISOString()
-          }).then(function () { return { txHash: receipt.hash }; });
+          });
+          try { localStorage.setItem('archon_voucher_gifts', JSON.stringify(gifts)); } catch (e) {}
+
+          return { txHash: receipt.hash, vaultAddress: vaultAddress };
         });
-      }).then(function (result) {
-        if (bar) bar.style.width = '100%';
-        txt('gvSendTitle', 'Gift sealed');
-        ov.classList.add('sealed');
-        confetti('gvConfetti', GV.t.g[0]);
-        setTimeout(function () {
-          ov.classList.remove('show');
-          buildSent({ sym: GV.t.sym, name: GV.t.name, amount: GV.amount, usd: +usd().toFixed(2), to: claimCode, message: GV.msg.trim(), code: claimCode, txHash: result.txHash });
-          if (window.historyStack) historyStack.length = 0;
-          showPage('page-gift-sent');
-        }, 1050);
-      }).catch(function (err) {
-        console.error('[GV] Send failed:', err);
-        ov.classList.remove('show');
-        toast('Send failed: ' + (err.reason || err.message || 'Unknown error'));
       });
-    }, 300);
+    }).then(function (result) {
+      setProgress(100, 'Gift sealed!');
+      ov.classList.add('sealed');
+      confetti('gvConfetti', GV.t.g[0]);
+      setTimeout(function () {
+        ov.classList.remove('show');
+        buildSent({
+          sym: GV.t.sym, name: GV.t.name, amount: GV.amount,
+          usd: +usd().toFixed(2), to: claimCode, message: GV.msg.trim(),
+          code: claimCode, txHash: result.txHash
+        });
+        if (window.historyStack) historyStack.length = 0;
+        showPage('page-gift-sent');
+      }, 1200);
+    }).catch(function (err) {
+      console.error('[GV] Send failed:', err);
+      ov.classList.remove('show');
+      var msg = err.reason || err.message || 'Unknown error';
+      if (msg.includes('user rejected') || msg.includes('denied')) {
+        toast('Transaction rejected');
+      } else if (msg.includes('insufficient funds')) {
+        toast('Insufficient BOT balance');
+      } else {
+        toast('Send failed: ' + msg);
+      }
+    });
   };  function buildSent(p) {
     set('gvSBadgeImg', 'src', GV.t.img);
     set('gvSTokImg', 'src', GV.t.img);
@@ -6791,8 +6922,15 @@ function doLogout(){
   if(window.WalletEngine) window.WalletEngine.logoutWallet();
   localStorage.removeItem('archon_device_pin');
   localStorage.removeItem('archon_pin_enabled');
+  localStorage.removeItem('archon_wallet_v1');
+  localStorage.removeItem('archon_recovery_key');
+  localStorage.removeItem('archon_profile_v1');
+  localStorage.removeItem('archon_gift_sent_count');
+  localStorage.removeItem('archon_gift_received_count');
   _pendingMnemonic = '';
   _pendingRecoveryKey = '';
+  _pinLockBuffer = '';
+  _pinSetupBuffer = '';
   historyStack.length = 0;
   showPage('page-onboarding');
 }
@@ -7134,20 +7272,30 @@ function showDepositNotif(amount, from){
   setTimeout(function(){ el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(function(){ el.remove(); },300); }, 5000);
 }
 
-(function(){
-  var ex = localStorage.getItem('archon_wallet_v1');
-  if(ex){
-    try {
-      var wd = JSON.parse(ex);
-      if(wd && wd.address && window.WalletEngine && window.WalletEngine.isPinSet && window.WalletEngine.isPinSet() && window.WalletEngine.isPinEnabled()){
-        showPage('page-pin-lock');
-        return;
-      }
-    } catch(e){}
-  }
-  showPage('page-onboarding');
-})();
 </script>
 <script src="wallet-engine.js?v=17"></script>
+<script>
+(function(){
+  function archonStartup(){
+    var ex = localStorage.getItem('archon_wallet_v1');
+    if(ex){
+      try {
+        var wd = JSON.parse(ex);
+        if(wd && wd.address && window.WalletEngine && window.WalletEngine.isPinSet && window.WalletEngine.isPinSet() && window.WalletEngine.isPinEnabled()){
+          showPage('page-pin-lock');
+          return;
+        }
+      } catch(e){}
+      if(window.WalletEngine && window.WalletEngine.isInitialized()){
+        showPage('page-wallet');
+        setTimeout(function(){ window.WalletEngine.fetchAllBalances().then(function(){ updateWalletPocket(); }); }, 300);
+        return;
+      }
+    }
+    showPage('page-onboarding');
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded', archonStartup);}else{archonStartup();}
+})();
+</script>
 </body>
 </html>
