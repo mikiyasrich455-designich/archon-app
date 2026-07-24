@@ -5464,7 +5464,7 @@ function execSend(){var t=tok(S.sendToken);var amt=parseFloat($('cxSendAmt').val
    $('cxSuccHash').textContent=result.hash;
    btn.disabled=false;$('cxCfBtnLabel').textContent='Confirm & Send';$('cxSendAmt').value='';$('cxSendAddr').value='';calcSend();renderSendToken();
    showPage('page-send-success');confetti();toast('Sent '+fmt(amt)+' BOT successfully','ok');
-   WalletEngine.fetchAllBalances();
+   WalletEngine.fetchAllBalances().then(function(){ WalletEngine.updateWalletPocket(); WalletEngine.renderTxHistory(); });
   }).catch(function(err){
    btn.disabled=false;$('cxCfBtnLabel').textContent='Confirm & Send';
    toast('Send failed: '+(err.message||'Unknown'),'err');
@@ -6151,6 +6151,26 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
       setProgress(100, 'Gift sealed!');
       ov.classList.add('sealed');
       confetti('gvConfetti', GV.t.g[0]);
+
+      if (window.WalletEngine && window.WalletEngine.addTx) {
+        window.WalletEngine.addTx({
+          type: 'gift_sent', amount: GV.amount, token: 'BOT',
+          to: vaultAddress, from: senderAddr, hash: result.txHash,
+          status: 'confirmed'
+        });
+      }
+      try {
+        var sc = parseInt(localStorage.getItem('archon_gift_sent_count') || '0') || 0;
+        localStorage.setItem('archon_gift_sent_count', String(sc + 1));
+        var acts = [];
+        try { acts = JSON.parse(localStorage.getItem('archon_gift_activities') || '[]'); } catch(e){}
+        acts.push({ type: 'sent', amount: GV.amount, to: vaultAddress, code: claimCode, message: GV.msg.trim(), timestamp: Date.now() });
+        localStorage.setItem('archon_gift_activities', JSON.stringify(acts));
+      } catch(e){}
+      if (window.WalletEngine && window.WalletEngine.globalRefresh) {
+        window.WalletEngine.globalRefresh();
+      }
+
       setTimeout(function () {
         ov.classList.remove('show');
         buildSent({
