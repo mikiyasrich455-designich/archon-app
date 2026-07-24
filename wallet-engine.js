@@ -954,6 +954,8 @@ function autoInit(){
           if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
           updateWalletUI();
           if(typeof renderTxHistory==='function') renderTxHistory();
+          if(typeof updateGiftStats==='function') updateGiftStats();
+          if(typeof updateWalletPocket==='function') updateWalletPocket();
         });
       }
     },500);
@@ -962,6 +964,7 @@ function autoInit(){
         Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
           if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
           updateWalletUI();
+          if(typeof updateGiftStats==='function') updateGiftStats();
         });
       }
     },30000);

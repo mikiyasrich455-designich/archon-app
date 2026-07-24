@@ -4614,9 +4614,11 @@ function switchTabMain(tab) {
 
 function updateAccountPage(){
   var an=$('cxAcctName'),ae=$('cxAcctEmail'),aa=$('cxAcctAvatar');
-  if(an) an.textContent = profile.name || 'User';
-  if(ae) ae.textContent = profile.email || 'No email set';
-  if(aa) aa.src = avUrl(profile.seed);
+  var p = (typeof profile !== 'undefined' && profile) ? profile : {name:'User',email:'',seed:'Felix'};
+  var aUrl = (typeof avUrl === 'function') ? avUrl : function(s){return 'https://api.dicebear.com/7.x/avataaars/svg?seed='+s;};
+  if(an) an.textContent = p.name || 'User';
+  if(ae) ae.textContent = p.email || 'No email set';
+  if(aa) aa.src = aUrl(p.seed);
 }
 
 // â”€â”€â”€ QR CODE GENERATOR â”€â”€â”€
@@ -4747,25 +4749,12 @@ function animateNum(el,from,to,dur){
     })(s);
 }
 function updateGiftStats(){
-    const newSent=Math.floor(Math.random()*50)+1;
-    const newReceived=Math.floor(Math.random()*80)+1;
-    const sentPct=(Math.random()*20-10).toFixed(2);
-    const recvPct=(Math.random()*15).toFixed(2);
-    const gsc=document.getElementById('giftSentCount');
-    const grc=document.getElementById('giftReceivedCount');
-    if(gsc) animateNum(gsc,prevSent,newSent,1200);
-    if(grc) animateNum(grc,prevReceived,newReceived,1200);
-    const gse=document.getElementById('giftSentChange');
-    const gre=document.getElementById('giftReceivedChange');
-    if(gse){
-        gse.innerHTML=parseFloat(sentPct)>=0?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg><span>+'+sentPct+'%</span>':'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg><span>'+sentPct+'%</span>';
-        gse.className='gift-stat-change '+(parseFloat(sentPct)>=0?'up':'down');
-    }
-    if(gre){
-        gre.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg><span>+'+recvPct+'%</span>';
-        gre.className='gift-stat-change up';
-    }
-    prevSent=newSent; prevReceived=newReceived;
+    var sentCount = parseInt(localStorage.getItem('archon_gift_sent_count')) || 0;
+    var receivedCount = parseInt(localStorage.getItem('archon_gift_received_count')) || 0;
+    var gsc = document.getElementById('giftSentCount');
+    var grc = document.getElementById('giftReceivedCount');
+    if(gsc) gsc.textContent = sentCount;
+    if(grc) grc.textContent = receivedCount;
 }
 setTimeout(updateGiftStats,400);
 setInterval(updateGiftStats,8000);
@@ -5622,6 +5611,7 @@ var profile=(function(){
   return {name:'User',email:'',seed:'Felix'};
 })();
 function avUrl(sd){return 'https://api.dicebear.com/7.x/avataaars/svg?seed='+sd;}
+window.avUrl = avUrl;
 function renderAvatars(){var g=$('cxAvatarGrid');if(!g)return;g.innerHTML=SEEDS.map(function(sd){
  return '<button onclick="cxSelectAvatar(\''+sd+'\')" style="border-radius:50%;overflow:hidden;border:3px solid '+(sd===profile.seed?'#7c3aed':'#f3f4f6')+';padding:0;background:#fff;cursor:pointer" data-seed="'+sd+'"><img src="'+avUrl(sd)+'" alt="'+sd+'" style="width:100%;height:100%;object-fit:cover;display:block" /></button>';}).join('');}
 function selectAvatar(sd){profile.seed=sd;var ea=$('cxEditAvatar');if(ea)ea.src=avUrl(sd);renderAvatars();}
