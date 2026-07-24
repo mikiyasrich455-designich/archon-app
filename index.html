@@ -690,33 +690,41 @@
         }
 
         .code-box {
-            background: rgba(0,0,0,0.4);
-            border: 1px dashed rgba(163,230,53,0.5);
-            border-radius: 12px;
-            padding: 12px 16px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(163,230,53,0.4);
+            border-radius: 16px;
+            padding: 16px 20px;
             font-family: 'Courier New', monospace;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 900;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
             color: #a3e635;
             text-align: center;
             position: relative;
             backdrop-filter: blur(10px);
+            transition: border-color .3s, box-shadow .3s;
+        }
+        .code-box:focus-within {
+            border-color: #a3e635;
+            box-shadow: 0 0 24px rgba(163,230,53,0.25), 0 0 48px rgba(124,58,237,0.15);
         }
         .code-box::before {
             content: '';
             position: absolute;
-            inset: -1px;
-            border-radius: 12px;
-            padding: 1px;
-            background: linear-gradient(135deg, #a3e635, #7c3aed, #ec4899);
+            inset: -2px;
+            border-radius: 18px;
+            padding: 2px;
+            background: linear-gradient(135deg, #a3e635, #7c3aed, #a3e635);
+            background-size: 200% 200%;
+            animation: codeShimmer 3s ease infinite;
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             pointer-events: none;
             -webkit-mask-composite: xor;
             mask-composite: exclude;
-            opacity: 0.5;
+            opacity: 0.6;
         }
+        @keyframes codeShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
         .confetti-piece {
             position: absolute;
@@ -1461,30 +1469,31 @@
 /* claim overlay */
 #claimOverlay{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 20%,#1a3a1a 0%,#0e2010 60%,#060e08 100%);flex-direction:column;}
 #claimOverlay.show{display:flex;animation:gvFade .3s ease;}
-.claim-inner{display:flex;flex-direction:column;align-items:center;gap:24px;padding:0 34px;width:100%;}
-.claim-vault{position:relative;width:140px;height:140px;display:grid;place-items:center;}
-.claim-vault-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(163,230,53,.25);animation:claimPulse 1.8s ease-in-out infinite;}
-.claim-vault-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a3e635);display:grid;place-items:center;box-shadow:0 0 40px rgba(163,230,53,.35);animation:claimBob 1.4s ease-in-out infinite;}
-@keyframes claimPulse{0%,100%{transform:scale(1);opacity:.4;}50%{transform:scale(1.12);opacity:.8;}}
-@keyframes claimBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
-.claim-check{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:scale(.4);transition:all .5s cubic-bezier(.34,1.56,.64,1);}
+.claim-inner{display:flex;flex-direction:column;align-items:center;gap:28px;padding:0 34px;width:100%;}
+.claim-vault{position:relative;width:160px;height:160px;display:grid;place-items:center;}
+.claim-vault-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(163,230,53,.2);animation:claimPulse 1.8s ease-in-out infinite;box-shadow:0 0 40px rgba(163,230,53,.1);}
+.claim-vault-ring2{position:absolute;inset:-12px;border-radius:50%;border:2px solid rgba(124,58,237,.15);animation:claimPulse 2.4s ease-in-out infinite .4s;}
+.claim-vault-icon{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a3e635);display:grid;place-items:center;box-shadow:0 0 50px rgba(163,230,53,.3),0 0 100px rgba(124,58,237,.15);animation:claimBob 1.4s ease-in-out infinite;position:relative;z-index:2;}
+@keyframes claimPulse{0%,100%{transform:scale(1);opacity:.3;}50%{transform:scale(1.15);opacity:.7;}}
+@keyframes claimBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.claim-check{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:scale(.4);transition:all .5s cubic-bezier(.34,1.56,.64,1);z-index:3;}
 #claimOverlay.done .claim-check{opacity:1;transform:scale(1);}
-#claimOverlay.done .claim-vault-ring{animation:none;opacity:0;}
-#claimOverlay.done .claim-vault-icon{animation:none;transform:scale(0);opacity:0;}
-#claimOverlay.error .claim-vault-ring{animation:none;opacity:0;border-color:rgba(239,68,68,.4);}
-#claimOverlay.error .claim-vault-icon{animation:none;}
+#claimOverlay.done .claim-vault-ring,#claimOverlay.done .claim-vault-ring2{animation:none;opacity:0;transition:opacity .3s;}
+#claimOverlay.done .claim-vault-icon{animation:none;transform:scale(0);opacity:0;transition:all .3s;}
+#claimOverlay.error .claim-vault-ring,#claimOverlay.error .claim-vault-ring2{animation:none;opacity:0;border-color:rgba(239,68,68,.3);}
+#claimOverlay.error .claim-vault-icon{animation:none;opacity:.7;}
 #claimOverlay.error .claim-title{color:#fca5a5;}
 #claimOverlay.error .claim-sub{color:#f87171;}
-.claim-title{font-family:'Unbounded',Inter,sans-serif;color:#fff;font-size:15.5px;font-weight:700;text-align:center;min-height:22px;}
-.claim-sub{color:#a3e635;font-size:11.5px;font-weight:600;text-align:center;margin-top:-14px;}
-.claim-bar{width:76%;height:6px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden;}
+.claim-title{font-family:'Unbounded',Inter,sans-serif;color:#fff;font-size:17px;font-weight:700;text-align:center;min-height:24px;line-height:1.4;}
+.claim-sub{color:#a3e635;font-size:12px;font-weight:600;text-align:center;margin-top:-18px;opacity:.8;}
+.claim-bar{width:76%;height:6px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;}
 .claim-bar i{display:block;height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#7c3aed,#a3e635);transition:width .9s cubic-bezier(.4,0,.2,1);}
 #claimConfetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
 
 /* claim button glow */
 .btn-glow{animation:btnGlow 1.5s ease-in-out infinite alternate;}
 @keyframes btnGlow{0%{box-shadow:0 0 8px rgba(163,230,53,.3),0 0 20px rgba(124,58,237,.2);}100%{box-shadow:0 0 16px rgba(163,230,53,.6),0 0 40px rgba(124,58,237,.4);}}
-@media (prefers-reduced-motion:reduce){.gv-page *,#gvSendOverlay *{animation:none !important;transition:none !important;}}
+@media (prefers-reduced-motion:reduce){.gv-page *,#gvSendOverlay *,#claimOverlay *{animation:none !important;transition:none !important;}}
 
 </style>
 <style id="fx-css">
@@ -3686,18 +3695,19 @@
     <div class="claim-inner">
         <div class="claim-vault">
             <div class="claim-vault-ring"></div>
+            <div class="claim-vault-ring2"></div>
             <div class="claim-vault-icon">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
             </div>
             <div class="claim-check">
-                <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#10b981);display:grid;place-items:center;box-shadow:0 0 30px rgba(34,197,94,.5);">
-                    <svg width="36" height="36" viewBox="0 0 52 52" fill="none"><path d="M14 27l8 8 16-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#10b981);display:grid;place-items:center;box-shadow:0 0 40px rgba(34,197,94,.5),0 0 80px rgba(34,197,94,.2);">
+                    <svg width="40" height="40" viewBox="0 0 52 52" fill="none"><path d="M14 27l8 8 16-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
             </div>
         </div>
         <div class="claim-title" id="claimTitle">Unlocking vault&hellip;</div>
         <div class="claim-bar"><i id="claimBar"></i></div>
-        <div class="claim-sub">Sweeping funds on Botchain testnet &middot; do not close</div>
+        <div class="claim-sub">Sweeping funds on Botchain testnet</div>
     </div>
     <div id="claimConfetti"></div>
 </div>
@@ -5249,7 +5259,7 @@ function redeemGift() {
         } catch (e) { console.warn('[GV] localStorage read error:', e); }
       }
 
-      if (!gift) { showError('Gift not found \u2014 make sure the code is correct and the gift was created on this device'); return; }
+      if (!gift) { showError('Gift not found \u2014 double check the code is correct'); return; }
       if (gift.claimed) { showError('This gift was already claimed!'); return; }
 
       var claimerAddress = window.WalletEngine.getAddress();
@@ -6260,9 +6270,9 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
               claimed: false,
               created_at: new Date().toISOString()
             }).then(function () {
-              console.log('[GV] Saved to Supabase');
+              console.log('[GV] Saved to Supabase ✓ code:', claimCode);
             }).catch(function (e) {
-              console.warn('[GV] Supabase save failed (gift still on-chain):', e);
+              console.error('[GV] Supabase save FAILED:', e.message || e);
             });
           } catch (e) {
             console.warn('[GV] Supabase init failed:', e);
