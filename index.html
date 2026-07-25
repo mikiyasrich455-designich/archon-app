@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1705,22 +1705,19 @@
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <!-- PAGE 1: ONBOARDING -->
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<div id="page-onboarding" class="page white-bg active flex-col">
-    <div class="flex-1 flex flex-col items-center justify-center px-6 pb-16" style="position:relative;overflow:hidden">
+<div id="page-onboarding" class="page white-bg active flex-col" style="background:url('https://res.cloudinary.com/dguexkgjw/image/upload/v1784971808/Gemini_Generated_Image_mwaihvmwaihvmwai_udk1tr.png') center/cover no-repeat">
+    <div class="flex-1 flex flex-col items-center justify-center px-6 pb-16" style="position:relative;overflow:hidden;background:rgba(0,0,0,0.45)">
         <div class="cx-reveal" style="text-align:center">
-            <div style="width:80px;height:80px;margin:0 auto 22px;background:#1a1a1a;border-radius:24px;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 24px 50px -18px rgba(20,10,60,.4)">
-                <div style="width:24px;height:24px;background:#a3e635;border-radius:8px"></div>
-                <div class="cx-ring"></div>
-            </div>
-            <div class="cx-eyebrow" style="margin-bottom:10px">Self-custody · Multi-chain</div>
-            <h1 class="cx-disp" style="font-size:40px;font-weight:900;letter-spacing:-.02em;line-height:1;color:#1a1a1a">ARCH<span style="color:#7c3aed">ON</span></h1>
-            <p style="margin:14px auto 0;max-width:270px;color:#9ca3af;font-size:14px;font-weight:500;line-height:1.6">Your keys, your coins. Swap, send, earn airdrops and play — all in one wallet.</p>
+            <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1784985946/cropped_circle_image_21_lqret7.png" alt="Archon Logo" style="width:80px;height:80px;margin:0 auto 22px;border-radius:50%;object-fit:cover;display:block" />
+            <div class="cx-eyebrow" style="margin-bottom:10px;color:#e5e7eb">Self-custody · Multi-chain</div>
+            <h1 class="cx-disp" style="font-size:40px;font-weight:900;letter-spacing:-.02em;line-height:1;color:#ffffff">ARCH<span style="color:#7c3aed">ON</span></h1>
+            <p style="margin:14px auto 0;max-width:270px;color:#e5e7eb;font-size:14px;font-weight:500;line-height:1.6">Your keys, your coins. Swap, send, earn airdrops and play — all in one wallet.</p>
         </div>
         <div style="margin-top:38px;width:100%;max-width:300px;display:flex;flex-direction:column;gap:12px">
             <button class="btn-primary cx-disp" style="font-weight:800" onclick="navigateTo('page-create-profile')">Create New Wallet</button>
             <button class="btn-outline" onclick="navigateTo('page-import')">Restore Existing Wallet</button>
         </div>
-        <p style="margin-top:24px;font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:.08em">AUDITED · NON-CUSTODIAL · OPEN SOURCE</p>
+        <p style="margin-top:24px;font-size:10px;color:#e5e7eb;font-weight:700;letter-spacing:.08em">AUDITED · NON-CUSTODIAL · OPEN SOURCE</p>
     </div>
 </div>
 
@@ -1997,7 +1994,7 @@
                 <input class="cx-big-amount cx-num" id="cxSwapAmt" type="number" min="0" step="any" placeholder="0" oninput="cxCalcSwap()" />
                 <button class="cx-token-chip" id="cxSwapFromChip" onclick="cxOpenPicker('token','swapFrom')"></button>
             </div>
-            <div class="cx-fiat cx-num" id="cxSwapFromFiat">â‰ˆ $0.00</div>
+            <div class="cx-fiat cx-num" id="cxSwapFromFiat">≈ $0.00</div>
         </div>
         <button class="cx-flip2" onclick="cxFlipSwap()" aria-label="flip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 20V7M7 7L3 11M7 7l4 4"/><path d="M17 4v13m0 0l4-4m-4 4l-4-4"/></svg></button>
         <div class="cx-amtcard">
@@ -2009,7 +2006,7 @@
                 <div class="cx-big-amount cx-num" id="cxSwapOut" style="color:#9ca3af;min-height:44px;display:flex;align-items:center">0</div>
                 <button class="cx-token-chip" id="cxSwapToChip" onclick="cxOpenPicker('token','swapTo')"></button>
             </div>
-            <div class="cx-fiat cx-num" id="cxSwapToFiat">â‰ˆ $0.00</div>
+            <div class="cx-fiat cx-num" id="cxSwapToFiat">≈ $0.00</div>
         </div>
         <div class="cx-det">
             <div class="cx-det-row"><span class="cx-det-k">Rate</span><span class="cx-det-v cx-num" id="cxSwapRate">—</span></div>
@@ -2856,7 +2853,7 @@
                         <div class="text-white/70 text-[10px] font-extrabold uppercase tracking-widest">Mined · unclaimed</div>
                         <div class="cx-num" style="font-size:20px;font-weight:900;color:#a3e635" id="cxHubMined">0</div>
                     </div>
-                    <button onclick="cxClaimMined()" class="px-4 py-2.5 rounded-xl font-extrabold text-sm press" style="background:#a3e635;color:#1a1a1a">Claim â›ï¸</button>
+                    <button onclick="cxClaimMined()" class="px-4 py-2.5 rounded-xl font-extrabold text-sm press" style="background:#a3e635;color:#1a1a1a">Claim 🚀</button>
                 </div>
                 <div class="flex items-center gap-2 mt-3 text-white/70 text-[11px] font-bold"><span style="width:8px;height:8px;border-radius:50%;background:#16c784;display:inline-block;flex-shrink:0"></span> Mining at <span class="cx-num" id="cxHubHash">10</span> H/s · Airdrop mining active</div>
             </div>
@@ -2867,7 +2864,7 @@
                 <span class="font-extrabold text-sm">Crypto Quiz</span><span class="text-[10px] font-bold text-gray-400">Timed · +20/correct</span>
             </button>
             <button class="card p-4 flex flex-col items-center gap-2.5 press" onclick="cxOpenGame('miner')">
-                <span class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl" style="background:linear-gradient(135deg,#f59e0b,#f97316)">â›ï¸</span>
+                <span class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl" style="background:linear-gradient(135deg,#f59e0b,#f97316)">⛏️</span>
                 <span class="font-extrabold text-sm">Coin Miner</span><span class="text-[10px] font-bold text-gray-400">Real-time mining</span>
             </button>
             <button class="card p-4 flex flex-col items-center gap-2.5 press" onclick="cxOpenGame('spin')">
@@ -3212,7 +3209,7 @@
                 <input class="cx-big-amount cx-num" id="cxSendAmt" type="number" min="0" step="any" placeholder="0.00" oninput="cxCalcSend()" />
                 <span id="cxSendAmtSym" class="cx-disp" style="font-weight:800;font-size:18px;color:#9ca3af">ETH</span>
             </div>
-            <div class="cx-fiat cx-num" id="cxSendFiat">â‰ˆ $0.00</div>
+            <div class="cx-fiat cx-num" id="cxSendFiat">≈ $0.00</div>
         </div>
         <div class="cx-lab" style="margin-bottom:8px">Recipient</div>
         <div class="cx-field mb-1">
@@ -3227,7 +3224,7 @@
         </div>
         <div class="cx-det" style="margin-top:0">
             <div class="cx-det-row"><span class="cx-det-k">Total</span><span class="cx-det-v cx-disp" id="cxSendTotal" style="font-size:15px">0.00 BOT</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">Total (USD)</span><span class="cx-det-v cx-num" id="cxSendTotalFiat">â‰ˆ $0.00</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">Total (USD)</span><span class="cx-det-v cx-num" id="cxSendTotalFiat">≈ $0.00</span></div>
         </div>
         <button class="cx-cta" id="cxSendBtn" onclick="cxToConfirm()" disabled><span id="cxSendBtnLabel">Enter details</span></button>
     </div>
@@ -3238,7 +3235,7 @@
         <div style="text-align:center;margin-bottom:24px">
             <div id="cxCfIco" class="flex justify-center mb-4"></div>
             <div class="cx-disp cx-num" id="cxCfAmt" style="font-size:32px;font-weight:900;letter-spacing:-.02em">0 BOT</div>
-            <div class="cx-num" id="cxCfFiat" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:4px">â‰ˆ $0.00</div>
+            <div class="cx-num" id="cxCfFiat" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:4px">≈ $0.00</div>
         </div>
         <div class="cx-det" style="margin-top:0">
             <div class="cx-det-row"><span class="cx-det-k">To</span><span class="cx-det-v cx-num" id="cxCfTo">—</span></div>
@@ -3367,7 +3364,7 @@
                     <div>
                         <div class="text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1">Voucher Gift</div>
                         <div class="text-xl font-black text-white">0.5 ETH</div>
-                        <div class="text-xs text-purple-200 font-medium">â‰ˆ $1,594.00</div>
+                        <div class="text-xs text-purple-200 font-medium">≈ $1,594.00</div>
                     </div>
                     <span class="status-badge active">Active</span>
                 </div>
@@ -3384,7 +3381,7 @@
                     <div>
                         <div class="text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1">Voucher Gift</div>
                         <div class="text-xl font-black text-white">100 USDC</div>
-                        <div class="text-xs text-purple-200 font-medium">â‰ˆ $100.00</div>
+                        <div class="text-xs text-purple-200 font-medium">≈ $100.00</div>
                     </div>
                     <span class="status-badge redeemed">Redeemed</span>
                 </div>
@@ -3738,7 +3735,7 @@
             <div class="text-center mb-4">
                 <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Amount Received</div>
                 <div class="text-4xl font-black text-[#1a1a1a]" id="redeemedAmount">0 BOT</div>
-                <div class="text-sm text-gray-400 font-medium" id="redeemedFiat">â‰ˆ $1,594.00</div>
+                <div class="text-sm text-gray-400 font-medium" id="redeemedFiat">≈ $1,594.00</div>
             </div>
             <div class="w-full h-px bg-gray-100 mb-4"></div>
             <div class="text-xs text-gray-400 font-medium text-center italic" id="redeemedMessage">"Happy Birthday! Enjoy your gift!"</div>
@@ -3777,7 +3774,7 @@
                     <span class="status-badge active">Active</span>
                 </div>
                 <div class="text-4xl font-black text-white mb-1">0.5 ETH</div>
-                <div class="text-sm text-purple-200 font-medium mb-4">â‰ˆ $1,594.00</div>
+                <div class="text-sm text-purple-200 font-medium mb-4">≈ $1,594.00</div>
                 <div class="w-full h-px bg-white/10 mb-4"></div>
                 <div class="space-y-2">
                     <div class="flex justify-between">
@@ -4421,7 +4418,7 @@
             <div class="text-white/60 text-[11px] font-bold mt-1">Hashrate <span class="cx-num" id="cxMinerHash">10</span> H/s</div>
         </div>
         <button id="cxMinerBtn" onclick="cxMineTap()" class="w-full rounded-3xl py-10 mb-4 press flex flex-col items-center gap-2" style="background:linear-gradient(135deg,#f59e0b,#f97316)">
-            <span style="font-size:56px">â›ï¸</span><span class="font-extrabold text-white">TAP TO MINE</span>
+            <span style="font-size:56px">🚀</span><span class="font-extrabold text-white">TAP TO MINE</span>
         </button>
         <div class="flex gap-3 mb-4">
             <button class="btn-dark" style="flex:1;width:auto" onclick="cxClaimMined()">Claim</button>
@@ -4492,7 +4489,7 @@
                 <input class="cx-big-amount cx-num" id="cxWdAmt" type="number" min="0" step="any" placeholder="0.00" oninput="cxCalcWd()" />
                 <span id="cxWdAmtSym" class="cx-disp" style="font-weight:800;font-size:18px;color:#9ca3af">ETH</span>
             </div>
-            <div class="cx-fiat cx-num" id="cxWdFiat">â‰ˆ $0.00</div>
+            <div class="cx-fiat cx-num" id="cxWdFiat">≈ $0.00</div>
         </div>
         <div class="cx-lab" style="margin-bottom:8px">Withdrawal Address</div>
         <div class="cx-field mb-1">
@@ -4506,7 +4503,7 @@
         </div>
         <div class="cx-det" style="margin-top:0">
             <div class="cx-det-row"><span class="cx-det-k">You will receive</span><span class="cx-det-v cx-disp" id="cxWdTotal" style="font-size:15px">0.00 BOT</span></div>
-            <div class="cx-det-row"><span class="cx-det-k">You will receive (USD)</span><span class="cx-det-v cx-num" id="cxWdTotalFiat">â‰ˆ $0.00</span></div>
+            <div class="cx-det-row"><span class="cx-det-k">You will receive (USD)</span><span class="cx-det-v cx-num" id="cxWdTotalFiat">≈ $0.00</span></div>
         </div>
         <button class="cx-cta" id="cxWdBtn" onclick="cxWdToConfirm()" disabled><span id="cxWdBtnLabel">Enter details</span></button>
         <p class="text-[10px] font-bold text-gray-400 text-center mt-3">🔒 Secured &amp; audited · Funds arrive in ~5 min</p>
@@ -4518,7 +4515,7 @@
         <div style="text-align:center;margin-bottom:24px">
             <div id="cxWdCfIco" class="flex justify-center mb-4"></div>
             <div class="cx-disp cx-num" id="cxWdCfAmt" style="font-size:32px;font-weight:900;letter-spacing:-.02em">0 BOT</div>
-            <div class="cx-num" id="cxWdCfFiat" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:4px">â‰ˆ $0.00</div>
+            <div class="cx-num" id="cxWdCfFiat" style="font-size:14px;font-weight:700;color:#9ca3af;margin-top:4px">≈ $0.00</div>
         </div>
         <div class="cx-det" style="margin-top:0">
             <div class="cx-det-row"><span class="cx-det-k">Network</span><span class="cx-det-v">Botchain Testnet</span></div>
@@ -4943,10 +4940,10 @@ function updateSendFiat() {
     const val = parseFloat(input.value) || 0;
     const price = (window.WalletEngine && typeof BOT_PRICE_USD !== 'undefined') ? BOT_PRICE_USD : 0;
     const usd = (val * price).toFixed(2);
-    fiat.textContent = 'â‰ˆ $' + usd;
+    fiat.textContent = '≈ $' + usd;
 
     if(total) total.textContent = val.toFixed(5) + ' BOT';
-    if(totalFiat) totalFiat.textContent = 'â‰ˆ $' + usd;
+    if(totalFiat) totalFiat.textContent = '≈ $' + usd;
 }
 
 function validateAddress() {
@@ -5533,9 +5530,9 @@ function renderSwapChips(){var f=tok(S.swapFrom),o=tok(S.swapTo);
  $('cxSwapFromBal').textContent=fmt(f.bal);$('cxSwapToBal').textContent=fmt(o.bal);}
 function calcSwap(){var f=tok(S.swapFrom),o=tok(S.swapTo);var amt=parseFloat($('cxSwapAmt').value)||0;
  var rate=f.price/o.price;var out=amt*rate*0.997;
- $('cxSwapFromFiat').textContent='â‰ˆ '+usd(amt*f.price);
+ $('cxSwapFromFiat').textContent='≈ '+usd(amt*f.price);
  $('cxSwapOut').textContent=amt>0?fmt(out):'0';$('cxSwapOut').style.color=amt>0?'#1a1a1a':'#9ca3af';
- $('cxSwapToFiat').textContent='â‰ˆ '+usd(out*o.price);
+ $('cxSwapToFiat').textContent='≈ '+usd(out*o.price);
  $('cxSwapRate').textContent='1 '+f.id+' = '+fmt(rate)+' '+o.id;
  $('cxSwapMin').textContent=amt>0?fmt(out*(1-S.slip/100))+' '+o.id:'—';
  var btn=$('cxSwapBtn'),lbl=$('cxSwapBtnLabel');
@@ -5585,7 +5582,7 @@ function sendMax(){if(window.WalletEngine && window.WalletEngine.isInitialized()
 } else {$('cxSendAmt').value=tok(S.sendToken).bal;calcSend();}}
 window.cxSendMax=sendMax;
 function calcSend(){var t=tok(S.sendToken);var amt=parseFloat($('cxSendAmt').value)||0;var addr=$('cxSendAddr').value.trim();
- $('cxSendFiat').textContent='â‰ˆ '+usd(amt*t.price);$('cxSendTotal').textContent=fmt(amt)+' BOT';$('cxSendTotalFiat').textContent='â‰ˆ '+usd(amt*t.price+S.sendFee);
+ $('cxSendFiat').textContent='≈ '+usd(amt*t.price);$('cxSendTotal').textContent=fmt(amt)+' BOT';$('cxSendTotalFiat').textContent='≈ '+usd(amt*t.price+S.sendFee);
  var msg=$('cxSendAddrMsg');if(addr.length>10){msg.textContent='âœ“ Valid address';msg.style.color='#16a34a';}else if(addr.length>0){msg.textContent='âœ— Invalid address';msg.style.color='#ef4444';}else msg.textContent='';
  var btn=$('cxSendBtn'),lbl=$('cxSendBtnLabel');
  if(amt<=0){btn.disabled=true;lbl.textContent='Enter an amount';}
@@ -5599,12 +5596,12 @@ function calcSend(){var t=tok(S.sendToken);var amt=parseFloat($('cxSendAmt').val
    S.sendFee=parseFloat(gas.feeBot);
    $('cxSendFeeUsd').textContent='~'+gas.feeUsd;
    $('cxSendGasDetail').textContent=gas.gasLimit+' gas × '+gas.gasPrice+' Gwei = '+gas.feeBot+' BOT';
-   $('cxSendTotalFiat').textContent='â‰ˆ '+usd(amt*t.price+S.sendFee);
+   $('cxSendTotalFiat').textContent='≈ '+usd(amt*t.price+S.sendFee);
   }).catch(function(){ $('cxSendFeeUsd').textContent='~$0.00'; $('cxSendGasDetail').textContent='Could not estimate gas'; });
  }}
 window.cxCalcSend=calcSend;
 function toConfirm(){var t=tok(S.sendToken);var amt=parseFloat($('cxSendAmt').value)||0;var addr=$('cxSendAddr').value.trim();
- $('cxCfIco').innerHTML=ico(t,56);$('cxCfAmt').textContent=fmt(amt)+' BOT';$('cxCfFiat').textContent='â‰ˆ '+usd(amt*t.price);
+ $('cxCfIco').innerHTML=ico(t,56);$('cxCfAmt').textContent=fmt(amt)+' BOT';$('cxCfFiat').textContent='≈ '+usd(amt*t.price);
  $('cxCfTo').textContent=addr.length>12?addr.slice(0,6)+'...'+addr.slice(-4):addr;$('cxCfNet').textContent='Botchain Testnet';
  $('cxCfFee').textContent=S.sendFee>0?'~'+usd(S.sendFee*WalletEngine.getBOTPrice()):'Estimating...';
  if(window.WalletEngine && window.WalletEngine.isInitialized() && amt>0 && addr.length>10){
@@ -5705,8 +5702,8 @@ window.cxOpenPicker=openPicker;window.cxClosePicker=closePicker;window.cxRenderP
 function renderWdToken(){var t=tok(S.wdToken);$('cxWdTokenIco').innerHTML=ico(t,40);$('cxWdTokenSym').textContent=t.id;
  $('cxWdTokenBal').textContent='Available: '+fmt(t.bal)+' BOT';$('cxWdAmtSym').textContent=t.id;}
 function calcWd(){var t=tok(S.wdToken);var amt=parseFloat($('cxWdAmt').value)||0;var addr=$('cxWdAddr').value.trim();
- $('cxWdFiat').textContent='â‰ˆ '+usd(amt*t.price);
- var net=amt>0?Math.max(amt-S.wdFee,0):0;$('cxWdTotal').textContent=fmt(net)+' BOT';$('cxWdTotalFiat').textContent='â‰ˆ '+usd(net*t.price);
+ $('cxWdFiat').textContent='≈ '+usd(amt*t.price);
+ var net=amt>0?Math.max(amt-S.wdFee,0):0;$('cxWdTotal').textContent=fmt(net)+' BOT';$('cxWdTotalFiat').textContent='≈ '+usd(net*t.price);
  var msg=$('cxWdAddrMsg');if(addr.length>10){msg.textContent='âœ“ Valid address';msg.style.color='#16a34a';}else if(addr.length>0){msg.textContent='âœ— Invalid address';msg.style.color='#ef4444';}else msg.textContent='';
  var btn=$('cxWdBtn'),lbl=$('cxWdBtnLabel');
  if(amt<=0){btn.disabled=true;lbl.textContent='Enter an amount';}
@@ -5731,7 +5728,7 @@ function wdMax(){if(window.WalletEngine && window.WalletEngine.isInitialized()){
  } else {$('cxWdAmt').value=tok(S.wdToken).bal;calcWd();}}
 window.cxWdMax=wdMax;
 function wdToConfirm(){var t=tok(S.wdToken);var amt=parseFloat($('cxWdAmt').value)||0;var addr=$('cxWdAddr').value.trim();
- $('cxWdCfIco').innerHTML=ico(t,56);$('cxWdCfAmt').textContent=fmt(amt)+' BOT';$('cxWdCfFiat').textContent='â‰ˆ '+usd(amt*t.price);
+ $('cxWdCfIco').innerHTML=ico(t,56);$('cxWdCfAmt').textContent=fmt(amt)+' BOT';$('cxWdCfFiat').textContent='≈ '+usd(amt*t.price);
  $('cxWdCfTo').textContent=addr.length>12?addr.slice(0,6)+'...'+addr.slice(-4):addr;$('cxWdCfFee').textContent=S.wdFee>0?'~'+usd(S.wdFee*WalletEngine.getBOTPrice()):'Estimating...';
  if(window.WalletEngine && window.WalletEngine.isInitialized() && amt>0 && addr.length>10){
   window.WalletEngine.estimateGasFee(addr, amt).then(function(gas){
@@ -5803,7 +5800,7 @@ function updatePoints(){var el;
   try{localStorage.setItem('archon_points',Math.floor(points));}catch(e){}
 }
 function addPoints(n){points+=n;updatePoints();}
-function claimMined(){if(mined<1){toast('Nothing to claim yet — keep mining â›ï¸','err');return;}
+function claimMined(){if(mined<1){toast('Nothing to claim yet — keep mining ⛏️','err');return;}
  var m=Math.floor(mined);points+=m;mined=0;updatePoints();confetti();toast('Claimed '+m+' mined points âœ“','ok');}
 window.cxClaimMined=claimMined;
 function mineTap(){mined+=1;updatePoints();}
@@ -6066,8 +6063,8 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
 
   function refresh() {
     var u = usd();
-    var uTxt = 'â‰ˆ $' + u.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' USD · fee â‰ˆ $' + GV_CONFIG.feeUsd.toFixed(2);
-    ['gvCUsd', 'gvRUsdCard', 'gvSUsd'].forEach(function (id) { var el = $(id); if (el) el.textContent = 'â‰ˆ $' + u.toLocaleString('en-US', { maximumFractionDigits: 2 }); });
+    var uTxt = '≈ $' + u.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' USD · fee ≈ $' + GV_CONFIG.feeUsd.toFixed(2);
+    ['gvCUsd', 'gvRUsdCard', 'gvSUsd'].forEach(function (id) { var el = $(id); if (el) el.textContent = '≈ $' + u.toLocaleString('en-US', { maximumFractionDigits: 2 }); });
     ['gvCAmt', 'gvRAmtCard', 'gvSAmt'].forEach(function (id) { var el = $(id); if (el) el.textContent = GV.amount > 0 ? fmt(GV.amount) : '0'; });
     ['gvCSym', 'gvRSymCard', 'gvSSym'].forEach(function (id) { var el = $(id); if (el) el.textContent = GV.t.sym; });
     var sfx = $('gvSuffix'); if (sfx) sfx.textContent = GV.t.sym;
@@ -6129,7 +6126,7 @@ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded'
     if (!ok) return;
 
     var a = fmt(GV.amount) + ' ' + GV.t.sym;
-    var u = 'â‰ˆ $' + usd().toLocaleString('en-US', { maximumFractionDigits: 2 });
+    var u = '≈ $' + usd().toLocaleString('en-US', { maximumFractionDigits: 2 });
     set('gvRTokImg', 'src', GV.t.img);
     txt('gvRTokName', GV.t.name + ' · ' + GV.t.sym);
     txt('gvRAmt', a); txt('gvRUsd', u);
