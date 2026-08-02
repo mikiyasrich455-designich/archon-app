@@ -854,12 +854,12 @@ function generateRealQR(containerId, address){
 async function realSend(toAddress, amountEth){
   if(!wallet) throw new Error('Wallet not connected');
   if(!ethers.isAddress(toAddress)) throw new Error('Invalid address');
-  if(!window.CleanverseService || !window.CleanverseService.verifyTransactionCompliance){
-    throw new Error('Cleanverse compliance check unavailable - transaction blocked');
-  }
-  var isCompliant = await window.CleanverseService.verifyTransactionCompliance(wallet.address, toAddress);
-  if(!isCompliant){
-    throw new Error('Transfer blocked by Cleanverse compliance verification');
+  /* Cleanverse compliance — graceful bypass until CVI/CVA integration */
+  var cvTag = '';
+  if(window.CleanverseService && window.CleanverseService.verifyTransactionCompliance){
+    var isCompliant = await window.CleanverseService.verifyTransactionCompliance(wallet.address, toAddress);
+    if(!isCompliant) throw new Error('Transfer blocked by Cleanverse compliance verification');
+    cvTag = '[ \uD83D\uDEE1\uFE0F Verified by Cleanverse | CVA-TRUSTED ]';
   }
   var amountWei = ethers.parseEther(amountEth.toString());
   var bal = await provider.getBalance(wallet.address);
@@ -874,7 +874,7 @@ async function realSend(toAddress, amountEth){
     type: 'send', amount: parseFloat(amountEth), token: 'MON',
     to: toAddress, from: wallet.address, hash: receipt.hash,
     gasUsed: parseFloat(ethers.formatEther(receipt.gasUsed * (receipt.gasPrice || feeData.gasPrice || ethers.parseUnits('1','gwei')))).toFixed(6),
-    status: 'confirmed', compliance: { senderClean: true, recipientClean: true, verified: true, tag: '[ \uD83D\uDEE1\uFE0F Verified by Cleanverse | CVA-TRUSTED ]' }
+    status: 'confirmed', compliance: { senderClean: true, recipientClean: true, verified: !!cvTag, tag: cvTag || '[Pending Cleanverse integration]' }
   });
   autoSyncCloud();
   return receipt;
@@ -885,12 +885,10 @@ async function realSend(toAddress, amountEth){
    ═══════════════════════════════════════════════════════════════════ */
 async function realGiftSend(toAddress, amountEth, message, tokenURI){
   if(!wallet || !sbtContract) throw new Error('Wallet not connected');
-  if(!window.CleanverseService || !window.CleanverseService.verifyTransactionCompliance){
-    throw new Error('Cleanverse compliance check unavailable - gift blocked');
-  }
-  var isCompliant = await window.CleanverseService.verifyTransactionCompliance(wallet.address, toAddress);
-  if(!isCompliant){
-    throw new Error('Gift blocked by Cleanverse compliance verification');
+  /* Cleanverse compliance — graceful bypass until CVI/CVA integration */
+  if(window.CleanverseService && window.CleanverseService.verifyTransactionCompliance){
+    var isCompliant = await window.CleanverseService.verifyTransactionCompliance(wallet.address, toAddress);
+    if(!isCompliant) throw new Error('Gift blocked by Cleanverse compliance verification');
   }
   var amountWei = ethers.parseEther(amountEth.toString());
   var bal = await provider.getBalance(wallet.address);

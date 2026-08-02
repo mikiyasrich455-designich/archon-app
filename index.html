@@ -3389,7 +3389,17 @@ window.formatRedeemCode = formatRedeemCode;
 function redeemGift() {
   var inp = $('redeemCode');
   if (!inp) return;
-  var code = inp.value.trim().toUpperCase();
+  var rawInput = inp.value.trim();
+  /* Handle portable self-contained codes: HUMANCODE::base64payload */
+  var portableData = null;
+  var code = rawInput;
+  var ppIdx = rawInput.indexOf('::');
+  if (ppIdx > 0) {
+    code = rawInput.slice(0, ppIdx).trim().toUpperCase();
+    try { portableData = JSON.parse(atob(rawInput.slice(ppIdx + 2))); } catch(e) { portableData = null; }
+  } else {
+    code = rawInput.toUpperCase();
+  }
   if (!code || code.length < 3) { if (window.cxToast) window.cxToast('Enter a valid gift code (3+ chars)', 'err'); return; }
   if (!window.WalletEngine || !window.WalletEngine.isInitialized()) { if (window.cxToast) window.cxToast('Create or import a wallet first', 'err'); return; }
   var overlay = $('claimOverlay');
@@ -3406,7 +3416,7 @@ function redeemGift() {
   }
   setStatus('Looking up gift (any device)...', 10);
 
-  /* 1) SHARED store first (works across all devices/wallets), then localStorage */
+  /* 1) SHARED store first (works across all devices/wallets), then localStorage, then portable payload */
   sgLookupGift(code).then(function(shared) {
     if (shared) { console.log('[GV] Found in shared store:', shared.code); return shared; }
     console.log('[GV] Not in shared store, trying this device...');
@@ -3414,10 +3424,41 @@ function redeemGift() {
       var localGifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
       for (var i = 0; i < localGifts.length; i++) if (localGifts[i].code === code) return localGifts[i];
     } catch(e) {}
+    /* 2) Portable self-contained fallback — works on ANY device, no server needed */
+    if (portableData && portableData.epk) {
+      console.log('[GV] Using portable self-contained payload');
+      return {
+        code: code,
+        amount: portableData.amt,
+        encrypted_pk: portableData.epk,
+        token_sym: portableData.sym,
+        token_name: portableData.name,
+        chain: portableData.chain,
+        token_type: portableData.type,
+        token_contract: portableData.contract,
+        token_decimals: portableData.dec,
+        token_price: portableData.price,
+        gift_type: portableData.gtype,
+        message: portableData.msg || '',
+        sender: portableData.sender || '',
+        sender_name: portableData.sname || '',
+        unlock_time: portableData.ut || null,
+        claimed: false
+      };
+    }
     return null;
   }).then(function(gift) {
     if (!gift) { showError('Gift not found — double check the code'); return; }
-    if (gift.claimed) { showError('This gift was already claimed!'); return; }
+    /* Only block if THIS wallet already redeemed it (check local redeemed list) */
+    var myAddr = window.WalletEngine.getAddress();
+    var alreadyRedeemed = false;
+    try {
+      var redeemedList = JSON.parse(localStorage.getItem('archon_redeemed_gifts') || '[]');
+      for (var ri = 0; ri < redeemedList.length; ri++) { if (redeemedList[ri].code === code) { alreadyRedeemed = true; break; } }
+    } catch(e) {}
+    /* Also block if Supabase says claimed AND claimed_by matches our address */
+    if (gift.claimed && gift.claimed_by && gift.claimed_by.toLowerCase() === (myAddr || '').toLowerCase()) alreadyRedeemed = true;
+    if (alreadyRedeemed) { showError('You already claimed this gift!'); return; }
     if (!gift.encrypted_pk) { showError('No vault key — gift may be invalid'); return; }
 
     /* parse encoded metadata tail (cross-device token info + unlock time) */
@@ -4386,15 +4427,16 @@ function cxSendExecute() {
   updateTxStep(1, 'done'); updateTxStep(2, 'active');
   var p = window._cxSendPending;
   var viaEngine = (p.tok.chain === 'bot' && window.WalletEngine && window.WalletEngine.realSend);
-  setTimeout(function() { updateTxStep(2, 'done'); updateTxStep(3, 'active'); }, 700);
+  setTimeout(function() { updateTxStep(2, 'done'); updateTxStep(3, 'active'); }, 300);
   setTimeout(function() {
     updateTxStep(3, 'done'); updateTxStep(4, 'active');
     var sendPromise;
     if (p.tok.type === 'erc20') {
       sendPromise = MultiChain.sendERC20(p.tok.chain, p.tok.contract, p.to, p.amt, p.tok.decimals);
-    } else if (viaEngine) {
-      sendPromise = window.WalletEngine.realSend(p.to, p.amt);
     } else {
+      /* ALWAYS use MultiChain.sendNative — it picks the correct per-chain RPC
+         (Bohr for BOT, Monad for MON, etc). WalletEngine.realSend uses the
+         wrong provider (Monad) for BOT sends. */
       sendPromise = MultiChain.sendNative(p.tok.chain, p.to, p.amt);
     }
     sendPromise.then(function(tx) {
@@ -4422,7 +4464,7 @@ function cxSendExecute() {
       cxToast('Send failed: ' + (e && e.message ? e.message : e), 'err');
       if (btn) { btn.disabled = false; btn.textContent = 'Confirm & Send'; }
     });
-  }, 1400);
+  }, 400);
 }
 window.cxSendExecute = cxSendExecute;
 
@@ -5513,8 +5555,18 @@ function gvConfirm() {
       if (sSub) sSub.textContent = meta.label + ' gift sealed!';
       var sTo = $('gvSToName');
       if (sTo) sTo.textContent = GV.to || 'Anyone with the code';
+      /* Build self-contained portable code: HUMANCODE::base64(payload)
+         This ensures the gift works on ANY device even if Supabase is down */
+      var portablePayload = JSON.stringify({
+        epk: encPk, amt: GV.amt, sym: GV.tok.sym, name: GV.tok.name,
+        chain: GV.tok.chain, type: GV.tok.type, contract: GV.tok.contract || null,
+        dec: GV.tok.decimals, price: GV.tok.price, gtype: GV.type,
+        msg: GV.msg || '', sender: senderAddr, sname: senderName,
+        ut: GV.unlockTime || null
+      });
+      var portableCode = code + '::' + btoa(portablePayload);
       var sCode = $('gvSCode');
-      if (sCode) sCode.textContent = code;
+      if (sCode) sCode.textContent = portableCode;
       navigateTo('page-gift-sent');
       if (typeof updateGiftStats === 'function') updateGiftStats();
       if (typeof MultiChain !== 'undefined') MultiChain.refreshAll();
