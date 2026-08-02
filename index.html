@@ -2598,6 +2598,13 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
   <div style="font-family:var(--f-disp);font-size:20px;font-weight:700" id="claimHeading">Unlocking vault</div>
   <div id="claimStatus" style="margin-top:8px;font-size:13px;font-weight:600;color:rgba(255,255,255,.7)">Decrypting with your code&hellip;</div>
   <div class="gv-ov-bar"><div id="claimBar"></div></div>
+  <!-- TIME-LOCK COUNTDOWN (hidden by default) -->
+  <div id="claimCountdown" style="display:none;margin-top:20px;text-align:center">
+    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:10px">Vault unlocks in</div>
+    <div id="claimTimer" style="font-family:var(--f-num);font-size:32px;font-weight:800;color:#38BDF8;letter-spacing:.04em">00:00:00:00</div>
+    <div id="claimUnlockDate" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.5);margin-top:8px"></div>
+    <button id="claimRetryBtn" onclick="redeemGift()" style="margin-top:16px;padding:12px 28px;border-radius:14px;border:none;background:linear-gradient(135deg,#0EA5E9,#38BDF8);color:#fff;font-size:13px;font-weight:800;cursor:pointer;opacity:.4;pointer-events:none;transition:all .3s">Claim Now</button>
+  </div>
 </div>
 
 <div id="gvToast"></div>
@@ -2805,9 +2812,17 @@ function sgStoreGift(g) {
   });
 }
 function sgLookupGift(code) {
-  return sgDB.from('secret_gifts').select('*').eq('code', code.toUpperCase().trim()).single().then(function(res) {
-    if (res.error || !res.data) return null;
-    return res.data;
+  /* Strip dashes/spaces — codes are clean alphanumeric */
+  var clean = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  /* Check secret_gifts first (SDK), then archon_vouchers (old table) */
+  return sgDB.from('secret_gifts').select('*').eq('code', clean).single().then(function(res) {
+    if (!res.error && res.data) return res.data;
+    /* Fallback: archon_vouchers table (old working system) */
+    return fetch(APP_CONFIG.supabase.url + '/rest/v1/archon_vouchers?select=*&code=eq.' + encodeURIComponent(clean) + '&limit=1', {
+      headers: { 'apikey': APP_CONFIG.supabase.key, 'Authorization': 'Bearer ' + APP_CONFIG.supabase.key }
+    }).then(function(r) { return r.json(); }).then(function(rows) {
+      return (rows && rows.length) ? rows[0] : null;
+    });
   }).catch(function() { return null; });
 }
 function sgMarkClaimed(code, addr) {
@@ -3382,10 +3397,8 @@ window.renderVoucherHistory = renderVoucherHistory;
 function gvOnRedeemInput() {
   var inp = $('redeemCode');
   if (!inp) return;
-  var v = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
-  var parts = [];
-  for (var i = 0; i < v.length; i += 4) parts.push(v.slice(i, i + 4));
-  inp.value = parts.join('-');
+  /* NO dashes — clean uppercase alphanumeric only */
+  inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
 }
 window.gvOnRedeemInput = gvOnRedeemInput;
 function formatRedeemCode() { gvOnRedeemInput(); }
@@ -3397,7 +3410,7 @@ window.formatRedeemCode = formatRedeemCode;
 function redeemGift() {
   var inp = $('redeemCode');
   if (!inp) return;
-  var code = inp.value.trim().toUpperCase();
+  var code = inp.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (!code || code.length < 3) { if (window.cxToast) window.cxToast('Enter a valid gift code (3+ chars)', 'err'); return; }
   if (!window.WalletEngine || !window.WalletEngine.isInitialized()) { if (window.cxToast) window.cxToast('Create or import a wallet first', 'err'); return; }
   var overlay = $('claimOverlay');
@@ -3450,24 +3463,57 @@ function redeemGift() {
     var tokenPrice = meta.token_price || gift.token_price || 0;
     var unlockTime = meta.unlock_time || gift.unlock_time || null;
 
-    /* time-lock enforcement */
+    /* time-lock enforcement — show countdown if locked */
     if (unlockTime) {
       var now = Date.now();
       var until = (typeof unlockTime === 'number' && unlockTime < 1e12) ? unlockTime * 1000 : Number(unlockTime);
       if (now < until) {
-        var d = new Date(until);
-        showError('Locked until ' + d.toLocaleString() + ' — come back then!');
-        return;
+        /* Show countdown UI instead of just an error */
+        var cdWrap = $('claimCountdown');
+        var cdTimer = $('claimTimer');
+        var cdDate = $('claimUnlockDate');
+        var cdBtn = $('claimRetryBtn');
+        var cdHeading = $('claimHeading');
+        var cdStatus = $('claimStatus');
+        var cdBar = $('claimBar');
+        if (cdHeading) cdHeading.textContent = 'Time-Locked Gift';
+        if (cdStatus) cdStatus.textContent = 'This vault is sealed until the unlock time';
+        if (cdBar) { cdBar.style.width = '100%'; cdBar.style.background = '#0EA5E9'; }
+        if (cdDate) cdDate.textContent = 'Unlocks: ' + new Date(until).toLocaleString();
+        if (cdWrap) cdWrap.style.display = 'block';
+        if (cdBtn) { cdBtn.style.opacity = '.4'; cdBtn.style.pointerEvents = 'none'; }
+        /* live countdown ticker */
+        if (window._gvCountdownInterval) clearInterval(window._gvCountdownInterval);
+        window._gvCountdownInterval = setInterval(function() {
+          var diff = until - Date.now();
+          if (diff <= 0) {
+            clearInterval(window._gvCountdownInterval);
+            if (cdTimer) cdTimer.textContent = '00:00:00:00';
+            if (cdBtn) { cdBtn.style.opacity = '1'; cdBtn.style.pointerEvents = 'auto'; }
+            if (cdStatus) cdStatus.textContent = 'Vault unlocked! Tap Claim Now.';
+            return;
+          }
+          var d = Math.floor(diff / 86400000);
+          var h = Math.floor((diff % 86400000) / 3600000);
+          var m = Math.floor((diff % 3600000) / 60000);
+          var s = Math.floor((diff % 60000) / 1000);
+          if (cdTimer) cdTimer.textContent = (d > 0 ? d + 'd ' : '') + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        }, 1000);
+        return; /* stop here — don't proceed to decrypt/claim */
       }
     }
+    /* hide countdown if visible (gift is unlocked or not time-locked) */
+    var cdWrap2 = $('claimCountdown');
+    if (cdWrap2) cdWrap2.style.display = 'none';
+    if (window._gvCountdownInterval) { clearInterval(window._gvCountdownInterval); window._gvCountdownInterval = null; }
 
     if (typeof gvSetClaimTheme === 'function') gvSetClaimTheme(gift.gift_type || meta.gift_type || 'voucher');
     setStatus('Decrypting vault...', 30);
 
-    /* resolve provider for the gift's chain (bot uses proven Bohr RPC) */
-    var provider = (chain === 'bot')
-      ? new ethers.JsonRpcProvider('https://rpc.bohr.life', 968)
-      : (MultiChain.getProvider(chain) || new ethers.JsonRpcProvider('https://rpc.bohr.life', 968));
+    /* resolve provider for the gift's chain */
+    var provider = (chain === 'mon')
+      ? new ethers.JsonRpcProvider('https://rpc.testnet.monad.xyz', 10143)
+      : new ethers.JsonRpcProvider('https://rpc.bohr.life', 968);
 
     _gvDecryptVault(gift.encrypted_pk, code).then(function(pk) {
       if (!pk || !pk.startsWith('0x')) throw new Error('Invalid vault key');
@@ -3639,7 +3685,11 @@ function daoExecute() {
   if (Math.abs(sumPct - 100) > 0.01) { if (window.cxToast) cxToast('Allocations must sum to 100%', 'err'); return; }
   var btn = $('daoExecuteBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Distributing...'; }
-  var provider = new ethers.JsonRpcProvider('https://rpc.bohr.life', 968);
+  /* Use correct RPC based on selected token chain */
+  var daoChain = (typeof GV !== 'undefined' && GV.tok && GV.tok.chain === 'mon') ? 'mon' : 'bot';
+  var RPC_URL = daoChain === 'mon' ? 'https://rpc.testnet.monad.xyz' : 'https://rpc.bohr.life';
+  var CHAIN_ID = daoChain === 'mon' ? 10143 : 968;
+  var provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
   var signer = new ethers.Wallet(window.WalletEngine.getPrivateKey(), provider);
   var gasLimit = 21000n;
   var sent = 0, failed = 0;
@@ -5387,7 +5437,7 @@ function gvSetClaimTheme(type) {
 }
 window.gvSetClaimTheme = gvSetClaimTheme;
 
-/* ── GV CONFIRM (resilient: save locally first, on-chain best-effort) ── */
+/* ── GV CONFIRM (save to Supabase FIRST, on-chain best-effort) ── */
 function gvConfirm() {
   var btn = event ? event.target : null;
   if (btn) { btn.disabled = true; btn.textContent = 'Creating gift...'; }
@@ -5397,7 +5447,6 @@ function gvConfirm() {
   var coinImg = $('gvCoinImg');
   if (overlay) overlay.classList.add('show');
   if (coinImg) coinImg.src = GV.tok.logo;
-  /* per-type send heading + floaters */
   var sendTh = GV_OV_THEME[GV.type] || GV_OV_THEME.voucher;
   var sendHead = $('gvSendHeading');
   if (sendHead) sendHead.textContent = sendTh.heading;
@@ -5411,102 +5460,133 @@ function gvConfirm() {
   setBar(10, 'Generating vault...');
   gvUpdateSendStep(0, 'Generate vault wallet', 'active');
   var vault = ethers.Wallet.createRandom();
-  /* use the user's custom claim code (GV.to), fall back to random only if empty */
-  var code = (GV.to && GV.to.length >= 3) ? GV.to.toUpperCase().replace(/[^A-Z0-9\-]/g, '') : gvGenCode();
+  /* user's custom claim code — NO dashes, clean alphanumeric */
+  var code = (GV.to && GV.to.length >= 3) ? GV.to.toUpperCase().replace(/[^A-Z0-9]/g, '') : gvGenCode();
   var senderAddr = (window.WalletEngine && window.WalletEngine.getAddress) ? window.WalletEngine.getAddress() : '0x0000';
   var senderName = (typeof profile !== 'undefined' && profile) ? profile.name : 'Anonymous';
   setBar(25, 'Encrypting vault...');
   gvUpdateSendStep(0, 'Generate vault wallet', 'done');
   gvUpdateSendStep(1, 'Encrypt with claim code', 'active');
+
   _gvEncryptVault(vault.privateKey, code).then(function(encPk) {
-    setBar(50, 'Saving gift...');
+    setBar(40, 'Saving gift...');
     gvUpdateSendStep(1, 'Encrypt with claim code', 'done');
     gvUpdateSendStep(2, 'Save gift record', 'active');
-    var record = {
-      code: code,
-      amount: GV.amt,
-      token_sym: GV.tok.sym,
-      token_name: GV.tok.name,
-      token_type: GV.tok.type,
-      token_contract: GV.tok.contract || null,
-      token_decimals: GV.tok.decimals,
-      token_price: GV.tok.price,
-      chain: GV.tok.chain,
-      vault_address: vault.address,
-      encrypted_pk: encPk,
-      sender: senderAddr,
-      sender_name: senderName,
-      recipient: GV.to || null,
-      message: GV.msg || null,
-      gift_type: GV.type,
-      unlock_time: GV.unlockTime || null,
-      claimed: false,
-      funded: false,
-      created_at: new Date().toISOString()
-    };
-    /* 1) Save locally FIRST — always succeeds */
-    var gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
-    gifts.unshift(Object.assign({}, record, { ts: Date.now() }));
-    localStorage.setItem('archon_voucher_gifts', JSON.stringify(gifts));
-    /* 2) Save to SHARED cross-device store (secret_gifts table).
-          Token metadata + unlock time are encoded into the message tail
-          (after \u0001) so ANY device/wallet can reconstruct & claim. */
+
     var metaTail = JSON.stringify({
       chain: GV.tok.chain, token_type: GV.tok.type, token_contract: GV.tok.contract || null,
       token_decimals: GV.tok.decimals, token_sym: GV.tok.sym, token_price: GV.tok.price,
       unlock_time: GV.unlockTime || null, image_url: GV_IMAGE_URL || null, gift_type: GV.type
     });
-    sgStoreGift({
+    var fullMsg = (GV.msg || '') + '\u0001' + metaTail;
+    var record = {
+      code: code, amount: GV.amt, token_sym: GV.tok.sym, token_name: GV.tok.name,
+      token_type: GV.tok.type, token_contract: GV.tok.contract || null,
+      token_decimals: GV.tok.decimals, token_price: GV.tok.price, chain: GV.tok.chain,
+      vault_address: vault.address, encrypted_pk: encPk,
+      sender: senderAddr, sender_name: senderName,
+      recipient: GV.to || null, message: fullMsg, gift_type: GV.type,
+      unlock_time: GV.unlockTime || null, claimed: false, funded: false,
+      created_at: new Date().toISOString()
+    };
+
+    /* 1) Save locally — always succeeds */
+    try {
+      var gifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
+      gifts.unshift(Object.assign({}, record, { ts: Date.now() }));
+      localStorage.setItem('archon_voucher_gifts', JSON.stringify(gifts));
+    } catch(e) {}
+
+    /* 2) AWAIT Supabase save (both tables) — this is what makes cross-device work */
+    setBar(55, 'Syncing to cloud...');
+    var sbPayload = {
+      code: code, amount: GV.amt, token_sym: GV.tok.sym,
+      sender: senderAddr, sender_name: senderName,
+      message: fullMsg, vault_address: vault.address,
+      encrypted_pk: encPk, claimed: false, created_at: new Date().toISOString()
+    };
+    /* Save to secret_gifts (SDK) */
+    var p1 = sgDB.from('secret_gifts').insert({
       code: code, amount: GV.amt, sender: senderAddr, sender_name: senderName,
-      recipient: '', message: (GV.msg || '') + '\u0001' + metaTail, image_url: GV_IMAGE_URL || '', encrypted_pk: encPk,
-      gift_type: GV.type
-    }).then(function() { console.log('[GV] Saved to Supabase — cross-device claim enabled'); })
-      .catch(function(e) { console.warn('[GV] Supabase save failed (local-only):', e.message); });
-    /* 3) Fund vault on-chain via Bohr RPC (REAL blockchain tx) */
-    setBar(65, 'Funding vault on-chain...');
-    gvUpdateSendStep(2, 'Save gift record', 'done');
-    gvUpdateSendStep(3, 'Fund vault on-chain', 'active');
-    var RPC_URL = 'https://rpc.bohr.life';
-    var CHAIN_ID = 968;
-    var gasBuffer = GV.tok.type === 'erc20' ? 0.002 : 0.001;
-    var fundP;
-    if (GV.tok.type === 'erc20' && GV.tok.contract) {
-      /* ERC-20: send tokens to vault, then fund gas */
-      var ercProvider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
-      var ercSigner = new ethers.Wallet(window.WalletEngine.getPrivateKey(), ercProvider);
-      var ercContract = new ethers.Contract(GV.tok.contract, ERC20_ABI, ercSigner);
-      fundP = ercContract.transfer(vault.address, ethers.parseUnits(String(GV.amt), GV.tok.decimals))
-        .then(function(tx) { return tx.wait(); })
-        .then(function() {
-          setBar(75, 'Funding vault gas...');
-          return ercSigner.sendTransaction({ to: vault.address, value: ethers.parseEther(String(gasBuffer)), gasLimit: 21000n });
-        })
-        .then(function(tx) { return tx.wait(); });
-    } else {
-      /* Native BOT: send amount + gas buffer directly via Bohr RPC */
-      var nativeProvider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
-      var nativeSigner = new ethers.Wallet(window.WalletEngine.getPrivateKey(), nativeProvider);
-      var totalAmt = GV.amt + gasBuffer;
-      fundP = nativeSigner.sendTransaction({
-        to: vault.address,
-        value: ethers.parseEther(String(totalAmt)),
-        gasLimit: 21000n
-      }).then(function(tx) { return tx.wait(); });
+      recipient: '', message: fullMsg, image_url: GV_IMAGE_URL || '',
+      encrypted_pk: encPk, claimed: false
+    }).then(function(r) {
+      if (r.error) throw new Error(r.error.message);
+      console.log('[GV] Saved to secret_gifts');
+    }).catch(function(e) { console.warn('[GV] secret_gifts save failed:', e.message); });
+
+    /* Save to archon_vouchers (old working table, raw fetch with retry) */
+    function saveVouchers(attempt) {
+      return fetch(APP_CONFIG.supabase.url + '/rest/v1/archon_vouchers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': APP_CONFIG.supabase.key, 'Authorization': 'Bearer ' + APP_CONFIG.supabase.key, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(sbPayload)
+      }).then(function(r) {
+        if (!r.ok && attempt < 2) return saveVouchers(attempt + 1);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        console.log('[GV] Saved to archon_vouchers');
+      });
     }
-    fundP.then(function(receipt) {
-      console.log('[GV] Vault funded on-chain! TX:', receipt.hash);
-      record.funded = true;
-      record.txHash = receipt.hash;
-      /* record in tx history (Activity) */
-      if (window.WalletEngine && window.WalletEngine.addTx) {
-        window.WalletEngine.addTx({ type: 'gift_sent', token: GV.tok.sym, amount: GV.amt, to: vault.address, hash: receipt.hash, status: 'confirmed' });
+    var p2 = saveVouchers(0).catch(function(e) { console.warn('[GV] archon_vouchers save failed:', e.message); });
+
+    return Promise.all([p1, p2]).then(function() {
+      /* 3) On-chain funding — BEST EFFORT (don't block success on RPC) */
+      setBar(70, 'Funding vault on-chain...');
+      gvUpdateSendStep(2, 'Save gift record', 'done');
+      gvUpdateSendStep(3, 'Fund vault on-chain', 'active');
+
+      var RPC_URL = GV.tok.chain === 'mon' ? 'https://rpc.testnet.monad.xyz' : 'https://rpc.bohr.life';
+      var CHAIN_ID = GV.tok.chain === 'mon' ? 10143 : 968;
+      var gasBuffer = GV.tok.type === 'erc20' ? 0.002 : 0.001;
+
+      var fundP;
+      try {
+        var pk = window.WalletEngine.getPrivateKey();
+        if (GV.tok.type === 'erc20' && GV.tok.contract) {
+          var ercProvider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
+          var ercSigner = new ethers.Wallet(pk, ercProvider);
+          var ercContract = new ethers.Contract(GV.tok.contract, ERC20_ABI, ercSigner);
+          fundP = ercContract.transfer(vault.address, ethers.parseUnits(String(GV.amt), GV.tok.decimals))
+            .then(function(tx) { return tx.wait(); })
+            .then(function() {
+              setBar(80, 'Funding vault gas...');
+              return ercSigner.sendTransaction({ to: vault.address, value: ethers.parseEther(String(gasBuffer)), gasLimit: 21000n });
+            })
+            .then(function(tx) { return tx.wait(); });
+        } else {
+          var nativeProvider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
+          var nativeSigner = new ethers.Wallet(pk, nativeProvider);
+          fundP = nativeSigner.sendTransaction({
+            to: vault.address,
+            value: ethers.parseEther(String(GV.amt + gasBuffer)),
+            gasLimit: 21000n
+          }).then(function(tx) { return tx.wait(); });
+        }
+      } catch(e) {
+        fundP = Promise.reject(e);
       }
-      /* update local record */
-      var g2 = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
-      for (var i = 0; i < g2.length; i++) { if (g2[i].code === code) { g2[i].funded = true; g2[i].txHash = receipt.hash; break; } }
-      localStorage.setItem('archon_voucher_gifts', JSON.stringify(g2));
-    }).catch(function(e) { console.warn('[GV] On-chain funding failed (gift saved locally):', e.message); });
-    /* 4) Show success regardless */
+
+      /* Race: on-chain tx vs 15s timeout — don't hang forever */
+      var timeout = new Promise(function(_, rej) { setTimeout(function() { rej(new Error('timeout')); }, 15000); });
+      return Promise.race([fundP, timeout]).then(function(receipt) {
+        console.log('[GV] Vault funded on-chain! TX:', receipt.hash);
+        record.funded = true;
+        record.txHash = receipt.hash;
+        if (window.WalletEngine && window.WalletEngine.addTx) {
+          window.WalletEngine.addTx({ type: 'gift_sent', token: GV.tok.sym, amount: GV.amt, to: vault.address, hash: receipt.hash, status: 'confirmed' });
+        }
+        try {
+          var g2 = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
+          for (var i = 0; i < g2.length; i++) { if (g2[i].code === code) { g2[i].funded = true; g2[i].txHash = receipt.hash; break; } }
+          localStorage.setItem('archon_voucher_gifts', JSON.stringify(g2));
+        } catch(e) {}
+      }).catch(function(e) {
+        /* On-chain failed — gift is still saved & claimable, just not funded yet */
+        console.warn('[GV] On-chain funding failed (gift saved, claimable):', e.message);
+      });
+    });
+  }).then(function() {
+    /* 4) SUCCESS — always reached after Supabase save */
     setBar(100, 'Gift sealed!');
     gvUpdateSendStep(3, 'Fund vault on-chain', 'done');
     gvUpdateSendStep(4, 'Gift ready to share!', 'done');
@@ -5540,8 +5620,12 @@ function gvConfirm() {
       if (btn) { btn.disabled = false; btn.textContent = 'Seal & Fund Gift'; }
     }, 800);
   }).catch(function(e) {
+    /* Only encryption or Supabase-total-failure reaches here */
+    console.error('[GV] Gift creation failed:', e);
     if (overlay) overlay.classList.remove('show');
-    gvToast('Encryption error: ' + e.message, 'err');
+    var msg = (e && (e.reason || e.message)) || 'Gift creation failed';
+    if (typeof gvToast === 'function') gvToast(msg, 'err');
+    else if (window.cxToast) window.cxToast(msg, 'err');
     if (btn) { btn.disabled = false; btn.textContent = 'Seal & Fund Gift'; }
   });
 }
@@ -5549,8 +5633,7 @@ window.gvConfirm = gvConfirm;
 function gvGenCode() {
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   var code = '';
-  for (var i = 0; i < 12; i++) {
-    if (i > 0 && i % 4 === 0) code += '-';
+  for (var i = 0; i < 10; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
   return code;
