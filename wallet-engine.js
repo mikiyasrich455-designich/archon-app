@@ -1,13 +1,43 @@
-/* ═══════════════════════════════════════════════════════════════════
-   WALLET ENGINE v17 — Seed/Key Auth + Cloud Sync + Blockchain + PIN + On-chain Txs
+﻿/* ═══════════════════════════════════════════════════════════════════
+   WALLET ENGINE v18 — Monad Testnet + Cleanverse Compliance
    ═══════════════════════════════════════════════════════════════════ */
 (function(){
 "use strict";
 
-var BOT_RPC = 'https://rpc.bohr.life';
-var BOT_CHAIN_ID = 968;
-var BOT_CHAIN_HEX = '0x3C8';
-var BOT_EXPLORER = 'https://scan.bohr.life';
+var MON_RPC = 'https://testnet-rpc.monad.xyz';
+var MON_CHAIN_ID = 10143;
+var MON_CHAIN_HEX = '0x279f';
+var MON_EXPLORER = 'https://testnet.monadexplorer.com';
+var MON_CURRENCY = 'MON';
+var NETWORKS = {
+  BOT: {
+    chainId: 968,
+    chainIdHex: '0x3C8',
+    rpc: 'https://rpc.bohr.life',
+    explorer: 'https://scan.bohr.life/',
+    symbol: 'BOT',
+    name: 'Botchain'
+  },
+  MON: {
+    chainId: 10143,
+    chainIdHex: '0x279f',
+    rpc: 'https://testnet-rpc.monad.xyz',
+    explorer: 'https://testnet.monadscan.com',
+    symbol: 'MON',
+    name: 'Monad Testnet'
+  }
+};
+var currentNetwork = 'MON';
+var ETH_RPC = 'https://ethereum.publicnode.com';
+var ETH_CHAIN_ID = 1;
+var ETH_EXPLORER = 'https://etherscan.io';
+var ethProvider = null;
+var ERC20_ABI = ['function balanceOf(address) view returns (uint256)', 'function decimals() view returns (uint8)'];
+var USDT_ADDRESS = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+var WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+var WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
+var MON_PRICE_USD = 0.021;
+var ethBalances = {ETH:0, USDT:0, WETH:0, WBTC:0};
 var SBT_ADDRESS = '0x740e1ce98364EfF4d5e3d89b2b1fa513e0F75b16';
 var SBT_ABI = [
   'function mintSoulboundGift(address _recipient, string _tokenURI, string _message) payable returns (uint256)',
@@ -20,7 +50,21 @@ var SBT_ABI = [
   'event SoulboundGiftMinted(uint256 indexed tokenId, address indexed sender, address indexed recipient, string tokenURI, uint256 amount)',
   'event GiftConverted(uint256 indexed tokenId, address indexed recipient, uint256 amount)'
 ];
-var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bot&vs_currencies=usd&include_24hr_change=true';
+
+var APASS_ADDRESS = '0x000000000000000000000000000000000000C13A';
+var APASS_ABI = [
+  'function isVerified(address account) view returns (bool)',
+  'function getTier(address account) view returns (uint8)',
+  'function getGroup(address account) view returns (string)'
+];
+var ROUTER_ADDRESS = '0x000000000000000000000000000000000000C13B';
+var ROUTER_ABI = [
+  'function compliantTransfer(address token, address recipient, uint256 amount) returns (bool)',
+  'function verifyTransfer(address sender, address recipient) view returns (bool)'
+];
+var apassContract = null;
+var routerContract = null;
+var COINGECKO_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,tether,weth,wrapped-bitcoin&vs_currencies=usd&include_24hr_change=true';
 var BOT_PRICE_USD = 0;
 var STORAGE_KEY = 'archon_wallet_v1';
 var PROFILE_KEY = 'archon_profile_v1';
@@ -32,6 +76,74 @@ var SUPABASE_URL = 'https://vjljoydtwvpvhqiecbqr.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbGpveWR0d3ZwdmhxaWVjYnFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTAwMjYsImV4cCI6MjA5OTM2NjAyNn0.YFIbiUGGzGvjuvF2bsm4dQv_yzNtJr8G1La8Rtqexy8';
 var sbClient = null;
 
+/* ═══════════════════════════════════════════════════════════════════
+   CLEANVERSE COMPLIANCE — CVI + CVA Integration
+   All API calls go through the backend proxy (server.js).
+   No API keys are stored in the frontend.
+   ═══════════════════════════════════════════════════════════════════ */
+window.ArchonCVI = {
+  async checkIdentity(address) {
+    if (!window.CleanverseService) return { verified: false, tier: 'unknown' };
+    try {
+      var result = await window.CleanverseService.checkAPassStatus(address);
+      return { verified: result.verified, tier: result.verified ? 'standard' : 'unknown', cached: false };
+    } catch (e) {
+      console.warn('[Archon] CVI check failed:', e.message);
+      return { verified: false, tier: 'error', error: e.message };
+    }
+  },
+  getCachedStatus() { return { verified: false, tier: 'unknown' }; },
+  async generateAPass(address) {
+    if (!window.CleanverseService) return { success: false, reason: 'CleanverseService not loaded' };
+    try {
+      var nonceData = await window.CleanverseService.getNonce();
+      var message = "Verify Cleanverse Wallet:\nAddress: " + address + "\nNonce: " + nonceData.nonce;
+      var sig = await ethereum.request({ method: 'personal_sign', params: [address, message] });
+      var result = await window.CleanverseService.generateAPass(address, sig, nonceData.nonce);
+      return { success: result.generated, data: result.data };
+    } catch (e) {
+      console.warn('[Archon] A-Pass generation failed:', e.message);
+      return { success: false, reason: e.message };
+    }
+  }
+};
+window.ArchonCVA = {
+  async verifyTransfer(sender, recipient) {
+    if (!window.CleanverseService) return { approved: false, reason: 'CleanverseService not loaded' };
+    try {
+      var s = await window.CleanverseService.checkAPassStatus(sender);
+      var r = await window.CleanverseService.checkAPassStatus(recipient);
+      var ok = s.verified && r.verified;
+      return { approved: ok, senderClean: s.verified, recipientClean: r.verified };
+    } catch (e) {
+      return { approved: false, reason: e.message };
+    }
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   CLEANVERSE MODAL — Animated Verification Overlay
+   ═══════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CLEANVERSE BRIDGE â€” Delegates to CleanverseService
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function cvShowModal(title, subtitle, badge) {
+  if(window.CleanverseService) { window.CleanverseService.showModal(); return; }
+  var overlay = document.getElementById('cleanverse-verify-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+}
+function cvUpdateModal(title, subtitle, badge, color) {
+  if(window.CleanverseService) {
+    if(color === 'green') window.CleanverseService.setVerifiedState(subtitle);
+    else if(color === 'red') window.CleanverseService.setBlockedState(subtitle);
+    return;
+  }
+}
+function cvHideModal() {
+  if(window.CleanverseService) { window.CleanverseService.hideModal(); return; }
+  var overlay = document.getElementById('cleanverse-verify-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
 var provider = null;
 var wallet = null;
 var sbtContract = null;
@@ -317,17 +429,74 @@ function createWallet(){
   walletData = { address: w.address, privateKey: w.privateKey, mnemonic: w.mnemonic.phrase, createdAt: Date.now() };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
   initProvider();
+  if(window.CleanverseService){
+    window.CleanverseService.checkAPassStatus(w.address).then(function(r){
+      walletData.cviVerified = r.verified;
+      walletData.cviTier = r.verified ? 'standard' : 'unknown';
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(walletData));
+    }).catch(function(){
+      console.warn('[Archon] A-Pass check deferred');
+    });
+  }
   return walletData;
 }
 function initProvider(){
   if(!walletData) return;
   try {
-    provider = new ethers.JsonRpcProvider(BOT_RPC, BOT_CHAIN_ID);
+    var net = NETWORKS[currentNetwork] || NETWORKS.MON;
+    provider = new ethers.JsonRpcProvider(net.rpc, net.chainId);
+    ethProvider = new ethers.JsonRpcProvider(ETH_RPC, ETH_CHAIN_ID);
     wallet = new ethers.Wallet(walletData.privateKey, provider);
     try {
       sbtContract = new ethers.Contract(SBT_ADDRESS, SBT_ABI, wallet);
     } catch(e){ console.warn('[Archon] SBT contract init skipped:', e.message); sbtContract = null; }
+    try {
+      var monadProvider = new ethers.JsonRpcProvider(NETWORKS.MON.rpc, NETWORKS.MON.chainId);
+      apassContract = new ethers.Contract(APASS_ADDRESS, APASS_ABI, monadProvider);
+      var monadWallet = new ethers.Wallet(walletData.privateKey, monadProvider);
+      routerContract = new ethers.Contract(ROUTER_ADDRESS, ROUTER_ABI, monadWallet);
+      console.log('[Archon] Cleanverse contracts initialized on Monad Testnet');
+    } catch(e){ console.warn('[Archon] Cleanverse contract init skipped:', e.message); apassContract = null; routerContract = null; }
   } catch(e){ console.error('[Archon] init error', e); }
+}
+
+async function switchNetwork(name) {
+  if (!NETWORKS[name]) throw new Error('Unknown network: ' + name);
+  currentNetwork = name;
+  initProvider();
+  if (window.ethereum) {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: NETWORKS[name].chainIdHex }]
+      });
+    } catch(e) {
+      if (e.code === 4902) {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: NETWORKS[name].chainIdHex,
+            chainName: NETWORKS[name].name,
+            nativeCurrency: { name: NETWORKS[name].symbol, symbol: NETWORKS[name].symbol, decimals: 18 },
+            rpcUrls: [NETWORKS[name].rpc],
+            blockExplorerUrls: [NETWORKS[name].explorer]
+          }]
+        });
+      }
+    }
+  }
+  BOT_PRICE_USD = 0;
+  if (typeof chainDatabase !== 'undefined' && chainDatabase[name.toLowerCase()]) {
+    chainDatabase[name.toLowerCase()].price = BOT_PRICE_USD > 0 ? BOT_PRICE_USD.toLocaleString('en-US') : '0';
+  }
+  globalRefresh();
+}
+
+function switchChain() {
+  if(walletData) {
+    globalRefresh();
+  }
+  console.log('[Archon] Network:', currentNetwork);
 }
 function logoutWallet(){
   walletData = null; wallet = null; provider = null; sbtContract = null;
@@ -363,7 +532,7 @@ function addTx(tx){
 async function fetchOnChainTransactions(){
   if(!walletData || !walletData.address) return [];
   var addr = walletData.address;
-  var explorerApi = BOT_EXPLORER + '/api';
+  var explorerApi = MON_EXPLORER + '/api';
   try {
     var resp = await fetch(explorerApi + '?module=account&action=txlist&address=' + addr + '&startblock=0&endblock=99999999&sort=desc&page=1&offset=50');
     var data = await resp.json();
@@ -377,7 +546,7 @@ async function fetchOnChainTransactions(){
         txs.push({
           type: isIncoming ? 'receive' : 'send',
           amount: amount,
-          token: 'BOT',
+          token: 'MON',
           to: raw.to,
           from: raw.from,
           hash: raw.hash,
@@ -489,7 +658,8 @@ async function fetchBOTBalance(){
       new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('RPC timeout (15s)')); }, 15000); })
     ]);
     var formatted = ethers.formatEther(bal);
-    console.log('[Archon] Balance for', walletData.address.slice(0,10)+'...'+walletData.address.slice(-4), '=', formatted, 'BOT');
+    var sym = (NETWORKS[currentNetwork] || NETWORKS.MON).symbol;
+    console.log('[Archon] Balance for', walletData.address.slice(0,10)+'...'+walletData.address.slice(-4), '=', formatted, sym);
     return formatted;
   }
   catch(e){
@@ -498,7 +668,8 @@ async function fetchBOTBalance(){
     try {
       var bal2 = await provider.getBalance(walletData.address);
       var formatted2 = ethers.formatEther(bal2);
-      console.log('[Archon] Balance retry succeeded:', formatted2, 'BOT');
+      var sym2 = (NETWORKS[currentNetwork] || NETWORKS.MON).symbol;
+      console.log('[Archon] Balance retry succeeded:', formatted2, sym2);
       return formatted2;
     } catch(e2){
       console.error('[Archon] Balance retry also failed:', e2.message || e2);
@@ -507,38 +678,57 @@ async function fetchBOTBalance(){
   }
 }
 function syncBalanceToUI(n){
+  var net = NETWORKS[currentNetwork] || NETWORKS.MON;
+  var sym = net.symbol;
+  var chainKey = currentNetwork.toLowerCase();
   var priceUsd = BOT_PRICE_USD;
   var usdVal = n * priceUsd;
   var balStr = n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   var usdStr = usdVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   var priceStr = priceUsd > 0 ? priceUsd.toLocaleString('en-US') : '0';
-  if(typeof window.cxTOKENS!=='undefined'){ for(var i=0;i<window.cxTOKENS.length;i++){ if(window.cxTOKENS[i].id==='BOT'){ window.cxTOKENS[i].bal=n; if(priceUsd>0) window.cxTOKENS[i].price=priceUsd; } } }
-  if(typeof chainDatabase!=='undefined' && chainDatabase.bot){
-    chainDatabase.bot.balance = balStr;
-    chainDatabase.bot.usdBalance = usdStr;
-    chainDatabase.bot.addr = walletData?walletData.address:chainDatabase.bot.addr;
-    if(priceUsd>0) chainDatabase.bot.price = priceStr;
-    if(chainDatabase.bot.tokens&&chainDatabase.bot.tokens[0]){
-      chainDatabase.bot.tokens[0].bal = balStr;
-      chainDatabase.bot.tokens[0].usd = '$'+usdStr;
+  if(typeof window.cxTOKENS!=='undefined'){ for(var i=0;i<window.cxTOKENS.length;i++){ if(window.cxTOKENS[i].id===sym){ window.cxTOKENS[i].bal=n; if(priceUsd>0) window.cxTOKENS[i].price=priceUsd; } } }
+  if(typeof chainDatabase!=='undefined' && chainDatabase[chainKey]){
+    chainDatabase[chainKey].balance = balStr;
+    chainDatabase[chainKey].usdBalance = usdStr;
+    chainDatabase[chainKey].addr = walletData?walletData.address:chainDatabase[chainKey].addr;
+    if(priceUsd>0) chainDatabase[chainKey].price = priceStr;
+    if(chainDatabase[chainKey].tokens&&chainDatabase[chainKey].tokens[0]){
+      chainDatabase[chainKey].tokens[0].bal = balStr;
+      chainDatabase[chainKey].tokens[0].usd = usdStr === '0.00' ? '—' : '$'+usdStr;
     }
   }
-  if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='$BOT'||GVT[i].sym==='BOT'){ GVT[i].bal=n; if(priceUsd>0) GVT[i].price=priceUsd; } } }
-  if(typeof window._GVT!=='undefined'){ for(var i=0;i<window._GVT.length;i++){ if(window._GVT[i].sym==='$BOT'||window._GVT[i].sym==='BOT'){ window._GVT[i].bal=n; if(priceUsd>0) window._GVT[i].price=priceUsd; } } }
+  if(typeof GVT!=='undefined'){ for(var i=0;i<GVT.length;i++){ if(GVT[i].sym==='$'+sym||GVT[i].sym===sym){ GVT[i].bal=n; if(priceUsd>0) GVT[i].price=priceUsd; } } }
+  if(typeof window._GVT!=='undefined'){ for(var i=0;i<window._GVT.length;i++){ if(window._GVT[i].sym==='$'+sym||window._GVT[i].sym===sym){ window._GVT[i].bal=n; if(priceUsd>0) window._GVT[i].price=priceUsd; } } }
   if(typeof window.gvRefresh==='function'){ try{ window.gvRefresh(); }catch(e){} }
-  if(typeof tokenDetails!=='undefined' && tokenDetails.BOT){
-    tokenDetails.BOT.bal = balStr;
-    if(priceUsd>0) tokenDetails.BOT.price = '$'+priceStr;
+  if(typeof tokenDetails!=='undefined' && tokenDetails[sym]){
+    tokenDetails[sym].bal = balStr;
+    if(priceUsd>0) tokenDetails[sym].price = '$'+priceStr;
   }
   if(typeof window.cxS!=='undefined') window.cxS.wdFee = 0.001;
   if(typeof updateWalletPocket==='function') updateWalletPocket();
   if(typeof renderDashboardBalance==='function') renderDashboardBalance();
   var el;
-  el = document.getElementById('wpcBotBal'); if(el) el.textContent = balStr + ' BOT';
-  el = document.getElementById('wpcTotalUsd'); if(el) el.textContent = '$' + usdStr;
-  el = document.getElementById('wdbalETH'); if(el) el.textContent = balStr + ' BOT';
-  el = document.getElementById('cxSendPrice'); if(el) el.textContent = '$' + usdStr;
-  el = document.getElementById('gvBalHint'); if(el) el.textContent = 'Balance: ' + balStr + ' BOT';
+  el = document.getElementById('wpcBotBal'); if(el) el.textContent = balStr + ' ' + sym;
+  el = document.getElementById('wpcTotalUsd'); if(el) el.textContent = usdStr === '0.00' ? '—' : '$' + usdStr;
+  el = document.getElementById('wdbalETH'); if(el) el.textContent = balStr + ' ' + sym;
+  el = document.getElementById('cxSendPrice'); if(el) el.textContent = usdStr === '0.00' ? '—' : '$' + usdStr;
+  el = document.getElementById('gvBalHint'); if(el) el.textContent = 'Balance: ' + balStr + ' ' + sym;
+}
+async function fetchETHBalances(){
+  if(!ethProvider || !walletData) return;
+  try {
+    var bal = await ethProvider.getBalance(walletData.address);
+    ethBalances.ETH = parseFloat(ethers.formatEther(bal));
+    var usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, ethProvider);
+    var wethContract = new ethers.Contract(WETH_ADDRESS, ERC20_ABI, ethProvider);
+    var wbtcContract = new ethers.Contract(WBTC_ADDRESS, ERC20_ABI, ethProvider);
+    var usdtBal = await usdtContract.balanceOf(walletData.address);
+    var wethBal = await wethContract.balanceOf(walletData.address);
+    var wbtcBal = await wbtcContract.balanceOf(walletData.address);
+    ethBalances.USDT = parseFloat(ethers.formatUnits(usdtBal, 6));
+    ethBalances.WETH = parseFloat(ethers.formatEther(wethBal));
+    ethBalances.WBTC = parseFloat(ethers.formatUnits(wbtcBal, 8));
+  } catch(e){ console.warn('[Archon] ETH balance fetch error:', e.message); }
 }
 var lastKnownBalance = '0';
 async function fetchAllBalances(){
@@ -550,15 +740,36 @@ async function fetchAllBalances(){
     if(typeof showDepositNotif==='function') showDepositNotif(diff, walletData?walletData.address:null);
   }
   lastKnownBalance = botBal;
+  await fetchETHBalances();
   syncBalanceToUI(n);
+  if(typeof chainDatabase!=='undefined' && chainDatabase.eth){
+    chainDatabase.eth.balance = ethBalances.ETH.toLocaleString('en-US',{minimumFractionDigits:4,maximumFractionDigits:4});
+    chainDatabase.eth.usdBalance = '$'+(ethBalances.ETH*BOT_PRICE_USD).toFixed(2);
+    if(chainDatabase.eth.tokens&&chainDatabase.eth.tokens[0]){
+      chainDatabase.eth.tokens[0].bal = ethBalances.ETH.toLocaleString('en-US',{minimumFractionDigits:4,maximumFractionDigits:4});
+      chainDatabase.eth.tokens[0].usd = '$'+(ethBalances.ETH*BOT_PRICE_USD).toFixed(2);
+    }
+    if(chainDatabase.eth.tokens&&chainDatabase.eth.tokens[1]){
+      chainDatabase.eth.tokens[1].bal = ethBalances.USDT.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      chainDatabase.eth.tokens[1].usd = '$'+(ethBalances.USDT*1).toFixed(2);
+    }
+    if(chainDatabase.eth.tokens&&chainDatabase.eth.tokens[2]){
+      chainDatabase.eth.tokens[2].bal = ethBalances.WETH.toLocaleString('en-US',{minimumFractionDigits:4,maximumFractionDigits:4});
+      chainDatabase.eth.tokens[2].usd = '$'+(ethBalances.WETH*BOT_PRICE_USD).toFixed(2);
+    }
+    if(chainDatabase.eth.tokens&&chainDatabase.eth.tokens[3]){
+      chainDatabase.eth.tokens[3].bal = ethBalances.WBTC.toLocaleString('en-US',{minimumFractionDigits:6,maximumFractionDigits:6});
+      chainDatabase.eth.tokens[3].usd = '$'+(ethBalances.WBTC*BOT_PRICE_USD).toFixed(2);
+    }
+  }
   if(typeof renderDashboardBalance==='function') renderDashboardBalance();
   return botBal;
 }
 function renderDashboardBalance(){
   if(!walletData) return;
   var n = 0;
-  if(typeof chainDatabase!=='undefined' && chainDatabase.bot){
-    n = parseFloat(chainDatabase.bot.balance) || 0;
+  if(typeof chainDatabase!=='undefined' && chainDatabase.mon){
+    n = parseFloat(chainDatabase.mon.balance) || 0;
   }
   var priceUsd = BOT_PRICE_USD;
   var usdVal = (n * priceUsd).toFixed(2);
@@ -592,45 +803,41 @@ async function estimateGasFee(toAddress, amountEth){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 15: COINGECKO PRICE FETCHING
+   SECTION 15: COINGECKO PRICE FETCHING (ETH mainnet only)
    ═══════════════════════════════════════════════════════════════════ */
 async function fetchPrices(){
+  BOT_PRICE_USD = 0;
   try {
     var ctrl = new AbortController();
     var timer = setTimeout(function(){ ctrl.abort(); }, 5000);
     var resp = await fetch(COINGECKO_URL, { signal: ctrl.signal });
     clearTimeout(timer);
     var data = await resp.json();
-    var map = { ETH: data.ethereum, BTC: data.bitcoin, SOL: data.solana, BNB: data.binancecoin, XRP: data.ripple, BOT: data['wrapped-bot'] };
-    if(map.BOT && map.BOT.usd){
-      BOT_PRICE_USD = map.BOT.usd;
-      var p = map.BOT.usd.toLocaleString('en-US');
-      var ch = map.BOT.usd_24h_change;
-      var chStr = ch != null ? (ch>0?'+':'')+ch.toFixed(2)+'%' : '—';
-      var dir = ch != null ? (ch>0?'up':'down') : 'neutral';
-      if(typeof chartData !== 'undefined'){
-        chartData['1H'].val = p; chartData['1D'].val = p; chartData['1W'].val = p;
-        chartData['1H'].chg = chStr; chartData['1D'].chg = chStr; chartData['1W'].chg = chStr;
-        chartData['1H'].dir = dir; chartData['1D'].dir = dir; chartData['1W'].dir = dir;
-      }
-      if(typeof chainMap !== 'undefined' && chainMap.bot){
-        chainMap.bot.prices['1H'] = p; chainMap.bot.prices['1D'] = p; chainMap.bot.prices['1W'] = p;
-        chainMap.bot.chgs['1H'] = chStr; chainMap.bot.chgs['1D'] = chStr; chainMap.bot.chgs['1W'] = chStr;
-        chainMap.bot.dirs['1H'] = dir; chainMap.bot.dirs['1D'] = dir; chainMap.bot.dirs['1W'] = dir;
-      }
-    }
-    if(window.cxTOKENS){ for(var i=0;i<window.cxTOKENS.length;i++){ var t=window.cxTOKENS[i]; if(map[t.id]&&map[t.id].usd) t.price=map[t.id].usd; } }
-    if(window.GVT){ for(var i=0;i<window.GVT.length;i++){ var s=window.GVT[i].sym.replace('\\$',''); if(map[s]&&map[s].usd){ window.GVT[i].price=map[s].usd; } } }
-    if(typeof chainDatabase!=='undefined'){
-      if(map.BOT && map.BOT.usd){
-        chainDatabase.bot.price = map.BOT.usd.toLocaleString('en-US');
-        if(map.BOT.usd_24h_change != null){
-          chainDatabase.bot.change24h = (map.BOT.usd_24h_change>0?'+':'')+map.BOT.usd_24h_change.toFixed(2)+'%';
-          chainDatabase.bot.changeDir = map.BOT.usd_24h_change>0?'up':'down';
+    if(data.ethereum && data.ethereum.usd){
+      if(typeof chainDatabase!=='undefined' && chainDatabase.eth){
+        chainDatabase.eth.price = data.ethereum.usd.toLocaleString('en-US');
+        if(data.ethereum.usd_24h_change != null){
+          chainDatabase.eth.change24h = (data.ethereum.usd_24h_change>0?'+':'')+data.ethereum.usd_24h_change.toFixed(2)+'%';
+          chainDatabase.eth.changeDir = data.ethereum.usd_24h_change>0?'up':'down';
         }
       }
+      if(typeof chainMap !== 'undefined' && chainMap.eth){
+        var pEth = data.ethereum.usd.toLocaleString('en-US');
+        var chEth = data.ethereum.usd_24h_change != null ? (data.ethereum.usd_24h_change>0?'+':'')+data.ethereum.usd_24h_change.toFixed(2)+'%' : '—';
+        var dirEth = data.ethereum.usd_24h_change != null ? (data.ethereum.usd_24h_change>0?'up':'down') : 'neutral';
+        chainMap.eth.prices['1H'] = pEth; chainMap.eth.prices['1D'] = pEth; chainMap.eth.prices['1W'] = pEth;
+        chainMap.eth.chgs['1H'] = chEth; chainMap.eth.chgs['1D'] = chEth; chainMap.eth.chgs['1W'] = chEth;
+        chainMap.eth.dirs['1H'] = dirEth; chainMap.eth.dirs['1D'] = dirEth; chainMap.eth.dirs['1W'] = dirEth;
+      }
     }
-  } catch(e){ console.error('[Archon] CoinGecko failed', e); }
+    if(window.cxTOKENS){
+      var tokMap = {ETH: data.ethereum, USDT: data.tether, WETH: data.weth, WBTC: data['wrapped-bitcoin']};
+      for(var i=0;i<window.cxTOKENS.length;i++){
+        var t=window.cxTOKENS[i];
+        if(tokMap[t.id]&&tokMap[t.id].usd) t.price=tokMap[t.id].usd;
+      }
+    }
+  } catch(e){ console.warn('[Archon] CoinGecko ETH prices failed', e); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -647,27 +854,27 @@ function generateRealQR(containerId, address){
 async function realSend(toAddress, amountEth){
   if(!wallet) throw new Error('Wallet not connected');
   if(!ethers.isAddress(toAddress)) throw new Error('Invalid address');
-  if(typeof showTxOverlay==='function') showTxOverlay('Sending BOT', 'Preparing your transaction...');
-  if(typeof updateTxStep==='function') updateTxStep(1, 'active');
+  if(!window.CleanverseService || !window.CleanverseService.verifyTransactionCompliance){
+    throw new Error('Cleanverse compliance check unavailable - transaction blocked');
+  }
+  var isCompliant = await window.CleanverseService.verifyTransactionCompliance(wallet.address, toAddress);
+  if(!isCompliant){
+    throw new Error('Transfer blocked by Cleanverse compliance verification');
+  }
   var amountWei = ethers.parseEther(amountEth.toString());
   var bal = await provider.getBalance(wallet.address);
-  if(typeof updateTxStep==='function'){ updateTxStep(1, 'done'); updateTxStep(2, 'active'); }
   if(bal < amountWei) throw new Error('Insufficient balance');
   var feeData = await provider.getFeeData();
   var gasEstimate = await provider.estimateGas({ from:wallet.address, to:toAddress, value:amountWei });
   var gasCost = gasEstimate * (feeData.gasPrice || ethers.parseUnits('1','gwei'));
   if(bal < amountWei + gasCost) throw new Error('Insufficient balance for gas');
-  if(typeof updateTxStep==='function'){ updateTxStep(2, 'done'); updateTxStep(3, 'active'); }
   var tx = await wallet.sendTransaction({ to: toAddress, value: amountWei });
-  if(typeof updateTxStep==='function'){ updateTxStep(3, 'done'); updateTxStep(4, 'active'); }
   var receipt = await tx.wait();
-  if(typeof updateTxStep==='function') updateTxStep(4, 'done');
-  if(typeof hideTxOverlay==='function') setTimeout(hideTxOverlay, 800);
   addTx({
-    type: 'send', amount: parseFloat(amountEth), token: 'BOT',
+    type: 'send', amount: parseFloat(amountEth), token: 'MON',
     to: toAddress, from: wallet.address, hash: receipt.hash,
     gasUsed: parseFloat(ethers.formatEther(receipt.gasUsed * (receipt.gasPrice || feeData.gasPrice || ethers.parseUnits('1','gwei')))).toFixed(6),
-    status: 'confirmed'
+    status: 'confirmed', compliance: { senderClean: true, recipientClean: true, verified: true, tag: '[ \uD83D\uDEE1\uFE0F Verified by Cleanverse | CVA-TRUSTED ]' }
   });
   autoSyncCloud();
   return receipt;
@@ -678,6 +885,13 @@ async function realSend(toAddress, amountEth){
    ═══════════════════════════════════════════════════════════════════ */
 async function realGiftSend(toAddress, amountEth, message, tokenURI){
   if(!wallet || !sbtContract) throw new Error('Wallet not connected');
+  if(!window.CleanverseService || !window.CleanverseService.verifyTransactionCompliance){
+    throw new Error('Cleanverse compliance check unavailable - gift blocked');
+  }
+  var isCompliant = await window.CleanverseService.verifyTransactionCompliance(wallet.address, toAddress);
+  if(!isCompliant){
+    throw new Error('Gift blocked by Cleanverse compliance verification');
+  }
   var amountWei = ethers.parseEther(amountEth.toString());
   var bal = await provider.getBalance(wallet.address);
   var feeData = await provider.getFeeData();
@@ -701,10 +915,10 @@ async function realGiftSend(toAddress, amountEth, message, tokenURI){
     } catch(e){}
   }
   addTx({
-    type: 'gift_sent', amount: parseFloat(amountEth), token: 'BOT',
+    type: 'gift_sent', amount: parseFloat(amountEth), token: 'MON',
     to: toAddress, from: wallet.address, hash: receipt.hash,
     gasUsed: parseFloat(ethers.formatEther(receipt.gasUsed * (receipt.gasPrice || feeData.gasPrice || ethers.parseUnits('1','gwei')))).toFixed(6),
-    status: 'confirmed', tokenId: tokenId
+    status: 'confirmed', tokenId: tokenId, compliance: { senderClean: true, recipientClean: true, verified: true, tag: '[ \uD83D\uDEE1\uFE0F Verified by Cleanverse | CVA-TRUSTED ]' }
   });
   autoSyncCloud();
   return { hash: receipt.hash, tokenId: tokenId };
@@ -718,7 +932,7 @@ async function realGiftClaim(tokenId){
   var tx = await sbtContract.convertToBot(tokenId);
   var receipt = await tx.wait();
   addTx({
-    type: 'gift_claimed', amount: 0, token: 'BOT',
+    type: 'gift_claimed', amount: 0, token: 'MON',
     from: 'Gift Voucher', to: wallet.address, hash: receipt.hash,
     status: 'confirmed', tokenId: tokenId
   });
@@ -738,17 +952,18 @@ async function readGiftData(tokenId){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   SECTION 21: ADD BOT TO METAMASK
+   SECTION 21: ADD NETWORK TO METAMASK
    ═══════════════════════════════════════════════════════════════════ */
-async function addBotToMetaMask(){
+async function addMonToMetaMask(){
+  var net = NETWORKS[currentNetwork] || NETWORKS.MON;
   if(!window.ethereum) throw new Error('MetaMask not installed');
   try {
     await window.ethereum.request({
       method: 'wallet_addEthereumChain',
       params: [{
-        chainId: BOT_CHAIN_HEX, chainName: 'BOT Chain Testnet',
-        nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
-        rpcUrls: [BOT_RPC], blockExplorerUrls: [BOT_EXPLORER]
+        chainId: net.chainIdHex, chainName: net.name,
+        nativeCurrency: { name: net.symbol, symbol: net.symbol, decimals: 18 },
+        rpcUrls: [net.rpc], blockExplorerUrls: [net.explorer]
       }]
     });
   } catch(e){ throw new Error('Failed to add network'); }
@@ -852,6 +1067,11 @@ function updateWalletUI(){
   var depAddrText = $('cxDepAddrText'); if(depAddrText) depAddrText.textContent = addr;
   var depAddr = $('cxDepAddr'); if(depAddr) depAddr.textContent = addr;
   generateRealQR('cxDepQr', addr);
+  if(typeof chainDatabase!=='undefined' && chainDatabase.eth){
+    chainDatabase.eth.addr = addr;
+    var ethChain = typeof CHAINS !== 'undefined' ? CHAINS.find(function(c){ return c.id === 'eth'; }) : null;
+    if(ethChain) ethChain.addr = addr;
+  }
   if(typeof updateWalletPocket==='function') updateWalletPocket();
 }
 
@@ -860,7 +1080,7 @@ function updateWalletUI(){
    ═══════════════════════════════════════════════════════════════════ */
 function globalRefresh(){
   return Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
-    if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
+    if(typeof updateActiveChainView==='function'){ try{updateActiveChainView(window.currentChain || 'mon');}catch(e){} }
     updateWalletUI();
     if(typeof renderTxHistory==='function') renderTxHistory();
     if(typeof updateGiftStats==='function') updateGiftStats();
@@ -892,10 +1112,11 @@ function renderTxHistory(){
     else { icon='&#8226;'; typeLabel='Transaction'; amtPrefix=''; color='#6b7280'; bg='#f9fafb'; }
     var statusDot = tx.status==='confirmed' ? '<span style="color:#22c55e;font-size:10px">&#9679;</span>' : '<span style="color:#ef4444;font-size:10px">&#9679;</span>';
     var hashShort = tx.hash ? tx.hash.slice(0,10)+'...' : '';
+    var cvBadge = tx.compliance ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;background:#dcfce7;color:#16a34a;margin-left:4px">' + (tx.compliance.tag || '\uD83D\uDEE1\uFE0F CVI') + '</span>' : '';
     html += '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border-radius:14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04)" onclick="window.cxOpenTxDetail && window.cxOpenTxDetail('+i+')">'+
       '<div style="width:40px;height:40px;border-radius:12px;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+icon+'</div>'+
-      '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700;color:#1a1a1a">'+typeLabel+'</span>'+
-      '<span style="font-size:13px;font-weight:800;color:'+color+'">'+amtPrefix+fmt(tx.amount)+' '+(tx.token||'BOT')+'</span></div>'+
+      '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700;color:#1a1a1a">'+typeLabel+cvBadge+'</span>'+
+      '<span style="font-size:13px;font-weight:800;color:'+color+'">'+amtPrefix+fmt(tx.amount)+' '+(tx.token||'MON')+'</span></div>'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px"><span style="font-size:11px;color:#9ca3af">'+addrStr+(hashShort?' &#183; '+hashShort:'')+'</span>'+
       '<span style="font-size:11px;color:#9ca3af">'+statusDot+' '+timeStr+'</span></div></div></div>';
   }
@@ -921,7 +1142,7 @@ window.cxOpenTxDetail = function(idx){
   el.innerHTML = '<div style="text-align:center;padding:20px 0">'+
     '<div style="width:56px;height:56px;border-radius:16px;background:'+(tx.type==='send'||tx.type==='gift_sent'?'#fef2f2':'#f0fdf4')+';display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px">'+(tx.type==='gift_sent'||tx.type==='gift_claimed'?'&#127873;':(tx.type==='send'?'&#8593;':'&#8595;'))+'</div>'+
     '<div style="font-size:13px;font-weight:700;color:#9ca3af;margin-bottom:4px">'+typeLabel+'</div>'+
-    '<div style="font-size:28px;font-weight:900;color:'+color+'">'+((tx.type==='send'||tx.type==='gift_sent')?'-':'+')+fmt(tx.amount)+' '+(tx.token||'BOT')+'</div>'+
+    '<div style="font-size:28px;font-weight:900;color:'+color+'">'+((tx.type==='send'||tx.type==='gift_sent')?'-':'+')+fmt(tx.amount)+' '+(tx.token||'MON')+'</div>'+
     '<div style="font-size:13px;color:#9ca3af;margin-top:4px">'+(BOT_PRICE_USD>0?'&#8776; $'+(tx.amount*BOT_PRICE_USD).toFixed(2):'')+'</div>'+
     '</div>'+
     '<div style="background:#f9fafb;border-radius:14px;padding:16px;margin-top:8px">'+
@@ -929,10 +1150,10 @@ window.cxOpenTxDetail = function(idx){
     (tx.to?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">To</span><span style="font-size:12px;font-weight:700;color:#1a1a1a;font-family:monospace">'+shortAddr(tx.to)+'</span></div>':'')+
     (tx.from?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">From</span><span style="font-size:12px;font-weight:700;color:#1a1a1a;font-family:monospace">'+shortAddr(tx.from)+'</span></div>':'')+
     (tx.hash?'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6"><span style="font-size:12px;color:#9ca3af;font-weight:600">Hash</span><span style="font-size:12px;font-weight:700;color:#7c3aed;font-family:monospace;cursor:pointer" onclick="window.cxCopy(\''+tx.hash+'\',\'Hash copied\')">'+shortAddr(tx.hash)+' &#8599;</span></div>':'')+
-    (tx.gasUsed?'<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:12px;color:#9ca3af;font-weight:600">Gas Fee</span><span style="font-size:12px;font-weight:700;color:#1a1a1a">'+tx.gasUsed+' BOT</span></div>':'')+
+    (tx.gasUsed?'<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:12px;color:#9ca3af;font-weight:600">Gas Fee</span><span style="font-size:12px;font-weight:700;color:#1a1a1a">'+tx.gasUsed+' MON</span></div>':'')+
     '<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:12px;color:#9ca3af;font-weight:600">Time</span><span style="font-size:12px;font-weight:700;color:#1a1a1a">'+new Date(tx.timestamp).toLocaleString()+'</span></div>'+
     '</div>'+
-    (tx.hash?'<button style="width:100%;margin-top:16px;padding:14px;background:#1a1a1a;color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer" onclick="window.open(\''+BOT_EXPLORER+'/tx/'+tx.hash+'\',\'_blank\')">View on Explorer &#8599;</button>':'');
+    (tx.hash?'<button style="width:100%;margin-top:16px;padding:14px;background:#1a1a1a;color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer" onclick="window.open(\''+MON_EXPLORER+'/tx/'+tx.hash+'\',\'_blank\')">View on Explorer &#8599;</button>':'');
   navigateTo('page-tx-detail');
 };
 
@@ -977,7 +1198,7 @@ function autoInit(){
         console.log('[Archon] Compare with MetaMask — they must match!');
         console.log('[Archon] ═══════════════════════════════════════');
         Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
-          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
+          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView(window.currentChain || 'mon');}catch(e){} }
           updateWalletUI();
           if(typeof renderTxHistory==='function') renderTxHistory();
           if(typeof updateGiftStats==='function') updateGiftStats();
@@ -999,7 +1220,7 @@ function autoInit(){
     setInterval(function(){
       if(walletData){
         Promise.all([fetchAllBalances(), fetchPrices()]).then(function(){
-          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView('bot');}catch(e){} }
+          if(typeof updateActiveChainView==='function'){ try{updateActiveChainView(window.currentChain || 'mon');}catch(e){} }
           updateWalletUI();
           if(typeof renderTxHistory==='function') renderTxHistory();
           if(typeof updateGiftStats==='function') updateGiftStats();
@@ -1033,6 +1254,7 @@ window.WalletEngine = {
   createReal:createReal, importReal:importReal, logoutWallet:logoutWallet,
   saveProfile:saveProfile, getProfile:getProfile,
   getAddress:function(){return walletData?walletData.address:null;},
+  getWalletAddress:function(){return walletData?walletData.address:null;},
   getShortAddress:function(){return walletData?shortAddr(walletData.address):'';},
   getPrivateKey:function(){return walletData?walletData.privateKey:null;},
   getMnemonic:function(){return walletData?walletData.mnemonic:null;},
@@ -1041,7 +1263,7 @@ window.WalletEngine = {
   estimateGasFee:estimateGasFee,
   realSend:realSend, realGiftSend:realGiftSend, realGiftClaim:realGiftClaim, readGiftData:readGiftData,
   redeemGiftCode:redeemGiftCode,
-  generateRealQR:generateRealQR, addBotToMetaMask:addBotToMetaMask,
+  generateRealQR:generateRealQR, addMonToMetaMask:addMonToMetaMask,
   updateWalletUI:updateWalletUI, globalRefresh:globalRefresh, updateWalletPocket:function(){if(typeof updateWalletPocket==='function')updateWalletPocket();},
   getTxHistory:getTxHistory, addTx:addTx, renderTxHistory:renderTxHistory,
   getGiftCodes:getGiftCodes, saveGiftCode:saveGiftCode, lookupGiftCode:lookupGiftCode,
@@ -1049,7 +1271,12 @@ window.WalletEngine = {
   autoInit:autoInit,
   getBOTPrice:function(){return BOT_PRICE_USD;},
   hasWallet:function(){return !!localStorage.getItem(STORAGE_KEY);},
-  SBT_ADDRESS:SBT_ADDRESS, BOT_RPC:BOT_RPC, BOT_CHAIN_ID:BOT_CHAIN_ID, BOT_EXPLORER:BOT_EXPLORER,
+  SBT_ADDRESS:SBT_ADDRESS,
+  MON_RPC:MON_RPC, MON_CHAIN_ID:MON_CHAIN_ID, MON_EXPLORER:MON_EXPLORER, MON_CURRENCY:MON_CURRENCY,
+  switchChain:switchChain, switchNetwork:switchNetwork,
+  getCurrentNetwork:function(){return currentNetwork;},
+  getNetworks:function(){return NETWORKS;},
+  getNetworkConfig:function(){return NETWORKS[currentNetwork] || NETWORKS.MON;},
   generateRecoveryKey:generateRecoveryKey, formatRecoveryKey:formatRecoveryKey,
   normalizeRecoveryKey:normalizeRecoveryKey, saveRecoveryKey:saveRecoveryKey,
   restoreFromSeed:restoreFromSeed, restoreFromKey:restoreFromKey,
@@ -1060,7 +1287,10 @@ window.WalletEngine = {
   setPin:setPin, getPin:getPin, isPinSet:isPinSet, verifyPin:verifyPin,
   clearPin:clearPin, setPinEnabled:setPinEnabled, isPinEnabled:isPinEnabled,
   refreshAllData:refreshAllData, fetchOnChainTransactions:fetchOnChainTransactions,
-  fetchGiftActivity:fetchGiftActivity
+  fetchGiftActivity:fetchGiftActivity, addMonToMetaMask:addMonToMetaMask,
+
+
+
 };
 
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){ autoInit(); });}else{autoInit();}
