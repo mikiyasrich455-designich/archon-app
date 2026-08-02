@@ -38,6 +38,20 @@
   --shadow-md:0 8px 24px -8px rgba(12,12,15,.12),0 2px 6px rgba(12,12,15,.05);
   --gv-a1:#8B5CF6; --gv-a2:#C084FC; --gv-glow:rgba(139,92,246,.5);
 }
+/* ── DARK THEME (toggled via [data-theme="dark"] on <html>) ── */
+html[data-theme="dark"]{
+  --bg:#0C0C0F; --surface:#17171C; --surface-2:#1F1F26; --line:#2A2A32; --line-2:#232329;
+  --ink:#F4F4F2; --ink-2:#C7C7CE; --ink-3:#8E8E96; --ink-4:#5A5A62; --ink-soft:#B8B8C0; --muted:#8E8E96;
+  --lime-soft:rgba(166,204,18,.16); --lime-mist:rgba(166,204,18,.08);
+  --primary-soft:rgba(139,92,246,.2); --violet-soft:rgba(139,92,246,.2); --blue-soft:rgba(59,130,246,.2);
+  --green-soft:rgba(30,158,90,.2); --red-soft:rgba(229,72,77,.2); --amber-soft:rgba(245,166,35,.2);
+  --pink-soft:rgba(236,72,153,.2); --teal-soft:rgba(20,184,166,.2); --gold-soft:rgba(201,150,47,.2);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
+  --shadow-md:0 8px 24px -8px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.4);
+}
+html[data-theme="dark"] body{background:var(--bg);}
+html[data-theme="dark"] .feat-card,html[data-theme="dark"] .fx-card,html[data-theme="dark"] .wallet-shell{background:var(--surface);}
+@keyframes auraPulse{0%,100%{opacity:.65;transform:scale(1)}50%{opacity:1;transform:scale(1.14)}}
 /* gv / claim overlays (preserved JS structure) */
 #gvSendOverlay,#claimOverlay{position:absolute;inset:0;z-index:300;background:radial-gradient(120% 100% at 50% 0%,#17171c,#0d0d12);display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;color:#fff;text-align:center;}
 #gvSendOverlay.show,#claimOverlay.show{display:flex;animation:fadeUp .4s var(--ease);}
@@ -1144,17 +1158,24 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 <!-- ══════════════════ HOME / WALLET ══════════════════ -->
 <div class="page" id="page-wallet">
   <div class="home-head">
-    <div class="avatar disp">A</div>
-    <div class="greet">
-      <div class="g1">ARCHON</div>
-      <div class="g2">Good day, <span id="homeGreetName">friend</span></div>
+    <div class="greet" style="display:flex;align-items:center;gap:11px">
+      <div style="width:48px;height:48px;flex:none;display:grid;place-items:center;position:relative">
+        <span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(166,204,18,.6),rgba(166,204,18,.18) 55%,rgba(166,204,18,0) 75%);filter:blur(3px);animation:auraPulse 3.2s ease-in-out infinite"></span>
+        <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1785617574/cropped_circle_image__21_-removebg-preview_kmbpwx.png" style="width:44px;height:44px;object-fit:contain;position:relative;filter:drop-shadow(0 4px 10px rgba(166,204,18,.55))" alt="Archon" />
+      </div>
+      <div>
+        <div class="g1" style="font-size:16px;letter-spacing:.02em">ARCHON</div>
+        <div class="g2" style="font-size:11px">Good day, <span id="homeGreetName">friend</span></div>
+      </div>
     </div>
-    <button class="icon-btn press" id="refreshBtn" onclick="doRefresh()" title="Refresh">
-      <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-    </button>
-    <button class="press" onclick="navigateTo('page-account')" style="width:42px;height:42px;border-radius:15px;overflow:hidden;border:1px solid var(--line);background:var(--lime-soft);flex:none">
-      <img id="homeAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" style="width:100%;height:100%;object-fit:cover"/>
-    </button>
+    <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+      <button class="icon-btn press" id="refreshBtn" onclick="doRefresh()" title="Refresh">
+        <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      </button>
+      <button class="press" onclick="navigateTo('page-account')" title="Profile" style="width:44px;height:44px;border-radius:50%;overflow:hidden;padding:0;border:2px solid var(--lime);background:var(--lime-soft);flex:none;box-shadow:0 4px 14px -4px rgba(166,204,18,.8);transition:transform .2s">
+        <img id="homeAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" style="width:100%;height:100%;object-fit:cover;display:block"/>
+      </button>
+    </div>
   </div>
 
   <div class="page-scroll" style="padding-bottom:130px">
@@ -1201,39 +1222,11 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
       <button class="qa" onclick="navigateTo('page-gifts')"><span class="qa-ico" style="background:linear-gradient(135deg,#FDE68A,#F59E0B)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 000-5C13 3 12 8 12 8"/></svg></span><span class="qa-lbl">Gift</span></button>
     </div>
 
-    <!-- ticker -->
-    <div class="ticker">
-      <div class="tk-track">
-        <span class="tk-item">BOT <span class="up" data-tk="BOT">$9.82</span></span>
-        <span class="tk-item">MON <span class="dn" data-tk="MON">$0.0207</span></span>
-        <span class="tk-item">USDT <span class="up" data-tk="USDT">$1.00</span></span>
-        <span class="tk-item">GAS <span class="up">low</span></span>
-        <span class="tk-item">BOT <span class="up" data-tk="BOT">$9.82</span></span>
-        <span class="tk-item">MON <span class="dn" data-tk="MON">$0.0207</span></span>
-        <span class="tk-item">USDT <span class="up" data-tk="USDT">$1.00</span></span>
-        <span class="tk-item">GAS <span class="up">low</span></span>
-      </div>
-    </div>
+    <!-- ticker — HIDDEN per user request -->
+    <!-- <div class="ticker"> ... </div> -->
 
-    <!-- network status strip (replaces old chain-switch icons) -->
-    <div style="margin:0 20px 6px;display:flex;gap:8px;overflow-x:auto;padding-bottom:2px">
-      <div class="press" onclick="switchChain('bot')" style="flex:none;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;cursor:pointer">
-        <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e88"></div>
-        <span style="font-size:11.5px;font-weight:800;color:var(--ink)">Botchain</span>
-        <span style="font-size:10px;font-weight:700;color:var(--muted)">Testnet</span>
-      </div>
-      <div class="press" onclick="switchChain('monad')" style="flex:none;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;cursor:pointer">
-        <div style="width:8px;height:8px;border-radius:50%;background:#8B5CF6;box-shadow:0 0 6px #8B5CF688"></div>
-        <span style="font-size:11.5px;font-weight:800;color:var(--ink)">Monad</span>
-        <span style="font-size:10px;font-weight:700;color:var(--muted)">Testnet</span>
-      </div>
-      <div class="press" onclick="switchChain('eth')" style="flex:none;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;cursor:pointer">
-        <div style="width:8px;height:8px;border-radius:50%;background:#627EEA;box-shadow:0 0 6px #627EEA88"></div>
-        <span style="font-size:11.5px;font-weight:800;color:var(--ink)">Ethereum</span>
-        <span style="font-size:10px;font-weight:700;color:var(--muted)">Sepolia</span>
-      </div>
-      <button onclick="navigateTo('page-networks')" class="chip press" style="flex:none;cursor:pointer;align-self:center;font-size:11px;font-weight:800">+ Add</button>
-    </div>
+    <!-- network status strip — HIDDEN per user request -->
+    <!-- chain pills removed -->
 
     <!-- gift banner — Creso style -->
     <div class="press" onclick="navigateTo('page-gifts')" style="margin:0 20px 4px;border-radius:22px;background:linear-gradient(120deg,#1E1B4B 0%,#312E81 60%,#4338CA 100%);padding:15px 18px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;box-shadow:0 16px 30px -16px rgba(67,56,202,.6)">
@@ -1262,33 +1255,33 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
     </div>
     <div class="feat-grid">
       <div class="feat-card press" style="--fc-accent:#6366F1;--fc-tint:rgba(99,102,241,.14);--fc-glow:rgba(99,102,241,.5)" onclick="switchTabMain('courses')">
-        <span class="fc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5L2 9z"/><path d="M6 11.5V16c0 1.6 2.7 3 6 3s6-1.4 6-3v-4.5"/><path d="M22 9v6"/></svg></span>
-        <span><span class="fc-name">Courses</span><span class="fc-sub">Learn Monad &amp; Botchain</span></span>
+        <span class="fc-ico" style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#6366F1,#818CF8);color:#fff;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5L2 9z"/><path d="M6 11.5V16c0 1.6 2.7 3 6 3s6-1.4 6-3v-4.5"/><path d="M22 9v6"/></svg></span>
+        <span><span class="fc-name" style="font-size:15px;font-weight:800">Courses</span></span>
         <svg class="fc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
       </div>
       <div class="feat-card press" style="--fc-accent:#F59E0B;--fc-tint:rgba(245,158,11,.15);--fc-glow:rgba(245,158,11,.5)" onclick="switchTabMain('games')">
-        <span class="fc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><path d="M17.32 5H6.68a4 4 0 00-3.98 3.6L2 14.5A2.5 2.5 0 004.5 17c.8 0 1.56-.38 2.03-1.03L8 14h8l1.47 1.97c.47.65 1.23 1.03 2.03 1.03a2.5 2.5 0 002.5-2.5l-.7-5.9A4 4 0 0017.32 5z"/></svg></span>
-        <span><span class="fc-name">Games</span><span class="fc-sub">Mine &amp; farm points</span></span>
+        <span class="fc-ico" style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#F59E0B,#FBBF24);color:#fff;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><path d="M17.32 5H6.68a4 4 0 00-3.98 3.6L2 14.5A2.5 2.5 0 004.5 17c.8 0 1.56-.38 2.03-1.03L8 14h8l1.47 1.97c.47.65 1.23 1.03 2.03 1.03a2.5 2.5 0 002.5-2.5l-.7-5.9A4 4 0 0017.32 5z"/></svg></span>
+        <span><span class="fc-name" style="font-size:15px;font-weight:800">Games</span></span>
         <svg class="fc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
       </div>
       <div class="feat-card press" style="--fc-accent:#10B981;--fc-tint:rgba(16,185,129,.14);--fc-glow:rgba(16,185,129,.5)" onclick="navigateTo('page-airdrops')">
-        <span class="fc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg></span>
-        <span><span class="fc-name">My Airdrops</span><span class="fc-sub">Archon Points hub</span></span>
+        <span class="fc-ico" style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#10B981,#34D399);color:#fff;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg></span>
+        <span><span class="fc-name" style="font-size:15px;font-weight:800">My Airdrops</span></span>
         <svg class="fc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
       </div>
       <div class="feat-card press" style="--fc-accent:#EC4899;--fc-tint:rgba(236,72,153,.14);--fc-glow:rgba(236,72,153,.5)" onclick="switchTabMain('gifts')">
-        <span class="fc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 000-5C13 3 12 8 12 8"/></svg></span>
-        <span><span class="fc-name">Gifts</span><span class="fc-sub">Send crypto with love</span></span>
+        <span class="fc-ico" style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#EC4899,#F472B6);color:#fff;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 000-5C13 3 12 8 12 8"/></svg></span>
+        <span><span class="fc-name" style="font-size:15px;font-weight:800">Gifts</span></span>
         <svg class="fc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
       </div>
       <div class="feat-card press" style="--fc-accent:#0EA5E9;--fc-tint:rgba(14,165,233,.14);--fc-glow:rgba(14,165,233,.5)" onclick="navigateTo('page-tx-history')">
-        <span class="fc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
-        <span><span class="fc-name">Activity</span><span class="fc-sub">On-chain history</span></span>
+        <span class="fc-ico" style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#0EA5E9,#38BDF8);color:#fff;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
+        <span><span class="fc-name" style="font-size:15px;font-weight:800">Activity</span></span>
         <svg class="fc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
       </div>
       <div class="feat-card press" style="--fc-accent:#8B5CF6;--fc-tint:rgba(139,92,246,.14);--fc-glow:rgba(139,92,246,.5)" onclick="navigateTo('page-security')">
-        <span class="fc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
-        <span><span class="fc-name">Security</span><span class="fc-sub">PIN &amp; recovery key</span></span>
+        <span class="fc-ico" style="width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#8B5CF6,#A78BFA);color:#fff;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <span><span class="fc-name" style="font-size:15px;font-weight:800">Security</span></span>
         <svg class="fc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
       </div>
     </div>
@@ -1980,8 +1973,8 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
     <div class="section-title" style="margin-top:6px">Active campaigns</div>
     <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px">
       <span class="lr-ico" style="background:var(--lime-soft);color:#5F7A00"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 019 9H3a9 9 0 019-9z"/><path d="M3 12l7 9M21 12l-7 9M12 12v9"/></svg></span>
-      <span style="flex:1"><span style="display:block;font-size:14.5px;font-weight:800">BOT Genesis Drop</span><span class="t-small t-muted" style="font-size:12px;font-weight:600">Hold BOT to qualify · Snapshot live</span></span>
-      <span class="badge-live">Live</span>
+      <span style="flex:1"><span style="display:block;font-size:14.5px;font-weight:800">BOT Genesis Drop</span><span class="t-small t-muted" style="font-size:12px;font-weight:600">Hold BOT to qualify · Snapshot soon</span></span>
+      <span class="chip" style="background:var(--amber-soft);color:#8A5A00">Coming Soon</span>
     </div>
     <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px">
       <span class="lr-ico" style="background:var(--violet-soft);color:#7C3AED"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 000-5C13 3 12 8 12 8"/></svg></span>
@@ -2237,8 +2230,17 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
   <div class="content">
     <div class="fx-card">
       <div class="fx-label">Avatar</div>
-      <div style="width:88px;height:88px;border-radius:50%;overflow:hidden;margin:8px auto 12px;background:var(--surface-2)"><img id="cxEditAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" style="width:100%;height:100%;object-fit:cover;display:block"/></div>
-      <div id="cxAvatarGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px"></div>
+      <div style="width:88px;height:88px;border-radius:50%;overflow:hidden;margin:8px auto 12px;background:var(--surface-2);position:relative">
+        <img id="cxEditAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" style="width:100%;height:100%;object-fit:cover;display:block"/>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px">
+        <label class="press" style="padding:10px 18px;border-radius:12px;background:linear-gradient(135deg,#6366F1,#818CF8);color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Upload Photo
+          <input type="file" accept="image/*" onchange="cxUploadPfp(event)" style="display:none"/>
+        </label>
+        <button class="press" onclick="cxRemovePfp()" style="padding:10px 18px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">Remove</button>
+      </div>
       <div class="fx-label" style="margin-top:14px">Display name</div>
       <input class="inp" id="cxEditName" placeholder="Your name" maxlength="24">
       <div class="fx-label" style="margin-top:14px">Email</div>
@@ -2309,16 +2311,23 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== SETTINGS: PROFILE (fx*) ==================== -->
 <div class="page" id="page-settings-profile">
-  <div class="topbar"><button class="backbtn press" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Profile</h2><div class="flex-1"></div><button class="btn btn-primary" style="padding:10px 16px;font-size:13px" onclick="fxSaveProfile()">Save</button></div>
+  <div class="topbar"><button class="backbtn press" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Profile</h2></div>
   <div class="content">
     <div class="fx-card" style="margin-bottom:14px">
-      <div style="width:96px;height:96px;border-radius:50%;overflow:hidden;margin:0 auto 12px;background:var(--surface-2)"><img id="fxProfAvatar" src="" style="width:100%;height:100%;object-fit:cover;display:block"/></div>
-      <div class="fx-label">Choose your avatar</div>
-      <div id="fxAvatarGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px"></div>
+      <div style="width:96px;height:96px;border-radius:50%;overflow:hidden;margin:0 auto 12px;background:var(--surface-2);position:relative"><img id="fxProfAvatar" src="" style="width:100%;height:100%;object-fit:cover;display:block"/></div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px">
+        <label class="press" style="padding:10px 18px;border-radius:12px;background:linear-gradient(135deg,#6366F1,#818CF8);color:#fff;font-size:12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Upload Photo
+          <input type="file" accept="image/*" onchange="fxUploadPfp(event)" style="display:none"/>
+        </label>
+        <button class="press" onclick="fxRemovePfp()" style="padding:10px 18px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">Remove</button>
+      </div>
       <div class="fx-label">Display name</div>
-      <input class="inp" id="fxProfName" placeholder="Your name" maxlength="24">
+      <input class="inp" id="fxProfName" placeholder="Your name" maxlength="24" oninput="fxAutoSaveField()">
       <div class="fx-label" style="margin-top:14px">Bio</div>
-      <textarea class="inp" id="fxProfBio" rows="3" maxlength="120" placeholder="Tell the community about yourself…" style="resize:none;line-height:1.5"></textarea>
+      <textarea class="inp" id="fxProfBio" rows="3" maxlength="120" placeholder="Tell the community about yourself…" style="resize:none;line-height:1.5" oninput="fxAutoSaveField()"></textarea>
+      <div id="fxProfSaved" style="text-align:center;font-size:11px;font-weight:700;color:var(--green);margin-top:10px;opacity:0;transition:opacity .3s">Saved ✓</div>
     </div>
     <div class="fx-card" style="padding:0;margin-bottom:14px">
       <div class="fx-srow"><span class="fx-sico" style="background:#fff3c4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg></span><div class="flex-1"><div style="font-size:13px;font-weight:700">Email</div><div class="fx-sub" id="fxProfEmail">No email set</div></div></div>
@@ -2604,6 +2613,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
     <div id="claimTimer" style="font-family:var(--f-num);font-size:32px;font-weight:800;color:#38BDF8;letter-spacing:.04em">00:00:00:00</div>
     <div id="claimUnlockDate" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.5);margin-top:8px"></div>
     <button id="claimRetryBtn" onclick="redeemGift()" style="margin-top:16px;padding:12px 28px;border-radius:14px;border:none;background:linear-gradient(135deg,#0EA5E9,#38BDF8);color:#fff;font-size:13px;font-weight:800;cursor:pointer;opacity:.4;pointer-events:none;transition:all .3s">Claim Now</button>
+    <button onclick="closeClaimCountdown()" style="margin-top:10px;padding:10px 24px;border-radius:12px;border:1.5px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.7);font-size:12px;font-weight:700;cursor:pointer">Go Back</button>
   </div>
 </div>
 
@@ -2981,7 +2991,7 @@ function navigateTo(id) {
     if (id === 'page-my-vouchers' && typeof renderVoucherHistory === 'function') renderVoucherHistory();
     if (id === 'page-gift-dao' && typeof daoRenderRows === 'function') daoRenderRows();
     if (id === 'page-airdrops' && typeof adRender === 'function') adRender();
-    if (id === 'page-courses' && typeof crRenderList === 'function') crRenderList();
+    if (id === 'page-courses' && typeof crRenderList === 'function') { crRenderList(); if (typeof cxClosePicker === 'function') cxClosePicker(); }
     if (id === 'page-tx-history' && typeof renderTxHistory === 'function') renderTxHistory();
     if (id === 'page-create-voucher') { if (typeof gvRenderTokens === 'function') gvRenderTokens(); if (typeof gvPaintTok === 'function') gvPaintTok(); }
   }
@@ -3010,7 +3020,7 @@ function updateAccountPage() {
   var aUrl = (typeof avUrl === 'function') ? avUrl : function(s) { return 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + s; };
   if (an) an.textContent = p.name || 'User';
   if (ae) ae.textContent = p.email || 'No email set';
-  if (aa) aa.src = aUrl(p.seed);
+  if (aa) aa.src = p.avatar || aUrl(p.seed);
 }
 window.updateAccountPage = updateAccountPage;
 
@@ -3615,6 +3625,12 @@ function redeemGift() {
   }).catch(function(e) { showError('Lookup error: ' + e.message); });
 }
 window.redeemGift = redeemGift;
+function closeClaimCountdown() {
+  if (window._gvCountdownInterval) { clearInterval(window._gvCountdownInterval); window._gvCountdownInterval = null; }
+  var ov = $('claimOverlay'); if (ov) ov.classList.remove('show','error','done');
+  var cd = $('claimCountdown'); if (cd) cd.style.display = 'none';
+}
+window.closeClaimCountdown = closeClaimCountdown;
 
 /* ═══════════════════════════════════════════════════════════════
    DAO TREASURY — real on-chain multi-send with % allocations
@@ -4705,6 +4721,52 @@ function cxSaveProfile() {
   goBack();
 }
 window.cxSaveProfile = cxSaveProfile;
+function cxUploadPfp(e) {
+  var file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { cxToast('Image too large (max 2MB)', 'err'); return; }
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var img = $('cxEditAvatar');
+    if (img) img.src = ev.target.result;
+    profile.avatar = ev.target.result;
+    localStorage.setItem('archon_profile', JSON.stringify(profile));
+    cxApplyProfile();
+    cxToast('Photo updated!', 'ok');
+  };
+  reader.readAsDataURL(file);
+}
+window.cxUploadPfp = cxUploadPfp;
+function cxRemovePfp() {
+  var def = 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
+  profile.avatar = def;
+  localStorage.setItem('archon_profile', JSON.stringify(profile));
+  var img = $('cxEditAvatar'); if (img) img.src = def;
+  cxApplyProfile();
+  cxToast('Photo removed', 'ok');
+}
+window.cxRemovePfp = cxRemovePfp;
+function cxApplyProfile() {
+  var av = profile.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
+  var nm = profile.name || 'Archon User';
+  var bio = profile.bio || '';
+  /* wallet top bar */
+  var ha = $('homeAvatar'); if (ha) ha.src = av;
+  var gn = $('homeGreetName'); if (gn) gn.textContent = nm.split(' ')[0];
+  /* account page */
+  var aa = $('cxAcctAvatar'); if (aa) aa.src = av;
+  var an = $('cxAcctName'); if (an) an.textContent = nm;
+  /* edit profile page */
+  var ea = $('cxEditAvatar'); if (ea) ea.src = av;
+  var en = $('cxEditName'); if (en && !en.value) en.value = nm;
+  /* settings profile page */
+  var fa = $('fxProfAvatar'); if (fa) fa.src = av;
+  var fn = $('fxProfName'); if (fn && !fn.value) fn.value = nm;
+  var fb = $('fxProfBio'); if (fb && !fb.value) fb.value = bio;
+}
+window.cxApplyProfile = cxApplyProfile;
+/* apply profile on load */
+(function() { try { var p = JSON.parse(localStorage.getItem('archon_profile') || '{}'); if (p.avatar) { profile.avatar = p.avatar; } if (p.name) { profile.name = p.name; } cxApplyProfile(); } catch(e) {} })();
 function doLogout() {
   if (confirm('Log out? Your wallet data remains on this device.')) {
     /* reset onboarding carousel to first slide */
@@ -4882,7 +4944,7 @@ function cxBoostHash() {
 }
 window.cxBoostHash = cxBoostHash;
 
-/* Spin */
+/* Spin — with visible prize labels */
 var CX_SPIN_PRIZES = [10, 50, 100, 200, 500, 25, 75, 150];
 var cxSpinAngle = 0;
 function cxRenderSpin() {
@@ -4893,55 +4955,71 @@ function cxRenderSpin() {
     wheel.style.background = 'conic-gradient(' + CX_SPIN_PRIZES.map(function(p, i) {
       return colors[i % colors.length] + ' ' + (i * seg) + 'deg ' + ((i + 1) * seg) + 'deg';
     }).join(',') + ')';
+    /* render prize labels on wheel */
+    wheel.innerHTML = '';
+    CX_SPIN_PRIZES.forEach(function(p, i) {
+      var angle = i * seg + seg / 2;
+      var label = document.createElement('span');
+      label.textContent = p;
+      label.style.cssText = 'position:absolute;left:50%;top:50%;font-size:11px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);transform:rotate(' + angle + 'deg) translateY(-52px) rotate(-' + angle + 'deg);transform-origin:0 0;';
+      wheel.appendChild(label);
+    });
   }
   var left = $('cxSpinLeft');
-  if (left) left.textContent = cxGames.spins + ' spins left';
+  if (left) left.textContent = cxGames.spins + ' spins left today';
 }
 window.cxRenderSpin = cxRenderSpin;
 function cxSpin() {
-  if (cxGames.spins <= 0) { cxToast('No spins left', 'err'); return; }
+  if (cxGames.spins <= 0) { cxToast('No spins left today — come back tomorrow!', 'err'); return; }
   cxGames.spins--;
   cxSaveGames();
   var left = $('cxSpinLeft');
-  if (left) left.textContent = cxGames.spins + ' spins left';
+  if (left) left.textContent = cxGames.spins + ' spins left today';
+  var btn = $('cxSpinBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Spinning...'; }
   var idx = Math.floor(Math.random() * CX_SPIN_PRIZES.length);
   var prize = CX_SPIN_PRIZES[idx];
   var seg = 360 / CX_SPIN_PRIZES.length;
   cxSpinAngle += 360 * 5 + (360 - idx * seg - seg / 2);
   var wheel = $('cxSpinWheel');
-  if (wheel) wheel.style.transform = 'rotate(' + cxSpinAngle + 'deg)';
+  if (wheel) { wheel.style.transition = 'transform 4s cubic-bezier(.17,.67,.12,.99)'; wheel.style.transform = 'rotate(' + cxSpinAngle + 'deg)'; }
   setTimeout(function() {
     cxGames.points += prize;
     cxSaveGames();
     cxRenderGamesHub();
-    cxToast('+' + prize + ' points!', 'ok');
-  }, 4300);
+    cxToast('🎉 You won ' + prize + ' Archon Points!', 'ok');
+    if (btn) { btn.disabled = false; btn.textContent = 'Spin the wheel'; }
+  }, 4200);
 }
 window.cxSpin = cxSpin;
 
-/* Catch */
-var cxCatch = { score: 0, timer: null, timeLeft: 30, active: false, coins: [] };
+/* Catch — with real collision detection */
+var cxCatch = { score: 0, timer: null, timeLeft: 30, active: false, coins: [], raf: null };
 function cxStartCatch() {
-  cxCatch.score = 0; cxCatch.timeLeft = 30; cxCatch.active = true;
+  cxCatch.score = 0; cxCatch.timeLeft = 30; cxCatch.active = true; cxCatch.coins = [];
   var overlay = $('cxCatchOverlay');
   if (overlay) overlay.style.display = 'none';
   var scoreEl = $('cxCatchScore');
   if (scoreEl) scoreEl.textContent = '0';
+  var timerEl = $('cxCatchTimer');
+  if (timerEl) timerEl.textContent = '30';
   clearInterval(cxCatch.timer);
   cxCatch.timer = setInterval(function() {
     cxCatch.timeLeft--;
-    var timerEl = $('cxCatchTimer');
-    if (timerEl) timerEl.textContent = cxCatch.timeLeft;
+    var t = $('cxCatchTimer');
+    if (t) t.textContent = cxCatch.timeLeft;
     if (cxCatch.timeLeft <= 0) {
       clearInterval(cxCatch.timer);
       cxCatch.active = false;
+      if (cxCatch.raf) cancelAnimationFrame(cxCatch.raf);
       cxGames.points += cxCatch.score;
       cxSaveGames();
       cxRenderGamesHub();
-      if (overlay) { overlay.style.display = ''; overlay.innerHTML = '<div style="font-weight:800;font-size:18px;">Time up!</div><div style="font-size:14px;font-weight:700;color:#9ca3af;">Score: ' + cxCatch.score + '</div><button class="btn-primary" style="max-width:180px;" onclick="cxStartCatch()">Play Again</button>'; }
+      if (overlay) { overlay.style.display = ''; overlay.innerHTML = '<div style="font-weight:800;font-size:18px;">Time up!</div><div style="font-size:14px;font-weight:700;color:#9ca3af;">Score: ' + cxCatch.score + ' pts earned</div><button class="btn-primary" style="max-width:180px;margin-top:12px" onclick="cxStartCatch()">Play Again</button>'; }
     }
   }, 1000);
   cxCatchSpawnLoop();
+  cxCatchGameLoop();
 }
 window.cxStartCatch = cxStartCatch;
 function cxCatchSpawnLoop() {
@@ -4949,14 +5027,53 @@ function cxCatchSpawnLoop() {
   var area = $('cxCatchArea');
   if (!area) return;
   var coin = document.createElement('div');
-  coin.innerHTML = AIC.coin;
-  coin.style.cssText = 'position:absolute;font-size:28px;color:#F59E0B;top:-30px;left:' + (10 + Math.random() * 80) + '%;transition:top 2s linear;pointer-events:none;';
+  var isGold = Math.random() > 0.7;
+  coin.innerHTML = isGold ? '💎' : '🪙';
+  coin.dataset.val = isGold ? '5' : '1';
+  coin.style.cssText = 'position:absolute;font-size:26px;top:-30px;left:' + (8 + Math.random() * 80) + '%;pointer-events:none;z-index:5;transition:none;';
+  coin.dataset.y = '-30';
+  coin.dataset.speed = (1.8 + Math.random() * 1.5).toFixed(2);
   area.appendChild(coin);
-  requestAnimationFrame(function() { coin.style.top = '100%'; });
-  setTimeout(function() { if (coin.parentNode) coin.remove(); }, 2100);
-  setTimeout(cxCatchSpawnLoop, 400 + Math.random() * 400);
+  cxCatch.coins.push(coin);
+  setTimeout(cxCatchSpawnLoop, 350 + Math.random() * 350);
 }
 window.cxCatchSpawnLoop = cxCatchSpawnLoop;
+function cxCatchGameLoop() {
+  if (!cxCatch.active) return;
+  var area = $('cxCatchArea');
+  var basket = $('cxCatchBasket');
+  if (!area || !basket) { cxCatch.raf = requestAnimationFrame(cxCatchGameLoop); return; }
+  var areaRect = area.getBoundingClientRect();
+  var basketRect = basket.getBoundingClientRect();
+  var bLeft = basketRect.left - areaRect.left;
+  var bRight = basketRect.right - areaRect.left;
+  var bTop = basketRect.top - areaRect.top;
+  for (var i = cxCatch.coins.length - 1; i >= 0; i--) {
+    var coin = cxCatch.coins[i];
+    if (!coin.parentNode) { cxCatch.coins.splice(i, 1); continue; }
+    var y = parseFloat(coin.dataset.y) + parseFloat(coin.dataset.speed);
+    coin.dataset.y = y;
+    coin.style.top = y + 'px';
+    var coinX = coin.offsetLeft + 13;
+    /* collision: coin bottom hits basket zone */
+    if (y + 26 >= bTop && y + 26 <= bTop + 40 && coinX >= bLeft - 10 && coinX <= bRight + 10) {
+      var val = parseInt(coin.dataset.val) || 1;
+      cxCatch.score += val;
+      var s = $('cxCatchScore');
+      if (s) s.textContent = cxCatch.score;
+      coin.remove();
+      cxCatch.coins.splice(i, 1);
+      /* flash basket */
+      basket.style.transform = 'translateX(-50%) scale(1.15)';
+      setTimeout(function() { basket.style.transform = 'translateX(-50%)'; }, 100);
+      continue;
+    }
+    /* remove if off screen */
+    if (y > areaRect.height + 40) { coin.remove(); cxCatch.coins.splice(i, 1); }
+  }
+  cxCatch.raf = requestAnimationFrame(cxCatchGameLoop);
+}
+window.cxCatchGameLoop = cxCatchGameLoop;
 (function() {
   var area = $('cxCatchArea');
   var basket = $('cxCatchBasket');
@@ -5711,7 +5828,7 @@ gvUpdateBalHint();
    ═══════════════════════════════════════════════════════════════ */
 var FX = {
   theme: localStorage.getItem('fx_theme') || 'light',
-  accent: localStorage.getItem('fx_accent') || '#7c3aed',
+  accent: localStorage.getItem('fx_accent') || '#A6CC12',
   currency: localStorage.getItem('fx_currency') || 'USD',
   lang: localStorage.getItem('fx_lang') || 'en',
   notifs: JSON.parse(localStorage.getItem('fx_notifs') || '{"tx":true,"gifts":true,"airdrop":true,"marketing":false}'),
@@ -5793,6 +5910,44 @@ function fxSaveProfile() {
   updateAccountPage();
 }
 window.fxSaveProfile = fxSaveProfile;
+/* auto-save name/bio as the user types (no Save button needed) */
+function fxAutoSaveField() {
+  var name = ($('fxProfName') || {}).value || '';
+  var bio = ($('fxProfBio') || {}).value || '';
+  if (typeof profile !== 'undefined') profile.name = name.trim() || 'User';
+  if (typeof profile !== 'undefined') profile.bio = bio;
+  localStorage.setItem('archon_profile', JSON.stringify(profile));
+  localStorage.setItem('fx_bio', bio);
+  updateAccountPage();
+  if (typeof cxApplyProfile === 'function') cxApplyProfile();
+  var saved = $('fxProfSaved');
+  if (saved) { saved.style.opacity = '1'; clearTimeout(window._fxSavedT); window._fxSavedT = setTimeout(function() { saved.style.opacity = '0'; }, 1200); }
+}
+window.fxAutoSaveField = fxAutoSaveField;
+/* upload a profile photo on the settings page */
+function fxUploadPfp(e) {
+  var file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { if (window.cxToast) window.cxToast('Image too large (max 2MB)', 'err'); return; }
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    if (typeof profile !== 'undefined') profile.avatar = ev.target.result;
+    localStorage.setItem('archon_profile', JSON.stringify(profile));
+    if (typeof cxApplyProfile === 'function') cxApplyProfile();
+    updateAccountPage();
+    if (window.cxToast) window.cxToast('Photo updated!', 'ok');
+  };
+  reader.readAsDataURL(file);
+}
+window.fxUploadPfp = fxUploadPfp;
+function fxRemovePfp() {
+  if (typeof profile !== 'undefined') profile.avatar = '';
+  localStorage.setItem('archon_profile', JSON.stringify(profile));
+  if (typeof cxApplyProfile === 'function') cxApplyProfile();
+  updateAccountPage();
+  if (window.cxToast) window.cxToast('Photo removed', 'ok');
+}
+window.fxRemovePfp = fxRemovePfp;
 
 /* ── FX APPEARANCE ── */
 var FX_THEMES = [
@@ -5800,7 +5955,28 @@ var FX_THEMES = [
   { id: 'dark', label: 'Dark', icon: AIC.moon },
   { id: 'auto', label: 'Auto', icon: AIC.refresh }
 ];
-var FX_ACCENTS = ['#7c3aed', '#f59e0b', '#22c55e', '#ef4444', '#3b82f6', '#ec4899'];
+var FX_ACCENTS = ['#A6CC12', '#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6'];
+function _hexToRgb(hex) { var h = hex.replace('#', ''); if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; var n = parseInt(h, 16); return { r: (n>>16)&255, g: (n>>8)&255, b: n&255 }; }
+function _shade(hex, amt) { var c = _hexToRgb(hex); function f(v){ v = Math.round(v*(1+amt)); return Math.max(0, Math.min(255, v)); } return 'rgb(' + f(c.r) + ',' + f(c.g) + ',' + f(c.b) + ')'; }
+function fxApplyTheme() {
+  var id = FX.theme;
+  var dark = id === 'dark' || (id === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+}
+window.fxApplyTheme = fxApplyTheme;
+function fxApplyAccent() {
+  var c = FX.accent;
+  var rgb = _hexToRgb(c);
+  var root = document.documentElement.style;
+  root.setProperty('--primary', c);
+  root.setProperty('--primary-2', _shade(c, .18));
+  root.setProperty('--primary-soft', 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',.12)');
+  root.setProperty('--lime', c);
+  root.setProperty('--lime-deep', _shade(c, -.18));
+  root.setProperty('--lime-soft', 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',.16)');
+  root.setProperty('--lime-mist', 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',.08)');
+}
+window.fxApplyAccent = fxApplyAccent;
 function fxRenderAppearance() {
   var grid = $('fxThemeGrid');
   if (grid) {
@@ -5823,18 +5999,21 @@ window.fxRenderAppearance = fxRenderAppearance;
 function fxSetTheme(id) {
   FX.theme = id;
   fxSave();
+  fxApplyTheme();
   fxRenderAppearance();
-  if (window.cxToast) window.cxToast('Theme: ' + id, 'ok');
+  if (window.cxToast) window.cxToast('Theme: ' + id.charAt(0).toUpperCase() + id.slice(1), 'ok');
 }
 window.fxSetTheme = fxSetTheme;
 function fxSetAccent(c) {
   FX.accent = c;
   fxSave();
+  fxApplyAccent();
   fxRenderAppearance();
-  document.documentElement.style.setProperty('--primary', c);
-  if (window.cxToast) window.cxToast('Accent updated!', 'ok');
+  if (window.cxToast) window.cxToast('Accent color updated', 'ok');
 }
 window.fxSetAccent = fxSetAccent;
+/* apply saved theme + accent on load */
+(function() { try { fxApplyTheme(); fxApplyAccent(); } catch(e) {} })();
 
 /* ── FX NOTIFICATIONS ── */
 var FX_NOTIF_ITEMS = [
@@ -5871,6 +6050,15 @@ var FX_CURRENCIES = [
   { code: 'JPY', sym: '¥', name: 'Japanese Yen', rate: 149.5 },
   { code: 'INR', sym: '₹', name: 'Indian Rupee', rate: 83.1 }
 ];
+/* Global currency formatter — converts USD to the user's selected currency */
+function fxFmt(usdAmount) {
+  var cur = null;
+  for (var i = 0; i < FX_CURRENCIES.length; i++) { if (FX_CURRENCIES[i].code === FX.currency) { cur = FX_CURRENCIES[i]; break; } }
+  if (!cur) cur = FX_CURRENCIES[0];
+  var converted = (usdAmount || 0) * cur.rate;
+  return cur.sym + converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+window.fxFmt = fxFmt;
 function fxRenderCurrency() {
   var list = $('fxCurrencyList');
   if (!list) return;
@@ -5889,6 +6077,9 @@ function fxSetCurrency(code) {
   FX.currency = code;
   fxSave();
   fxRenderCurrency();
+  /* actually re-render the wallet balance in the new currency */
+  if (typeof updateWalletPocket === 'function') updateWalletPocket();
+  if (typeof fxCurrPreview === 'function') fxCurrPreview();
   if (window.cxToast) window.cxToast('Currency: ' + code, 'ok');
 }
 window.fxSetCurrency = fxSetCurrency;
@@ -5923,13 +6114,36 @@ function fxRenderLang() {
   }).join('');
 }
 window.fxRenderLang = fxRenderLang;
+/* UI translations for the language switcher */
+var FX_UI_STRINGS = {
+  en: { greet: 'Good day', send: 'Send', receive: 'Receive', swap: 'Swap', buy: 'Buy' },
+  es: { greet: 'Buen día', send: 'Enviar', receive: 'Recibir', swap: 'Cambiar', buy: 'Comprar' },
+  fr: { greet: 'Bonjour', send: 'Envoyer', receive: 'Recevoir', swap: 'Échanger', buy: 'Acheter' },
+  de: { greet: 'Guten Tag', send: 'Senden', receive: 'Empfangen', swap: 'Tauschen', buy: 'Kaufen' },
+  ja: { greet: 'こんにちは', send: '送信', receive: '受取', swap: 'スワップ', buy: '購入' },
+  zh: { greet: '你好', send: '发送', receive: '接收', swap: '兑换', buy: '购买' }
+};
+function fxApplyLang() {
+  var s = FX_UI_STRINGS[FX.lang] || FX_UI_STRINGS.en;
+  var gn = $('homeGreetName');
+  if (gn && gn.parentNode) {
+    /* update the "Good day," label that precedes the name */
+    var parent = gn.parentNode;
+    parent.innerHTML = s.greet + ', <span id="homeGreetName">' + gn.textContent + '</span>';
+  }
+  document.documentElement.lang = FX.lang;
+}
+window.fxApplyLang = fxApplyLang;
 function fxSetLang(code) {
   FX.lang = code;
   fxSave();
   fxRenderLang();
+  fxApplyLang();
   if (window.cxToast) window.cxToast('Language updated!', 'ok');
 }
 window.fxSetLang = fxSetLang;
+/* apply saved language on load */
+(function() { try { fxApplyLang(); } catch(e) {} })();
 
 /* ── FX EXPORT ── */
 var FX_EXPORT_ITEMS = [
@@ -6692,8 +6906,8 @@ function updateWalletPocket() {
   var el;
   el = $('wpcBotBal'); if (el) el.textContent = botBal.toFixed(4) + ' BOT';
   el = $('wpcBotAddr'); if (el) el.textContent = short;
-  el = $('wpcTotalUsd'); if (el) el.textContent = '$' + totalUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  el = $('chartPriceLabel'); if (el) el.textContent = '$' + (priceBot > 0 ? priceBot.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00');
+  el = $('wpcTotalUsd'); if (el) el.textContent = fxFmt(totalUsd);
+  el = $('chartPriceLabel'); if (el) el.textContent = fxFmt(priceBot > 0 ? priceBot : 0);
   var botTok = window.cxTOKENS ? window.cxTOKENS.find(function(t){return t.id==='BOT';}) : null;
   var ch = botTok ? botTok.chg : (window.chainDatabase && window.chainDatabase.bot ? window.chainDatabase.bot.change24h : null);
   var dir = botTok ? botTok.dir : (window.chainDatabase && window.chainDatabase.bot ? window.chainDatabase.bot.changeDir : null);
