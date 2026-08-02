@@ -1481,13 +1481,9 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
     <div id="gvSAmtRow" class="num" style="font-size:17px;font-weight:800;margin-top:8px">—</div>
     <div style="display:flex;align-items:baseline;gap:6px;margin-top:2px"><span id="gvSAmt" style="display:none"></span><span id="gvSSym" style="display:none"></span><span id="gvSUsd" class="t-small t-muted" style="font-size:12px;font-weight:700"></span></div>
     <div id="gvSHeroSub" class="t-small t-muted" style="font-size:12.5px;font-weight:600;margin-top:10px">Share this code to let someone claim it</div>
-    <div style="background:rgba(245,158,11,.12);border:1.5px solid rgba(245,158,11,.4);border-radius:12px;padding:10px 14px;margin-top:14px;width:100%;max-width:300px;text-align:center">
-      <div style="font-size:11px;font-weight:800;color:#B45309">⚠️ IMPORTANT: Recipient must paste the FULL code below</div>
-      <div style="font-size:10px;font-weight:600;color:#92400E;margin-top:3px">Tap "Copy Code" and send the entire text — it works on any device/wallet</div>
-    </div>
-    <div class="ticket" style="margin-top:14px;width:100%;max-width:300px;text-align:center">
+    <div class="ticket" style="margin-top:18px;width:100%;max-width:300px;text-align:center">
       <div class="t-micro" style="margin-bottom:6px">CLAIM CODE · FOR <span id="gvSToName">—</span></div>
-      <div id="gvSCode" class="num" style="font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--ink);word-break:break-all;max-height:80px;overflow-y:auto;padding:8px;background:var(--surface-2);border-radius:10px">—</div>
+      <div id="gvSCode" class="num" style="font-size:20px;font-weight:800;letter-spacing:.08em;color:var(--ink);word-break:break-all">—</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:300px;margin-top:22px">
       <button onclick="gvCopy()" class="btn btn-primary">Copy Code</button>
@@ -1502,8 +1498,8 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
   <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Claim Gift</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:10px;display:flex;flex-direction:column;align-items:center;gap:18px">
     <div style="width:96px;height:96px;border-radius:28px;background:linear-gradient(135deg,var(--lime-deep),var(--lime));display:flex;align-items:center;justify-content:center;color:var(--ink);box-shadow:0 18px 36px -12px rgba(168,214,28,.6);animation:bob 3.5s ease-in-out infinite"><svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 000-5C13 3 12 8 12 8"/></svg></div>
-    <p class="t-small t-muted" style="text-align:center;max-width:260px">Paste the FULL gift code you received (includes :: and extra characters). Works on any wallet, any device.</p>
-    <div class="input-row" style="width:100%"><input id="redeemCode" type="text" placeholder="Paste full code here..." oninput="gvOnRedeemInput()" class="num" style="text-align:center;letter-spacing:.02em;font-weight:700;font-size:12px"/></div>
+    <p class="t-small t-muted" style="text-align:center;max-width:260px">Got a claim code? Enter it below to unlock and sweep your gift on-chain.</p>
+    <div class="input-row" style="width:100%"><input id="redeemCode" type="text" placeholder="e.g. HAPPYBDAY" oninput="gvOnRedeemInput()" class="num" style="text-transform:uppercase;text-align:center;letter-spacing:.08em;font-weight:800"/></div>
     <button onclick="redeemGift()" class="btn btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px">Claim Gift <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l1.7 4.3L18 10l-4.3 1.7L12 16l-1.7-4.3L6 10l4.3-1.7L12 4z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/></svg></button>
     <p class="t-small t-muted" style="font-size:11px;text-align:center;line-height:1.6;display:flex;align-items:flex-start;justify-content:center;gap:6px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;margin-top:2px"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span>The code decrypts a one-time vault wallet.<br/>Funds sweep straight into your balance.</span></p>
   </div></div>
@@ -2784,9 +2780,12 @@ function fmt(n, d) { if (d === undefined) d = (n >= 1000 ? 2 : (n >= 1 ? 4 : 6))
 window.fmt = fmt;
 
 /* ── Shared cross-device gift store (Supabase `secret_gifts` table) ──
-   Same table the reference botgift uses — proven to work across devices.
+   Uses the OFFICIAL Supabase JS SDK — same as the proven working system.
    Columns: code, amount, sender, sender_name, recipient, message,
             image_url, encrypted_pk, claimed, claimed_by, claimed_at */
+var sgDB = window.supabase.createClient(APP_CONFIG.supabase.url, APP_CONFIG.supabase.key);
+window.sgDB = sgDB;
+
 function sgStoreGift(g) {
   var payload = {
     code: g.code,
@@ -2799,22 +2798,26 @@ function sgStoreGift(g) {
     encrypted_pk: g.encrypted_pk,
     claimed: false
   };
-  return sbFetch(APP_CONFIG.supabase.secretGiftsTable, {
-    method: 'POST',
-    headers: { 'Prefer': 'return=minimal' },
-    body: JSON.stringify(payload)
-  }).catch(function(e) { console.warn('[GV] Supabase store failed:', e.message); return null; });
+  return sgDB.from('secret_gifts').insert(payload).then(function(res) {
+    if (res.error) { console.warn('[GV] Supabase insert error:', res.error.message); throw new Error(res.error.message); }
+    console.log('[GV] Gift stored to Supabase:', g.code);
+    return res;
+  });
 }
 function sgLookupGift(code) {
-  return sbFetch(APP_CONFIG.supabase.secretGiftsTable + '?select=*&code=eq.' + encodeURIComponent(code) + '&limit=1')
-    .then(function(rows) { return (rows && rows.length) ? rows[0] : null; })
-    .catch(function(e) { console.warn('[GV] Supabase lookup failed (will use portable/local):', e.message); return null; });
+  return sgDB.from('secret_gifts').select('*').eq('code', code.toUpperCase().trim()).single().then(function(res) {
+    if (res.error || !res.data) return null;
+    return res.data;
+  }).catch(function() { return null; });
 }
 function sgMarkClaimed(code, addr) {
-  return sbFetch(APP_CONFIG.supabase.secretGiftsTable + '?code=eq.' + encodeURIComponent(code), {
-    method: 'PATCH',
-    body: JSON.stringify({ claimed: true, claimed_by: addr, claimed_at: new Date().toISOString() })
-  });
+  return sgDB.from('secret_gifts')
+    .update({ claimed: true, claimed_by: addr, claimed_at: new Date().toISOString() })
+    .eq('code', code)
+    .then(function(res) {
+      if (res.error) console.warn('[GV] Mark claimed error:', res.error.message);
+      return res;
+    });
 }
 window.sgStoreGift = sgStoreGift;
 window.sgLookupGift = sgLookupGift;
@@ -3394,41 +3397,7 @@ window.formatRedeemCode = formatRedeemCode;
 function redeemGift() {
   var inp = $('redeemCode');
   if (!inp) return;
-  var rawInput = inp.value.trim();
-  /* Handle portable self-contained codes: HUMANCODE::base64payload
-     Also handle: just the base64 payload alone, or a pasted message containing the code */
-  var portableData = null;
-  var code = rawInput;
-
-  /* Strategy 1: explicit :: separator */
-  var ppIdx = rawInput.indexOf('::');
-  if (ppIdx > 0) {
-    code = rawInput.slice(0, ppIdx).trim().toUpperCase();
-    try { portableData = JSON.parse(atob(rawInput.slice(ppIdx + 2))); } catch(e) { portableData = null; }
-  }
-
-  /* Strategy 2: regex extract from pasted message (e.g. "here's your code: ABCD-1234::eyJ...") */
-  if (!portableData) {
-    var reMatch = rawInput.match(/([A-Z0-9\-]{3,})::([A-Za-z0-9+\/=]{20,})/);
-    if (reMatch) {
-      code = reMatch[1].toUpperCase();
-      try { portableData = JSON.parse(atob(reMatch[2])); } catch(e) { portableData = null; }
-    }
-  }
-
-  /* Strategy 3: entire input IS a base64 portable payload (user copied only the :: part) */
-  if (!portableData && /^[A-Za-z0-9+\/=]{40,}$/.test(rawInput)) {
-    try {
-      var decoded = JSON.parse(atob(rawInput));
-      if (decoded && decoded.epk) { portableData = decoded; code = (decoded.code || 'GIFT').toUpperCase(); }
-    } catch(e) {}
-  }
-
-  /* Strategy 4: just a human code (no portable data) */
-  if (!portableData && ppIdx < 0) {
-    code = rawInput.toUpperCase();
-  }
-
+  var code = inp.value.trim().toUpperCase();
   if (!code || code.length < 3) { if (window.cxToast) window.cxToast('Enter a valid gift code (3+ chars)', 'err'); return; }
   if (!window.WalletEngine || !window.WalletEngine.isInitialized()) { if (window.cxToast) window.cxToast('Create or import a wallet first', 'err'); return; }
   var overlay = $('claimOverlay');
@@ -3445,46 +3414,17 @@ function redeemGift() {
   }
   setStatus('Looking up gift (any device)...', 10);
 
-  /* 1) SHARED store first (works across all devices/wallets), then localStorage, then portable payload */
+  /* 1) SHARED store first (Supabase SDK — works across all devices/wallets), then localStorage */
   sgLookupGift(code).then(function(shared) {
-    if (shared) { console.log('[GV] Found in shared store:', shared.code); return shared; }
-    console.log('[GV] Not in shared store, trying this device...');
+    if (shared) { console.log('[GV] Found in Supabase:', shared.code); return shared; }
+    console.log('[GV] Not in Supabase, trying local...');
     try {
       var localGifts = JSON.parse(localStorage.getItem('archon_voucher_gifts') || '[]');
       for (var i = 0; i < localGifts.length; i++) if (localGifts[i].code === code) return localGifts[i];
     } catch(e) {}
-    /* 2) Portable self-contained fallback — works on ANY device, no server needed */
-    if (portableData && portableData.epk) {
-      console.log('[GV] Using portable self-contained payload');
-      return {
-        code: code,
-        amount: portableData.amt,
-        encrypted_pk: portableData.epk,
-        token_sym: portableData.sym,
-        token_name: portableData.name,
-        chain: portableData.chain,
-        token_type: portableData.type,
-        token_contract: portableData.contract,
-        token_decimals: portableData.dec,
-        token_price: portableData.price,
-        gift_type: portableData.gtype,
-        message: portableData.msg || '',
-        sender: portableData.sender || '',
-        sender_name: portableData.sname || '',
-        unlock_time: portableData.ut || null,
-        claimed: false
-      };
-    }
     return null;
   }).then(function(gift) {
-    if (!gift) {
-      if (!portableData && ppIdx < 0) {
-        showError('Code not found. Ask the sender to tap "Copy Code" and send you the FULL code (it includes :: and extra characters)');
-      } else {
-        showError('Gift not found — double check the code');
-      }
-      return;
-    }
+    if (!gift) { showError('Gift not found — double check the code'); return; }
     /* Only block if THIS wallet already redeemed it (check local redeemed list) */
     var myAddr = window.WalletEngine.getAddress();
     var alreadyRedeemed = false;
@@ -5514,13 +5454,14 @@ function gvConfirm() {
     var metaTail = JSON.stringify({
       chain: GV.tok.chain, token_type: GV.tok.type, token_contract: GV.tok.contract || null,
       token_decimals: GV.tok.decimals, token_sym: GV.tok.sym, token_price: GV.tok.price,
-      unlock_time: GV.unlockTime || null, image_url: GV_IMAGE_URL || null
+      unlock_time: GV.unlockTime || null, image_url: GV_IMAGE_URL || null, gift_type: GV.type
     });
     sgStoreGift({
       code: code, amount: GV.amt, sender: senderAddr, sender_name: senderName,
-      recipient: '', message: (GV.msg || '') + '\u0001' + metaTail, image_url: '', encrypted_pk: encPk
-    }).then(function() { console.log('[GV] Saved to shared store — cross-device claim enabled'); })
-      .catch(function(e) { console.warn('[GV] Shared store save failed (local-only):', e.message); });
+      recipient: '', message: (GV.msg || '') + '\u0001' + metaTail, image_url: GV_IMAGE_URL || '', encrypted_pk: encPk,
+      gift_type: GV.type
+    }).then(function() { console.log('[GV] Saved to Supabase — cross-device claim enabled'); })
+      .catch(function(e) { console.warn('[GV] Supabase save failed (local-only):', e.message); });
     /* 3) Fund vault on-chain via Bohr RPC (REAL blockchain tx) */
     setBar(65, 'Funding vault on-chain...');
     gvUpdateSendStep(2, 'Save gift record', 'done');
@@ -5591,18 +5532,8 @@ function gvConfirm() {
       if (sSub) sSub.textContent = meta.label + ' gift sealed!';
       var sTo = $('gvSToName');
       if (sTo) sTo.textContent = GV.to || 'Anyone with the code';
-      /* Build self-contained portable code: HUMANCODE::base64(payload)
-         This ensures the gift works on ANY device even if Supabase is down */
-      var portablePayload = JSON.stringify({
-        epk: encPk, amt: GV.amt, sym: GV.tok.sym, name: GV.tok.name,
-        chain: GV.tok.chain, type: GV.tok.type, contract: GV.tok.contract || null,
-        dec: GV.tok.decimals, price: GV.tok.price, gtype: GV.type,
-        msg: GV.msg || '', sender: senderAddr, sname: senderName,
-        ut: GV.unlockTime || null
-      });
-      var portableCode = code + '::' + btoa(portablePayload);
       var sCode = $('gvSCode');
-      if (sCode) sCode.textContent = portableCode;
+      if (sCode) sCode.textContent = code;
       navigateTo('page-gift-sent');
       if (typeof updateGiftStats === 'function') updateGiftStats();
       if (typeof MultiChain !== 'undefined') MultiChain.refreshAll();
