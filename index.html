@@ -4,12 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Archon</title>
+<script>
+/* pin theme before first paint — main theme is WHITE (light) unless the user explicitly saved dark/auto */
+try {
+  var _t = localStorage.getItem('fx_theme');
+  var _dark = _t === 'dark' || (_t === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.setAttribute('data-theme', _dark ? 'dark' : 'light');
+} catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Poppins:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    CRESO WALLET — DESIGN SYSTEM (copied from Archon reference)
@@ -38,19 +46,67 @@
   --shadow-md:0 8px 24px -8px rgba(12,12,15,.12),0 2px 6px rgba(12,12,15,.05);
   --gv-a1:#8B5CF6; --gv-a2:#C084FC; --gv-glow:rgba(139,92,246,.5);
 }
-/* ── DARK THEME (toggled via [data-theme="dark"] on <html>) ── */
+/* ── DARK THEME (toggled via [data-theme="dark"] on <html>) ──
+   --ink flips to light so TEXT is readable on the dark page/cards.
+   But --ink is ALSO the brand-dark FILL (frame, notch, tabbar, cards,
+   toasts, buttons). Those must stay dark, so we pin them below. */
 html[data-theme="dark"]{
-  --bg:#0C0C0F; --surface:#17171C; --surface-2:#1F1F26; --line:#2A2A32; --line-2:#232329;
-  --ink:#F4F4F2; --ink-2:#C7C7CE; --ink-3:#8E8E96; --ink-4:#5A5A62; --ink-soft:#B8B8C0; --muted:#8E8E96;
-  --lime-soft:rgba(166,204,18,.16); --lime-mist:rgba(166,204,18,.08);
-  --primary-soft:rgba(139,92,246,.2); --violet-soft:rgba(139,92,246,.2); --blue-soft:rgba(59,130,246,.2);
-  --green-soft:rgba(30,158,90,.2); --red-soft:rgba(229,72,77,.2); --amber-soft:rgba(245,166,35,.2);
-  --pink-soft:rgba(236,72,153,.2); --teal-soft:rgba(20,184,166,.2); --gold-soft:rgba(201,150,47,.2);
+  --bg:#0B0B0E; --surface:#17171C; --surface-2:#202027; --line:#2A2A32; --line-2:#232329;
+  --ink:#F4F4F2; --ink-2:#D4D4DA; --ink-3:#9A9AA2; --ink-4:#6A6A72; --ink-soft:#C8C8D0; --muted:#9A9AA2;
+  --lime-soft:rgba(197,240,50,.14); --lime-mist:rgba(197,240,50,.07);
+  --primary-soft:rgba(139,92,246,.22); --violet-soft:rgba(139,92,246,.22); --blue-soft:rgba(59,130,246,.22);
+  --green-soft:rgba(30,158,90,.22); --red-soft:rgba(229,72,77,.22); --amber-soft:rgba(245,166,35,.22);
+  --pink-soft:rgba(236,72,153,.22); --teal-soft:rgba(20,184,166,.22); --gold-soft:rgba(201,150,47,.22);
   --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3);
   --shadow-md:0 8px 24px -8px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.4);
 }
 html[data-theme="dark"] body{background:var(--bg);}
+/* cards sit on the dark page background */
 html[data-theme="dark"] .feat-card,html[data-theme="dark"] .fx-card,html[data-theme="dark"] .wallet-shell{background:var(--surface);}
+/* keep brand-dark chrome DARK (these use --ink as a fill, not as text) */
+html[data-theme="dark"] .shell,
+html[data-theme="dark"] .island,
+html[data-theme="dark"] .tabbar,
+html[data-theme="dark"] .balcard,
+html[data-theme="dark"] .gift-feat,
+html[data-theme="dark"] .ticker,
+html[data-theme="dark"] .btn-dark,
+html[data-theme="dark"] .tab-pill button.active,
+html[data-theme="dark"] .amount-pill.selected,
+html[data-theme="dark"] #page-splash,
+html[data-theme="dark"] .page.dark,
+html[data-theme="dark"] .ob-arrow,
+html[data-theme="dark"] .optcard.primary,
+html[data-theme="dark"] .swap-flip,
+html[data-theme="dark"] .gv-tok.active,
+html[data-theme="dark"] .fx-refcode,
+html[data-theme="dark"] .fx-preview,
+html[data-theme="dark"] .cx-catch-area,
+html[data-theme="dark"] #gvToast,
+html[data-theme="dark"] .cx-toast,
+html[data-theme="dark"] .claim-btn,
+html[data-theme="dark"] .qr-cell.on,
+html[data-theme="dark"] .gbanner .gb-go,
+html[data-theme="dark"] .home-head .avatar{background:#0C0C0F;}
+html[data-theme="dark"] .amount-pill.selected,
+html[data-theme="dark"] .optcard.primary,
+html[data-theme="dark"] .gv-tok.active{border-color:#0C0C0F;}
+/* inline-styled brand-dark fills (icon tiles, airdrop card, redeem button) */
+html[data-theme="dark"] [style*="background:var(--ink)"]{background:#0C0C0F !important;}
+/* kill the lime glow in dark mode — cards & logo stay, glow goes */
+html[data-theme="dark"] #cresWallet{box-shadow:0 14px 30px -18px rgba(0,0,0,.65) !important;filter:saturate(.9) brightness(.95);}
+html[data-theme="dark"] #cresWallet > span:first-child{opacity:.75;}
+html[data-theme="dark"] #cresWallet > span:nth-child(2){opacity:.22;}
+/* keep balance & info readable on the lime card — ink text must stay dark even in dark mode */
+html[data-theme="dark"] #cresWallet [style*="color:var(--ink)"]{color:#0C0C0F !important;}
+html[data-theme="dark"] #cresWallet .balance-real,html[data-theme="dark"] #cresWallet .balance-stars{color:#0C0C0F !important;}
+html[data-theme="dark"] #cresWallet svg[stroke="var(--ink)"]{stroke:#0C0C0F !important;}
+html[data-theme="dark"] .balcard{box-shadow:0 14px 30px -18px rgba(0,0,0,.65);}
+html[data-theme="dark"] .balcard::before{opacity:.16;animation:none;}
+html[data-theme="dark"] .gift-feat{box-shadow:0 14px 30px -18px rgba(0,0,0,.65);}
+html[data-theme="dark"] .logo-aura{opacity:.2 !important;filter:blur(2px) !important;animation:none !important;}
+html[data-theme="dark"] .logo-main{filter:drop-shadow(0 3px 8px rgba(0,0,0,.55)) !important;}
+html[data-theme="dark"] .home-head button[title="Profile"]{box-shadow:0 3px 10px -5px rgba(0,0,0,.7) !important;}
 @keyframes auraPulse{0%,100%{opacity:.65;transform:scale(1)}50%{opacity:1;transform:scale(1.14)}}
 /* gv / claim overlays (preserved JS structure) */
 #gvSendOverlay,#claimOverlay{position:absolute;inset:0;z-index:300;background:radial-gradient(120% 100% at 50% 0%,#17171c,#0d0d12);display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;color:#fff;text-align:center;}
@@ -866,11 +922,562 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 .cx-catch-overlay{position:absolute;inset:0;background:rgba(12,12,15,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;color:#fff;text-align:center;padding:20px}
 .cx-catch-overlay .btn{width:auto}
 .cx-guess-num{font-family:var(--f-disp);font-weight:800;font-size:64px;letter-spacing:-.03em;text-align:center;padding:18px 0}
+
+/* ═══════════════════════════════════════════════════════════════
+   WEB VERSION — desktop landing site + widescreen app shell
+   ≥861px  → website experience (landing + sidebar app)
+   ≤860px  → phone experience, 100% untouched
+   ═══════════════════════════════════════════════════════════════ */
+/* landing is ALWAYS the clean colorful marketing look — re-scope vars to light so it can never inherit the dark app theme */
+#wvLanding{
+  --ink:#15151a; --ink-2:#44444c; --ink-3:#7a7a82; --ink-4:#9a9aa2; --ink-soft:#44444c; --muted:#7a7a82;
+  --bg:#FCFCF8; --surface:#ffffff; --surface-2:#f4f4ee; --line:rgba(12,12,15,.09); --line-2:rgba(12,12,15,.06);
+  --lime:#C5F032; --lime-deep:#9bbf12; --lime-d:#7d9c0a; --lime-soft:rgba(166,204,18,.16); --lime-mist:rgba(166,204,18,.08);
+  /* landing-only fonts (wallet app keeps Space Grotesk / Jakarta) */
+  --f-disp:'Space Grotesk','Plus Jakarta Sans',sans-serif; --f-body:'Poppins','Plus Jakarta Sans',sans-serif; --f-mono:'Space Mono',ui-monospace,monospace;
+  display:none;color:var(--ink);
+  background:
+    radial-gradient(1100px 720px at 88% -10%, rgba(197,240,50,.34), transparent 60%),
+    radial-gradient(900px 620px at 4% 10%, rgba(123,97,255,.13), transparent 55%),
+    radial-gradient(820px 620px at 80% 62%, rgba(255,138,101,.13), transparent 55%),
+    radial-gradient(720px 520px at 16% 90%, rgba(56,189,248,.13), transparent 55%),
+    #FCFCF8;
+}
+#wvSidebar{display:none}
+
+@media (min-width: 861px){
+  /* ── landing overlay ── */
+  #wvLanding{display:block;position:fixed;inset:0;z-index:200;overflow-y:auto;overflow-x:hidden}
+  body.wv-app-on #wvLanding{display:none}
+
+  /* ── app shell goes full-bleed widescreen ── */
+  .scene{display:none}
+  .stage{padding:0;height:100vh}
+  .shell{width:100%;height:100vh;border-radius:0;padding:0;box-shadow:none}
+  .screen{border-radius:0;display:grid;grid-template-columns:250px minmax(0,1fr);background:var(--bg)}
+  .island{display:none}
+  #app{position:relative;inset:auto;grid-column:2;grid-row:1;min-width:0;height:100%;background:var(--bg);overflow:hidden}
+  #bottomNav{display:none !important}
+
+  /* ── sidebar ── */
+  #wvSidebar{display:flex;flex-direction:column;grid-column:1;grid-row:1;background:linear-gradient(180deg,#1A0E3E 0%,#2D1B69 100%);color:#fff;padding:24px 14px 16px;z-index:30}
+  .wv-side-logo{display:flex;align-items:center;gap:10px;padding:2px 10px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .wv-side-logo img{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(166,204,18,.5))}
+  .wv-side-logo b{font-family:var(--f-disp);font-size:15px;letter-spacing:.16em}
+  .wv-side-live{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:800;letter-spacing:.12em;color:rgba(255,255,255,.45)}
+  .wv-side-live i{width:6px;height:6px;border-radius:50%;background:var(--lime);animation:wvPulse 2s infinite}
+  @keyframes wvPulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .wv-side-nav{display:flex;flex-direction:column;gap:4px;padding-top:18px;flex:1}
+  .wv-snav{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:14px;background:transparent;border:none;color:rgba(255,255,255,.55);font-size:13.5px;font-weight:700;font-family:var(--f-body);cursor:pointer;transition:all .2s var(--ease);text-align:left}
+  .wv-snav svg{width:19px;height:19px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .wv-snav:hover{color:#fff;background:rgba(255,255,255,.06);transform:translateX(3px)}
+  .wv-snav.active{color:var(--lime);background:rgba(197,240,50,.1)}
+  .wv-side-foot{border-top:1px solid rgba(255,255,255,.08);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+  .wv-side-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;cursor:pointer;transition:background .2s}
+  .wv-side-user:hover{background:rgba(255,255,255,.06)}
+  .wv-side-user img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--lime)}
+  .wv-side-user b{display:block;font-size:12.5px;color:#fff}
+  .wv-side-user span{display:block;font-size:10px;color:rgba(255,255,255,.4);font-family:var(--f-disp)}
+
+  /* ── desktop app pages ── */
+  .home-head{padding:26px 34px 14px}
+  .topbar,.page-header{padding-top:24px;padding-left:34px;padding-right:34px}
+  .page-scroll,.content{padding-bottom:60px}
+  .page-scroll::-webkit-scrollbar,.content::-webkit-scrollbar{width:8px}
+  .page-scroll::-webkit-scrollbar-thumb,.content::-webkit-scrollbar-thumb{background:rgba(12,12,15,.16);border-radius:99px}
+  .page-scroll > *,.content > *{max-width:1000px;margin-left:auto !important;margin-right:auto !important}
+  .wallet-shell{padding:4px 34px 0}
+  .qa-row{padding:14px 34px 4px}
+  .feat-grid{grid-template-columns:repeat(4,1fr);padding:12px 34px 4px}
+  .gift-grid{grid-template-columns:repeat(4,1fr) !important;padding:14px 34px 0 !important}
+
+  /* ── landing: shared bits ── */
+  .wv-wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+  .wv-btn{display:inline-flex;align-items:center;gap:9px;border:none;cursor:pointer;font-family:var(--f-body);font-weight:800;font-size:14px;border-radius:14px;padding:13px 24px;transition:transform .2s var(--spring),box-shadow .2s}
+  .wv-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .wv-btn-ink{background:linear-gradient(135deg,#1A0E3E,#2D1B69);color:var(--lime);box-shadow:0 6px 16px -8px rgba(26,14,62,.4)}
+  .wv-btn-ink:hover{transform:translateY(-1px);box-shadow:0 10px 22px -10px rgba(26,14,62,.5)}
+  .wv-btn-ghost{background:transparent;color:var(--ink);border:1.5px solid rgba(12,12,15,.22)}
+  .wv-btn-ghost:hover{border-color:var(--ink);transform:translateY(-2px)}
+  .wv-btn-sm{padding:9px 18px;font-size:12.5px;border-radius:11px}
+
+  /* ── landing: nav ── */
+  .wv-nav{position:absolute;top:0;left:0;right:0;z-index:50;background:transparent;border:none}
+  .wv-nav-in{max-width:1180px;margin:0 auto;padding:0 40px;height:66px;display:flex;align-items:center;gap:34px}
+  .wv-brand{display:flex;align-items:center;gap:10px;font-family:var(--f-disp);font-weight:700;font-size:16px;letter-spacing:.16em;color:var(--ink)}
+  .wv-brand img{width:32px;height:32px;object-fit:contain}
+  .wv-links{display:flex;gap:34px;margin-left:auto}
+  .wv-link{background:none;border:none;font-family:var(--f-body);font-size:13.5px;font-weight:600;color:var(--ink-3);cursor:pointer;padding:6px 0;transition:color .2s}
+  .wv-link:hover{color:var(--ink)}
+
+  /* ── landing: hero · full-bleed raw artwork, text blended on top ── */
+  .wv-hero{position:relative;padding:132px 0 136px;overflow:hidden;background:#EAE8EE url('https://res.cloudinary.com/dguexkgjw/image/upload/v1785713337/ChatGPT_Image_Aug_2_2026_09_28_35_PM_pwajdu.png') center 44%/cover no-repeat}
+  .wv-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(238,236,241,.97) 0%,rgba(238,236,241,.93) 30%,rgba(238,236,241,.55) 52%,rgba(238,236,241,0) 76%);pointer-events:none}
+  .wv-hero-grid{position:relative;display:block}
+  .wv-hero-copy{max-width:640px;position:relative}
+  .wv-eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 15px;font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--ink-2)}
+  .wv-eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--lime-deep);animation:wvPulse 2s infinite}
+  .wv-h1{font-family:var(--f-disp);font-size:clamp(42px,4.4vw,62px);font-weight:700;line-height:1.05;letter-spacing:-.03em;color:var(--ink);margin:0 0 18px}
+  .wv-h1 .hl{position:relative;white-space:nowrap;z-index:0}
+  .wv-h1 .hl::after{content:'';position:absolute;left:-3%;bottom:5%;width:106%;height:.34em;background:var(--lime);z-index:-1;border-radius:4px;transform:skewX(-8deg)}
+  .wv-sub{font-size:17px;line-height:1.65;color:var(--ink-2);max-width:520px}
+  .wv-hero-sub{font-family:var(--f-body);font-size:15.5px;font-weight:500;line-height:1.75;color:var(--ink-2);max-width:460px;margin:0}
+  .wv-btn-lime{display:inline-flex;align-items:center;gap:9px;background:var(--lime);color:#15151a;border:none;cursor:pointer;font-family:var(--f-body);font-weight:700;font-size:14px;border-radius:14px;padding:15px 28px;box-shadow:0 10px 24px -12px rgba(125,156,10,.5);transition:transform .2s var(--spring),box-shadow .2s}
+  .wv-btn-lime svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .wv-btn-lime:hover{transform:translateY(-2px);box-shadow:0 16px 30px -12px rgba(125,156,10,.6)}
+  .wv-cta-row{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap;align-items:center}
+
+
+  /* ── landing: hero animated headline ── */
+  .wv-line{display:block;overflow:hidden}
+  .wv-line-in{display:block;transform:translateY(115%);opacity:0;filter:blur(10px);animation:wvLineUp .95s var(--ease) forwards}
+  .wv-line:nth-child(1) .wv-line-in{animation-delay:.12s}
+  .wv-line:nth-child(2) .wv-line-in{animation-delay:.3s}
+  .wv-line:nth-child(3) .wv-line-in{animation-delay:.48s}
+  @keyframes wvLineUp{to{transform:translateY(0);opacity:1;filter:blur(0)}}
+
+  /* ── landing: fintech illustration accents (match hero art style) ── */
+  .wv-fshape{position:absolute;pointer-events:none;z-index:0;filter:drop-shadow(0 16px 26px rgba(26,14,62,.16));animation:wvFloatC 7s ease-in-out infinite}
+  .wv-fshape.fs-2{animation-duration:9s;animation-delay:1.1s}
+  .wv-fshape.fs-3{animation-duration:8s;animation-delay:.5s}
+  @keyframes wvFloatC{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+  /* cleaner card shapes + staggered reveals */
+  .wv-bcard{border-radius:26px;background:linear-gradient(180deg,#fff,#FBFBF6)}
+  .wv-bcard.ink{background:linear-gradient(135deg,#1A0E3E,#2D1B69)}
+  .wv-bcard.lime{background:linear-gradient(135deg,var(--lime),#D7F76A)}
+  .wv-gcard{border-radius:20px}
+  .wv-bento>.wv-rev:nth-child(2){transition-delay:.08s}
+  .wv-bento>.wv-rev:nth-child(3){transition-delay:.16s}
+  .wv-bento>.wv-rev:nth-child(4){transition-delay:.24s}
+  .wv-bento>.wv-rev:nth-child(5){transition-delay:.3s}
+
+  /* ── landing: ticker ── */
+  .wv-ticker{background:linear-gradient(90deg,#1A0E3E,#2D1B69,#1A0E3E);color:#fff;overflow:hidden;padding:13px 0}
+  .wv-ticker-track{display:flex;gap:44px;width:max-content;animation:wvTick 30s linear infinite}
+  .wv-ticker:hover .wv-ticker-track{animation-play-state:paused}
+  @keyframes wvTick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .wv-tick{display:flex;align-items:center;gap:9px;font-family:var(--f-disp);font-size:12.5px;font-weight:600;letter-spacing:.06em;white-space:nowrap}
+  .wv-tick .up{color:var(--lime)}
+  .wv-tick .dim{color:rgba(255,255,255,.4)}
+
+  /* ── landing: sections ── */
+  .wv-sec{padding:96px 0}
+  .wv-sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:44px}
+  .wv-kicker{font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--lime-d);margin-bottom:12px}
+  .wv-h2{font-family:var(--f-disp);font-size:clamp(30px,3.2vw,42px);font-weight:600;letter-spacing:-.015em;line-height:1.15;color:var(--ink)}
+  .wv-sec-sub{font-size:15px;color:var(--ink-2);max-width:380px;line-height:1.6}
+
+  /* bento */
+  .wv-bento{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:232px;gap:18px}
+  .wv-bcard{position:relative;border-radius:22px;border:1.5px solid var(--line);background:#fff;padding:26px;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s}
+  .wv-bcard:hover{transform:translateY(-6px);box-shadow:0 24px 48px -20px rgba(12,12,15,.22)}
+  .wv-bcard.tall{grid-row:span 2}
+  .wv-bcard.wide{grid-column:span 2}
+  .wv-bcard.ink{background:linear-gradient(135deg,#1A0E3E,#2D1B69);color:#fff;border-color:transparent;box-shadow:0 20px 40px -16px rgba(45,27,105,.4)}
+  .wv-bcard.lime{background:linear-gradient(135deg,var(--lime),#D7F76A);border-color:transparent;color:#1A0E3E}
+  .wv-bico{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--lime-soft);color:var(--lime-d);margin-bottom:16px}
+  .wv-bcard.ink .wv-bico{background:rgba(197,240,50,.14);color:var(--lime)}
+  .wv-bcard.lime .wv-bico{background:rgba(26,14,62,.12);color:#1A0E3E}
+  .wv-bcard h3{font-family:var(--f-disp);font-size:20px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
+  .wv-bcard p{font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+  .wv-bcard.ink p{color:rgba(255,255,255,.6)}
+  .wv-bcard.lime p{color:rgba(12,12,15,.65)}
+  .wv-chainrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+  .wv-chainrow:first-of-type{margin-top:18px}
+  .wv-chainrow b{font-size:13px;font-weight:800}
+  .wv-chainrow span{font-size:11px;color:var(--ink-3);font-family:var(--f-disp)}
+  .wv-chainrow .num{margin-left:auto;font-size:14px;font-weight:700}
+
+  /* gifts row */
+  .wv-gifts-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+  .wv-gcard{border-radius:18px;border:1.5px solid var(--line);background:#fff;padding:22px 14px;text-align:center;transition:transform .25s var(--spring),box-shadow .25s}
+  .wv-gcard:hover{transform:translateY(-7px) rotate(-1.5deg);box-shadow:0 20px 36px -16px rgba(12,12,15,.25)}
+  .wv-gemoji{font-size:30px;display:block;margin-bottom:10px}
+  .wv-gcard b{display:block;font-size:13px;font-weight:800;color:var(--ink)}
+  .wv-gcard span{font-size:11px;color:var(--ink-3);font-weight:600}
+
+  /* security slab */
+  .wv-secure{background:linear-gradient(135deg,#1A0E3E 0%,#2D1B69 60%,#3B2080 100%);color:#fff;border-radius:34px;padding:70px 64px;position:relative;overflow:hidden}
+  .wv-secure::before{content:'';position:absolute;top:-140px;right:-100px;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(197,240,50,.16),transparent 65%)}
+  .wv-secure .wv-h2{color:#fff}
+  .wv-secure-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:52px;position:relative}
+  .wv-snum{font-family:var(--f-disp);font-size:46px;font-weight:700;color:var(--lime);letter-spacing:-.02em;line-height:1}
+  .wv-secure h3{font-family:var(--f-disp);font-size:19px;margin:12px 0 8px}
+  .wv-secure p{font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.55)}
+
+  /* earn strip */
+  .wv-earn{display:grid;grid-template-columns:1.45fr 1fr;gap:18px}
+  .wv-pillrow{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+  .wv-pill{display:inline-flex;align-items:center;gap:7px;border:1.5px solid rgba(12,12,15,.16);border-radius:999px;padding:8px 15px;font-size:12.5px;font-weight:800;background:rgba(255,255,255,.5);transition:transform .2s var(--spring),background .2s}
+  .wv-pill:hover{transform:translateY(-3px) scale(1.04);background:#fff}
+
+  /* cta band */
+  .wv-cta{background:linear-gradient(120deg,var(--lime) 0%,#CDF554 60%,#E4FA8E 100%);border-radius:34px;padding:72px 64px;display:flex;align-items:center;justify-content:space-between;gap:40px;position:relative;overflow:hidden}
+  .wv-cta::after{content:'';position:absolute;right:-70px;bottom:-90px;width:320px;height:320px;border-radius:50%;background:rgba(12,12,15,.08)}
+  .wv-cta h2{font-family:var(--f-disp);font-size:clamp(30px,3.4vw,48px);font-weight:700;letter-spacing:-.02em;color:#1A0E3E;line-height:1.05;position:relative}
+  .wv-cta p{margin-top:12px;font-size:13.5px;font-weight:800;letter-spacing:.04em;color:rgba(12,12,15,.55);position:relative}
+  .wv-cta .wv-btn{position:relative;z-index:2}
+
+  /* footer */
+  .wv-footer{background:linear-gradient(180deg,#1A0E3E,#120830);color:#fff;padding:64px 0 34px;margin-top:96px}
+  .wv-footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px}
+  .wv-footer h4{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:16px}
+  .wv-flink{display:block;background:none;border:none;color:rgba(255,255,255,.72);font-size:13.5px;font-weight:600;padding:5px 0;cursor:pointer;transition:color .2s,transform .2s;text-align:left}
+  .wv-flink:hover{color:var(--lime);transform:translateX(3px)}
+  .wv-copy{border-top:1px solid rgba(255,255,255,.08);margin-top:48px;padding-top:24px;display:flex;justify-content:space-between;gap:20px;font-size:12px;color:rgba(255,255,255,.35)}
+
+  /* scroll reveals */
+  .wv-rev{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s var(--ease)}
+  .wv-rev.wv-in{opacity:1;transform:none}
+
+  /* ── landing ambient: colorful gift-themed living background ── */
+  .wv-ambient{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .wv-blob{position:absolute;border-radius:50%;filter:blur(64px);opacity:.5;mix-blend-mode:multiply}
+  .wv-blob.b1{width:540px;height:540px;top:-130px;right:-90px;background:radial-gradient(circle,#d9f76a,transparent 70%)}
+  .wv-blob.b2{width:460px;height:460px;top:32%;left:-130px;background:radial-gradient(circle,#c9b8ff,transparent 70%);opacity:.38}
+  .wv-blob.b3{width:500px;height:500px;bottom:-150px;right:7%;background:radial-gradient(circle,#ffc4ad,transparent 70%);opacity:.4}
+  .wv-blob.b4{width:400px;height:400px;bottom:5%;left:16%;background:radial-gradient(circle,#a9e6ff,transparent 70%);opacity:.4}
+  .wv-hero,.wv-sec,.wv-ticker,.wv-footer{position:relative;z-index:1}
+
+  /* ── about section ── */
+  .wv-about{display:grid;grid-template-columns:1.05fr .95fr;gap:54px;align-items:center}
+  .wv-about-lead p{font-size:16px;line-height:1.7;color:var(--ink-2);margin-top:18px;max-width:480px}
+  .wv-values{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}
+  .wv-val{display:flex;gap:13px}
+  .wv-val .wv-bico{width:40px;height:40px;border-radius:12px;margin-bottom:0;flex:none}
+  .wv-val h4{font-family:var(--f-disp);font-size:15px;font-weight:700;margin-bottom:3px}
+  .wv-val p{font-size:12.5px;line-height:1.5;color:var(--ink-3)}
+  .wv-about-side{display:flex;flex-direction:column;gap:16px}
+  .wv-quote{background:linear-gradient(135deg,#2D1B69,#3B2080);color:#fff;border-radius:26px;padding:34px;position:relative;overflow:hidden}
+  .wv-quote::after{content:'\201C';position:absolute;right:18px;top:-30px;font-family:var(--f-disp);font-size:170px;color:rgba(197,240,50,.16);line-height:1}
+  .wv-quote p{font-family:var(--f-disp);font-size:21px;line-height:1.4;font-weight:600;letter-spacing:-.01em;position:relative}
+  .wv-quote span{display:block;margin-top:16px;font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--lime);position:relative}
+  .wv-ministats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .wv-ministat{background:linear-gradient(135deg,var(--lime),#D7F76A);border-radius:18px;padding:18px 14px;text-align:center;color:#1A0E3E}
+  .wv-ministat b{display:block;font-family:var(--f-disp);font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .wv-ministat span{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+
+  /* ── theme switcher (sidebar) ── */
+  .wv-theme{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 10px 12px}
+  .wv-theme-lbl{font-size:11px;font-weight:800;letter-spacing:.12em;color:rgba(255,255,255,.45);display:flex;align-items:center;gap:7px}
+  .wv-theme-lbl svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .wv-ttrack{width:48px;height:26px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);position:relative;cursor:pointer;flex:none;transition:background .25s}
+  .wv-tknob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--lime);display:grid;place-items:center;transition:left .28s var(--spring);color:#1A0E3E}
+  .wv-tknob svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .wv-theme.dark .wv-ttrack{background:rgba(197,240,50,.2)}
+  .wv-theme.dark .wv-tknob{left:24px}
+
+  /* ═══ MAX UI EFFECTS ═══ */
+
+  /* noise texture overlay on landing */
+  #wvLanding::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:128px 128px}
+
+  /* animated gradient border on bento cards */
+  .wv-bcard{position:relative;isolation:isolate}
+  .wv-bcard::before{content:'';position:absolute;inset:-2px;border-radius:24px;z-index:-1;opacity:0;transition:opacity .4s;
+    background:conic-gradient(from var(--wv-angle,0deg),var(--lime),#8B5CF6,#FF6B9D,#38BDF8,var(--lime));
+    animation:wvSpinBorder 4s linear infinite}
+  .wv-bcard:hover::before{opacity:1}
+  @property --wv-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+  @keyframes wvSpinBorder{to{--wv-angle:360deg}}
+
+  /* 3D tilt on bento cards */
+  .wv-bento{perspective:1200px}
+  .wv-bcard{transform-style:preserve-3d;transition:transform .35s var(--ease),box-shadow .35s}
+  .wv-bcard:hover{transform:translateY(-6px) rotateX(2deg) rotateY(-2deg);box-shadow:0 30px 60px -20px rgba(45,27,105,.25)}
+
+  /* glass morphism on white cards */
+  .wv-bcard:not(.ink):not(.lime){background:rgba(255,255,255,.72);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border-color:rgba(255,255,255,.5)}
+
+
+
+  /* magnetic button glow */
+  .wv-btn-ink{position:relative;overflow:hidden}
+  .wv-btn-ink::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:rgba(197,240,50,.25);transform:translate(-50%,-50%);transition:width .5s,height .5s}
+  .wv-btn-ink:hover::after{width:300px;height:300px}
+
+  /* gift card hover glow */
+  .wv-gcard{position:relative;overflow:hidden}
+  .wv-gcard::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 120%,rgba(139,92,246,.12),transparent 70%);opacity:0;transition:opacity .3s}
+  .wv-gcard:hover::after{opacity:1}
+
+  /* nav link underline glow */
+  .wv-link::after{background:linear-gradient(90deg,var(--lime-deep),#8B5CF6);box-shadow:0 0 8px rgba(139,92,246,.4)}
+
+  /* stat counter animation */
+  .wv-stat b{transition:transform .3s var(--spring)}
+  .wv-stat:hover b{transform:scale(1.08)}
+
+  /* smooth scroll for landing */
+  #wvLanding{scroll-behavior:smooth}
+
+  /* section reveal stagger */
+  .wv-rev:nth-child(2){transition-delay:.08s}
+  .wv-rev:nth-child(3){transition-delay:.16s}
+  .wv-rev:nth-child(4){transition-delay:.24s}
+  .wv-rev:nth-child(5){transition-delay:.32s}
+
+  /* secure slab inner glow */
+  .wv-secure::after{content:'';position:absolute;bottom:-80px;left:-60px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.2),transparent 65%);pointer-events:none}
+
+  /* CTA band purple accent */
+  .wv-cta::after{background:rgba(45,27,105,.1)}
+  .wv-cta p{color:rgba(26,14,62,.55)}
+
+  /* footer link hover purple */
+  .wv-flink:hover{color:#C4B5FD}
+
+  /* sidebar active glow */
+  .wv-snav.active{box-shadow:0 0 20px -4px rgba(197,240,50,.2)}
+
+  /* chain row hover */
+  .wv-chainrow{transition:background .2s,padding-left .2s}
+  .wv-chainrow:hover{background:rgba(255,255,255,.04);padding-left:6px}
+}
 </style>
 </head>
 <body>
+
+<!-- ══════════════ WEB VERSION · LANDING (desktop only, hidden on phones) ══════════════ -->
+<div id="wvLanding">
+  <!-- colorful gift-themed living background -->
+  <div class="wv-ambient" aria-hidden="true">
+    <span class="wv-blob b1"></span><span class="wv-blob b2"></span><span class="wv-blob b3"></span><span class="wv-blob b4"></span>
+  </div>
+  <!-- nav -->
+  <header class="wv-nav">
+    <div class="wv-nav-in">
+      <span class="wv-brand"><img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1785617574/cropped_circle_image__21_-removebg-preview_kmbpwx.png" alt="Archon"/>ARCHON</span>
+      <nav class="wv-links">
+        <button class="wv-link" onclick="wvGoSection('wvFeatures')">Features</button>
+        <button class="wv-link" onclick="wvGoSection('wvGifts')">Gifts</button>
+        <button class="wv-link" onclick="wvGoSection('wvSecurity')">Security</button>
+        <button class="wv-link" onclick="wvGoSection('wvEarn')">Earn</button>
+        <button class="wv-link" onclick="wvGoSection('wvAbout')">About</button>
+      </nav>
+      <button class="wv-btn wv-btn-ink wv-btn-sm" onclick="wvEnterApp()">Launch app <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+  </header>
+
+  <!-- hero · raw artwork full-bleed, copy blended on top -->
+  <section class="wv-hero">
+    <div class="wv-wrap wv-hero-grid">
+      <div class="wv-hero-copy wv-rev">
+        <h1 class="wv-h1">
+          <span class="wv-line"><span class="wv-line-in">Your crypto.</span></span>
+          <span class="wv-line"><span class="wv-line-in">Your rules.</span></span>
+          <span class="wv-line"><span class="wv-line-in"><span class="hl">Zero</span> stress.</span></span>
+        </h1>
+        <p class="wv-hero-sub">Store, send and receive cryptocurrency with confidence — self-custodial, private, and entirely yours.</p>
+        <div class="wv-cta-row">
+          <button class="wv-btn-lime" onclick="wvEnterApp()">Get Started <svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ticker -->
+  <div class="wv-ticker"><div class="wv-ticker-track">
+    <span class="wv-tick">GIFTS SENT <b class="num">12,400+</b></span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">CLAIM TIME <b class="num">&lt; 60s</b></span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">100% SELF-CUSTODIAL</span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">10 GIFT PACKS</span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">ZERO SERVERS <span class="up">●</span> ZERO MIDDLEMEN</span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">GIFTS SENT <b class="num">12,400+</b></span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">CLAIM TIME <b class="num">&lt; 60s</b></span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">100% SELF-CUSTODIAL</span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">10 GIFT PACKS</span><span class="wv-tick dim">◆</span>
+    <span class="wv-tick">ZERO SERVERS <span class="up">●</span> ZERO MIDDLEMEN</span><span class="wv-tick dim">◆</span>
+  </div></div>
+
+  <!-- features bento -->
+  <section class="wv-sec" id="wvFeatures">
+    <svg class="wv-fshape" style="top:12px;right:5%;width:132px" viewBox="0 0 140 110" aria-hidden="true"><rect x="6" y="10" width="118" height="92" rx="14" fill="#fff" stroke="#15151a" stroke-width="2.5"/><rect x="22" y="62" width="14" height="26" rx="3" fill="#C9B8FF"/><rect x="44" y="48" width="14" height="40" rx="3" fill="#8B5CF6"/><rect x="66" y="56" width="14" height="32" rx="3" fill="#C9B8FF"/><rect x="88" y="38" width="14" height="50" rx="3" fill="#8B5CF6"/><path d="M20 52 L46 34 L70 42 L104 20" stroke="#C5F032" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="112" cy="18" r="12" fill="#8B5CF6" stroke="#15151a" stroke-width="2.5"/><path d="M112 12v12M106 18h12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <svg class="wv-fshape fs-2" style="bottom:16px;left:4%;width:88px" viewBox="0 0 90 74" aria-hidden="true"><ellipse cx="34" cy="56" rx="26" ry="12" fill="#8B5CF6" stroke="#15151a" stroke-width="2.5"/><ellipse cx="34" cy="48" rx="26" ry="12" fill="#C9B8FF" stroke="#15151a" stroke-width="2.5"/><ellipse cx="34" cy="40" rx="26" ry="12" fill="#fff" stroke="#15151a" stroke-width="2.5"/><circle cx="66" cy="26" r="18" fill="#C5F032" stroke="#15151a" stroke-width="2.5"/><path d="M66 18l2.4 5.4 5.6.6-4.2 3.8 1.2 5.6-5-2.9-5 2.9 1.2-5.6-4.2-3.8 5.6-.6z" fill="#15151a"/></svg>
+    <div class="wv-wrap">
+      <div class="wv-sec-head wv-rev">
+        <div><div class="wv-kicker">The vault</div><h2 class="wv-h2">One wallet.<br>Every move covered.</h2></div>
+        <p class="wv-sec-sub">Send, receive, swap and track live prices across two testnets — with zero custody risk.</p>
+      </div>
+      <div class="wv-bento">
+        <div class="wv-bcard tall ink wv-rev">
+          <div class="wv-bico"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/><circle cx="12" cy="12" r="9"/></svg></div>
+          <h3>One vault, every asset</h3>
+          <p>Everything lives in a single portfolio view with real market data.</p>
+          <div class="wv-chainrow"><b>Send &amp; receive</b><span>instant · signed locally</span><span class="num">⚡</span></div>
+          <div class="wv-chainrow"><b>Gift packs</b><span>10 signature boxes</span><span class="num">🎁</span></div>
+          <div class="wv-chainrow"><b>Live prices</b><span>sparklines · 24h moves</span><span class="num">📈</span></div>
+        </div>
+        <div class="wv-bcard wv-rev">
+          <div class="wv-bico"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+          <h3>Instant sends</h3>
+          <p>Sign locally, broadcast straight to the chain. No middlemen, no waiting rooms.</p>
+        </div>
+        <div class="wv-bcard lime wv-rev">
+          <div class="wv-bico"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></div>
+          <h3>One-tap swap</h3>
+          <p>Flip assets inside the vault with a live rate preview before you commit.</p>
+        </div>
+        <div class="wv-bcard wv-rev">
+          <div class="wv-bico"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/></svg></div>
+          <h3>Live prices</h3>
+          <p>Sparklines and 24h moves for every token you hold. Honest tracking, no smoke.</p>
+        </div>
+        <div class="wv-bcard wide wv-rev">
+          <div class="wv-bico"><svg width="22" height="22" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div>
+          <h3>Full activity history</h3>
+          <p>Every send, receive, gift and claim — logged, searchable and exportable from your account page.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- gifts -->
+  <section class="wv-sec" id="wvGifts" style="padding-top:20px">
+    <svg class="wv-fshape fs-3" style="top:10px;left:44%;width:40px" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l4 12 12 4-12 4-4 12-4-12-12-4 12-4z" fill="#8B5CF6"/></svg>
+    <svg class="wv-fshape" style="bottom:14px;right:4%;width:112px" viewBox="0 0 120 84" aria-hidden="true"><g transform="rotate(-8 60 42)"><rect x="10" y="18" width="100" height="56" rx="10" fill="#8B5CF6" stroke="#15151a" stroke-width="2.5"/><rect x="22" y="34" width="24" height="16" rx="3" fill="#C5F032" stroke="#15151a" stroke-width="2"/><path d="M22 58h44" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/></g></svg>
+    <div class="wv-wrap">
+      <div class="wv-sec-head wv-rev">
+        <div><div class="wv-kicker">On-chain gifting</div><h2 class="wv-h2">Ten ways to wrap crypto in a moment.</h2></div>
+        <p class="wv-sec-sub">Fund a vault, seal it with a code, send the code. Anyone claims it — even wallet-less.</p>
+      </div>
+      <div class="wv-gifts-row wv-rev">
+        <div class="wv-gcard"><span class="wv-gemoji">🧧</span><b>Secret Gift</b><span>code-sealed vault</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">⏳</span><b>Time-Lock</b><span>claims at your hour</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">🏛️</span><b>DAO Treasury</b><span>split by %</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">🎨</span><b>Personal</b><span>custom image</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">🎂</span><b>Birthday Drop</b><span>party mode</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">❤️</span><b>Love Note</b><span>message inside</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">🧑‍🤝‍🧑</span><b>Bro Pack</b><span>squad split</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">🎉</span><b>Red Packet</b><span>lucky amounts</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">🎓</span><b>Graduation</b><span>cap &amp; coins</span></div>
+        <div class="wv-gcard"><span class="wv-gemoji">🏆</span><b>Reward</b><span>pay it forward</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- security -->
+  <section class="wv-sec" id="wvSecurity" style="padding-top:20px">
+    <div class="wv-wrap">
+      <div class="wv-secure wv-rev">
+        <svg class="wv-fshape" style="right:56px;top:52px;width:160px;opacity:.95" viewBox="0 0 140 150" aria-hidden="true"><path d="M70 8l52 20v38c0 34-22 62-52 76-30-14-52-42-52-76V28z" fill="rgba(197,240,50,.12)" stroke="#C5F032" stroke-width="3"/><rect x="50" y="66" width="40" height="34" rx="8" fill="#C5F032"/><path d="M58 66v-10a12 12 0 0124 0v10" fill="none" stroke="#C5F032" stroke-width="6"/><circle cx="70" cy="82" r="5" fill="#1A0E3E"/></svg>
+        <div class="wv-kicker" style="color:var(--lime)">Security</div>
+        <h2 class="wv-h2">Lose your phone,<br>never your funds.</h2>
+        <div class="wv-secure-grid">
+          <div><div class="wv-snum">01</div><h3>Keys stay local</h3><p>Your vault is generated and encrypted on your device. No servers, no middlemen — your crypto is actually yours.</p></div>
+          <div><div class="wv-snum">02</div><h3>12-word recovery</h3><p>One phrase restores everything anywhere, in under a minute. Write it down, sleep easy.</p></div>
+          <div><div class="wv-snum">03</div><h3>Device lock</h3><p>PIN-gate the app itself so a borrowed phone stays a borrowed phone.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- earn -->
+  <section class="wv-sec" id="wvEarn" style="padding-top:20px">
+    <svg class="wv-fshape fs-2" style="top:14px;right:5%;width:84px" viewBox="0 0 90 74" aria-hidden="true"><ellipse cx="34" cy="56" rx="26" ry="12" fill="#8B5CF6" stroke="#15151a" stroke-width="2.5"/><ellipse cx="34" cy="48" rx="26" ry="12" fill="#C9B8FF" stroke="#15151a" stroke-width="2.5"/><ellipse cx="34" cy="40" rx="26" ry="12" fill="#fff" stroke="#15151a" stroke-width="2.5"/><circle cx="66" cy="26" r="18" fill="#C5F032" stroke="#15151a" stroke-width="2.5"/><path d="M66 18l2.4 5.4 5.6.6-4.2 3.8 1.2 5.6-5-2.9-5 2.9 1.2-5.6-4.2-3.8 5.6-.6z" fill="#15151a"/></svg>
+    <svg class="wv-fshape fs-3" style="bottom:18px;left:4%;width:36px" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l4 12 12 4-12 4-4 12-4-12-12-4 12-4z" fill="#C5F032"/></svg>
+    <div class="wv-wrap">
+      <div class="wv-sec-head wv-rev">
+        <div><div class="wv-kicker">Earn</div><h2 class="wv-h2">Play, learn, farm points.</h2></div>
+        <p class="wv-sec-sub">Archon Points are farmed in-app and spent on real Web3 courses in the Academy.</p>
+      </div>
+      <div class="wv-earn">
+        <div class="wv-bcard wv-rev">
+          <div class="wv-bico"><svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h3>Games that actually pay</h3>
+          <p>Coin Catch, Lucky Spin, Number Rush and more — every round mines real points into your balance.</p>
+          <div class="wv-pillrow">
+            <span class="wv-pill">🪙 Coin Catch</span><span class="wv-pill">🎡 Lucky Spin</span><span class="wv-pill">⛏️ Tap Miner</span><span class="wv-pill">🔢 Number Rush</span><span class="wv-pill">🃏 Memory</span><span class="wv-pill">🎯 Daily Tasks</span>
+          </div>
+        </div>
+        <div class="wv-bcard ink wv-rev">
+          <div class="wv-bico"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 012-2h13v16H6a2 2 0 00-2 2zM8 7h8M8 11h6"/></svg></div>
+          <h3>Archon Academy</h3>
+          <p>Real Web3 courses, built by builders. Pay with the points you farm — learn for free.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- about -->
+  <section class="wv-sec" id="wvAbout" style="padding-top:20px">
+    <div class="wv-wrap">
+      <div class="wv-about">
+        <div class="wv-about-lead wv-rev">
+          <div class="wv-kicker">About Archon</div>
+          <h2 class="wv-h2">Crypto that feels<br>human again.</h2>
+          <p>Archon started with a simple frustration: sending crypto to a friend felt like filing a tax return. We wanted gifting to feel like gifting — a code, a moment, a smile. So we built a self-custodial vault where money moves like a present, not a wire transfer.</p>
+          <div class="wv-values">
+            <div class="wv-val"><div class="wv-bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2-6.3-4.6L5.7 21 8 13.8 2 9.4h7.6z"/></svg></div><div><h4>Self-custodial</h4><p>Your keys, your device, your rules. Always.</p></div></div>
+            <div class="wv-val"><div class="wv-bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 000-7.8z"/></svg></div><div><h4>Made for people</h4><p>Gifts, notes, drops — money with meaning.</p></div></div>
+            <div class="wv-val"><div class="wv-bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></div><div><h4>Open &amp; honest</h4><p>Real prices, real chains, no smoke.</p></div></div>
+            <div class="wv-val"><div class="wv-bico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20a6 6 0 0112 0M14.5 20a5 5 0 017 0"/></svg></div><div><h4>Community-first</h4><p>Learn, earn and build together.</p></div></div>
+          </div>
+        </div>
+        <div class="wv-about-side wv-rev">
+          <div class="wv-quote"><p>We didn't build another wallet. We built a way to make crypto feel like a gift worth giving.</p><span>— THE ARCHON TEAM</span></div>
+          <div class="wv-ministats">
+            <div class="wv-ministat"><b>2026</b><span>Founded</span></div>
+            <div class="wv-ministat"><b>2</b><span>Networks</span></div>
+            <div class="wv-ministat"><b>10</b><span>Gift packs</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- cta -->
+  <section class="wv-sec" style="padding-top:20px">
+    <div class="wv-wrap">
+      <div class="wv-cta wv-rev">
+        <div><h2>Open your vault.<br>Send your first gift.</h2><p>SETUP TAKES UNDER A MINUTE · NO SIGNUP · NO SERVERS</p></div>
+        <button class="wv-btn wv-btn-ink" style="flex:none;padding:18px 34px;font-size:16px" onclick="wvEnterApp()">Get Started Now <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- footer -->
+  <footer class="wv-footer">
+    <div class="wv-wrap">
+      <div class="wv-footer-grid">
+        <div>
+          <span class="wv-brand" style="color:#fff"><img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1785617574/cropped_circle_image__21_-removebg-preview_kmbpwx.png" alt="Archon"/>ARCHON</span>
+          <p style="margin-top:14px;font-size:13px;line-height:1.6;color:rgba(255,255,255,.45);max-width:280px">A self-custodial vault for gifting crypto across networks. Built for the community.</p>
+        </div>
+        <div><h4>Product</h4><button class="wv-flink" onclick="wvGoSection('wvFeatures')">Features</button><button class="wv-flink" onclick="wvGoSection('wvGifts')">Gift packs</button><button class="wv-flink" onclick="wvGoSection('wvEarn')">Earn points</button><button class="wv-flink" onclick="wvEnterApp()">Launch app</button></div>
+        <div><h4>Resources</h4><button class="wv-flink" onclick="wvGoSection('wvSecurity')">Security</button><button class="wv-flink" onclick="wvEnterApp()">Academy</button><button class="wv-flink" onclick="wvEnterApp()">Activity</button></div>
+        <div><h4>Get the app</h4><span class="wv-flink" style="cursor:default">Web app</span><span class="wv-flink" style="cursor:default">Mobile app</span><span class="wv-flink" style="cursor:default">Testnet builds</span></div>
+      </div>
+      <div class="wv-copy"><span>© 2026 Archon. All rights reserved.</span><span>Self-custodial · Open vault · Testnet</span></div>
+    </div>
+  </footer>
+</div>
+
 <div class="scene"><div class="orb a"></div><div class="orb b"></div><div class="grid-dots"></div></div>
 <div class="stage"><div class="shell"><div class="screen">
+
+<!-- ══════════════ WEB VERSION · SIDEBAR (desktop only) ══════════════ -->
+<aside id="wvSidebar">
+  <div class="wv-side-logo" onclick="wvExitToLanding()" title="Back to site" style="cursor:pointer"><img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1785617574/cropped_circle_image__21_-removebg-preview_kmbpwx.png" alt="Archon"/><b>ARCHON</b><span class="wv-side-live"><i></i>LIVE</span></div>
+  <nav class="wv-side-nav">
+    <button class="wv-snav" data-tab="wallet" onclick="switchTabMain('wallet')"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h13v3"/><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2v-6a2 2 0 00-2-2H3"/><circle cx="16.5" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg>Wallet</button>
+    <button class="wv-snav" data-tab="gifts" onclick="switchTabMain('gifts')"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 000-5C13 3 12 8 12 8"/></svg>Gifts</button>
+    <button class="wv-snav" data-tab="games" onclick="switchTabMain('games')"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="12" rx="6"/><path d="M8 11v4M6 13h4M15.5 11.5h.01M18 14h.01"/></svg>Games</button>
+    <button class="wv-snav" data-tab="courses" onclick="switchTabMain('courses')"><svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M8 7h8M8 11h6"/></svg>Academy</button>
+    <button class="wv-snav" data-tab="account" onclick="switchTabMain('account')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5a7.5 7.5 0 0115 0"/></svg>Account</button>
+  </nav>
+  <div class="wv-side-foot">
+    <div class="wv-theme" id="wvThemeRow">
+      <span class="wv-theme-lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>THEME</span>
+      <div class="wv-ttrack" onclick="wvToggleTheme()" data-wv-theme-track><span class="wv-tknob" data-wv-theme-knob></span></div>
+    </div>
+    <div class="wv-side-user" onclick="switchTabMain('account')"><img id="wvSideAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="me"/><div><b id="wvSideName">Archon User</b><span id="wvSideAddr">0x0000…0000</span></div></div>
+  </div>
+</aside>
+
 <div class="island"></div>
 <div id="app">
 
@@ -1160,8 +1767,8 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
   <div class="home-head">
     <div class="greet" style="display:flex;align-items:center;gap:11px">
       <div style="width:48px;height:48px;flex:none;display:grid;place-items:center;position:relative">
-        <span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(166,204,18,.6),rgba(166,204,18,.18) 55%,rgba(166,204,18,0) 75%);filter:blur(3px);animation:auraPulse 3.2s ease-in-out infinite"></span>
-        <img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1785617574/cropped_circle_image__21_-removebg-preview_kmbpwx.png" style="width:44px;height:44px;object-fit:contain;position:relative;filter:drop-shadow(0 4px 10px rgba(166,204,18,.55))" alt="Archon" />
+        <span class="logo-aura" style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(166,204,18,.6),rgba(166,204,18,.18) 55%,rgba(166,204,18,0) 75%);filter:blur(3px);animation:auraPulse 3.2s ease-in-out infinite"></span>
+        <img class="logo-main" src="https://res.cloudinary.com/dguexkgjw/image/upload/v1785617574/cropped_circle_image__21_-removebg-preview_kmbpwx.png" style="width:44px;height:44px;object-fit:contain;position:relative;filter:drop-shadow(0 4px 10px rgba(166,204,18,.55))" alt="Archon" />
       </div>
       <div>
         <div class="g1" style="font-size:16px;letter-spacing:.02em">ARCHON</div>
@@ -1169,6 +1776,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+      <button class="icon-btn press" id="wvThemeBtn" onclick="wvToggleTheme()" title="Toggle theme" data-wv-theme-icon></button>
       <button class="icon-btn press" id="refreshBtn" onclick="doRefresh()" title="Refresh">
         <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
       </button>
@@ -1848,7 +2456,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ══════════════════ WALLET ADDRESS / RECEIVE ══════════════════ -->
 <div class="page" id="page-wallet-address">
-  <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Receive</span></div>
+  <div class="page-header center"><div class="back-btn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Receive</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:4px;display:flex;flex-direction:column;align-items:center;gap:16px">
     <div class="qr-card" style="width:100%">
       <div class="qr-frame"><div id="qrGrid" class="qr-grid"></div><div class="qr-scanline"></div></div>
@@ -1865,7 +2473,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ══════════════════ NETWORKS ══════════════════ -->
 <div class="page" id="page-networks">
-  <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Networks</span></div>
+  <div class="page-header center"><div class="back-btn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Networks</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:4px;display:flex;flex-direction:column;gap:10px">
     <p class="t-small t-muted" style="margin-bottom:4px">Select the active network for your wallet.</p>
     <button class="list-row" onclick="switchChain('bot')">
@@ -1888,7 +2496,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ══════════════════ SECURITY ══════════════════ -->
 <div class="page" id="page-security">
-  <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Security</span></div>
+  <div class="page-header center"><div class="back-btn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Security</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:4px;display:flex;flex-direction:column;gap:12px">
     <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px">
       <span class="lr-ico" style="background:var(--violet-soft);color:#7C3AED"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/><circle cx="12" cy="16" r="1.4"/></svg></span>
@@ -1927,7 +2535,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ══════════════════ SESSIONS ══════════════════ -->
 <div class="page" id="page-sessions">
-  <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Sessions</span></div>
+  <div class="page-header center"><div class="back-btn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Sessions</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:4px">
     <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px">
       <span class="lr-ico" style="background:var(--green-soft);color:#059669"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
@@ -1939,7 +2547,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ══════════════════ DEVICE LOCK ══════════════════ -->
 <div class="page" id="page-device-lock">
-  <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Device Lock</span></div>
+  <div class="page-header center"><div class="back-btn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Device Lock</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:4px">
     <div class="card" style="padding:22px;text-align:center">
       <div style="width:76px;height:76px;border-radius:24px;background:var(--ink);color:var(--lime);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 16px 32px -12px rgba(12,12,15,.4)"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6l7-3z"/><path d="M9 11.5l2.2 2.2L15.5 9"/></svg></div>
@@ -1951,7 +2559,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ══════════════════ ABOUT ══════════════════ -->
 <div class="page" id="page-about">
-  <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">About</span></div>
+  <div class="page-header center"><div class="back-btn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">About</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:16px;display:flex;flex-direction:column;align-items:center;gap:14px">
     <div style="width:88px;height:88px;border-radius:26px;background:var(--ink);color:var(--lime);display:flex;align-items:center;justify-content:center;font-family:var(--f-disp);font-weight:700;font-size:42px;box-shadow:0 20px 40px -12px rgba(12,12,15,.45)">A</div>
     <div class="disp" style="font-size:24px;font-weight:700;letter-spacing:.12em">ARCHON</div>
@@ -1962,7 +2570,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ══════════════════ AIRDROPS ══════════════════ -->
 <div class="page" id="page-airdrop">
-  <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Airdrops</span></div>
+  <div class="page-header center"><div class="back-btn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Airdrops</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:4px;display:flex;flex-direction:column;gap:14px">
     <div class="gift-feat" style="margin:0">
       <div class="gf-kicker">Loyalty points</div>
@@ -2013,7 +2621,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ══════════════════ ACTIVITY / TX HISTORY ══════════════════ -->
 <div class="page" id="page-tx-history">
-  <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Activity</span></div>
+  <div class="page-header center"><div class="back-btn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Activity</span></div>
   <div class="page-scroll"><div class="page-pad" style="padding-top:4px">
     <div id="txHistoryList" style="display:flex;flex-direction:column;gap:8px">
       <div style="text-align:center;padding:40px 0;color:var(--ink-3);font-weight:700;font-size:13px">Loading transactions&hellip;</div>
@@ -2190,9 +2798,9 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== ACCOUNT (ME) ==================== -->
 <div class="page" id="page-account">
-  <div class="topbar"><div class="flex-1"><h1 class="ph">Account</h1><p class="ps">Profile &amp; settings</p></div></div>
+  <div class="topbar"><button class="backbtn press" onclick="switchTabMain('wallet')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="flex-1"><h1 class="ph">Account</h1><p class="ps">Profile &amp; settings</p></div></div>
   <div class="content">
-    <div class="fx-card press" style="display:flex;align-items:center;gap:14px;margin-bottom:14px" onclick="navigateTo('page-edit-profile')">
+    <div class="fx-card press" style="display:flex;align-items:center;gap:14px;margin-bottom:14px" onclick="cxOpenEditProfile()">
       <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;flex:none;background:var(--surface-2)"><img id="cxAcctAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" style="width:100%;height:100%;object-fit:cover;display:block"/></div>
       <div class="flex-1">
         <div class="fx-name" id="cxAcctName">My Wallet</div>
@@ -2209,7 +2817,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
       <div class="fx-srow press" onclick="navigateTo('page-referrals')"><span class="fx-sico" style="background:#ffe3ec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="3.5"/><path d="M3 20a7 7 0 0114 0M19 8v6M22 11h-6"/></svg></span><span class="flex-1">Referrals</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
     <div class="fx-card" style="padding:0;margin-bottom:14px">
-      <div class="fx-srow press" onclick="navigateTo('page-settings-profile')"><span class="fx-sico" style="background:#e6f7f1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5a7.5 7.5 0 0115 0"/></svg></span><span class="flex-1">Profile</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+      <div class="fx-srow press" onclick="cxOpenEditProfile()"><span class="fx-sico" style="background:#e6f7f1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5a7.5 7.5 0 0115 0"/></svg></span><span class="flex-1">Profile</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
       <div class="fx-srow press" onclick="navigateTo('page-settings-appearance')"><span class="fx-sico" style="background:#e8e4fb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 100 18c1.5 0 2.2-1 1.7-2.2-.6-1.4.3-2.8 1.8-2.8H17a4 4 0 004-4c0-5-4-9-9-9z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7.5" r="1.2"/><circle cx="15" cy="7.5" r="1.2"/></svg></span><span class="flex-1">Appearance</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
       <div class="fx-srow press" onclick="navigateTo('page-settings-notifications')"><span class="fx-sico" style="background:#fff3c4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5a6 6 0 0112 0c0 4 1.5 5.5 2.2 6.5H3.8C4.5 15 6 13.5 6 9.5z"/><path d="M10 19.5a2.2 2.2 0 004 0"/></svg></span><span class="flex-1">Notifications</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
       <div class="fx-srow press" onclick="navigateTo('page-settings-currency')"><span class="fx-sico" style="background:#e0f2fe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M14.8 8.8c-.5-.9-1.6-1.4-2.8-1.4-1.7 0-3 .8-3 2.1 0 2.8 6 1.5 6 4.3 0 1.3-1.3 2.1-3 2.1-1.2 0-2.3-.5-2.8-1.4"/></svg></span><span class="flex-1">Currency</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
@@ -2226,7 +2834,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== EDIT PROFILE ==================== -->
 <div class="page" id="page-edit-profile">
-  <div class="topbar"><button class="backbtn press" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Edit profile</h2><div class="flex-1"></div><button class="btn btn-primary" style="padding:10px 16px;font-size:13px" onclick="cxSaveProfile()">Save</button></div>
+  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Edit profile</h2><div class="flex-1"></div><button class="btn btn-primary" style="padding:10px 16px;font-size:13px" onclick="cxSaveProfile()">Save</button></div>
   <div class="content">
     <div class="fx-card">
       <div class="fx-label">Avatar</div>
@@ -2245,6 +2853,8 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
       <input class="inp" id="cxEditName" placeholder="Your name" maxlength="24">
       <div class="fx-label" style="margin-top:14px">Email</div>
       <input class="inp" id="cxEditEmail" type="email" placeholder="you@example.com">
+      <div class="fx-label" style="margin-top:14px">Bio</div>
+      <textarea class="inp" id="cxEditBio" rows="3" maxlength="120" placeholder="Tell the community about yourself…" style="resize:none;line-height:1.5"></textarea>
     </div>
   </div>
 </div>
@@ -2311,7 +2921,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== SETTINGS: PROFILE (fx*) ==================== -->
 <div class="page" id="page-settings-profile">
-  <div class="topbar"><button class="backbtn press" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Profile</h2></div>
+  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Profile</h2></div>
   <div class="content">
     <div class="fx-card" style="margin-bottom:14px">
       <div style="width:96px;height:96px;border-radius:50%;overflow:hidden;margin:0 auto 12px;background:var(--surface-2);position:relative"><img id="fxProfAvatar" src="" style="width:100%;height:100%;object-fit:cover;display:block"/></div>
@@ -2350,7 +2960,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== SETTINGS: APPEARANCE ==================== -->
 <div class="page" id="page-settings-appearance">
-  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-settings-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Appearance</h2></div>
+  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Appearance</h2></div>
   <div class="content">
     <div class="fx-card" style="margin-bottom:14px">
       <div class="fx-label">Theme</div>
@@ -2365,7 +2975,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== SETTINGS: NOTIFICATIONS ==================== -->
 <div class="page" id="page-settings-notifications">
-  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-settings-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Notifications</h2></div>
+  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Notifications</h2></div>
   <div class="content">
     <div class="fx-card" style="padding:0">
       <div id="fxNotifList"></div>
@@ -2375,7 +2985,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== SETTINGS: CURRENCY ==================== -->
 <div class="page" id="page-settings-currency">
-  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-settings-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Currency</h2></div>
+  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Currency</h2></div>
   <div class="content">
     <div class="fx-card" style="margin-bottom:14px;text-align:center">
       <div class="fx-label">Preview</div>
@@ -2389,7 +2999,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== SETTINGS: LANGUAGE ==================== -->
 <div class="page" id="page-settings-language">
-  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-settings-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Language</h2></div>
+  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Language</h2></div>
   <div class="content">
     <div class="fx-card" style="padding:0">
       <div id="fxLangList"></div>
@@ -2399,7 +3009,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 
 <!-- ==================== SETTINGS: EXPORT ==================== -->
 <div class="page" id="page-settings-export">
-  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-settings-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Export data</h2></div>
+  <div class="topbar"><button class="backbtn press" onclick="navigateTo('page-account')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><h2 class="pt">Export data</h2></div>
   <div class="content">
     <div class="fx-card" style="margin-bottom:14px">
       <div class="fx-label">What to export</div>
@@ -2979,6 +3589,7 @@ function showPage(id) {
   if ((id === 'page-create-voucher' || id === 'page-gift-send') && window.WalletEngine && window.WalletEngine.isInitialized()) {
     setTimeout(function() { MultiChain.refreshAll(); }, 200);
   }
+  if (typeof wvSyncSidebar === 'function') wvSyncSidebar();
 }
 window.showPage = showPage;
 
@@ -3021,8 +3632,147 @@ function updateAccountPage() {
   if (an) an.textContent = p.name || 'User';
   if (ae) ae.textContent = p.email || 'No email set';
   if (aa) aa.src = p.avatar || aUrl(p.seed);
+  /* web sidebar user card */
+  var sa = $('wvSideAvatar'); if (sa) sa.src = p.avatar || aUrl(p.seed);
+  var sn = $('wvSideName'); if (sn) sn.textContent = p.name || 'Archon User';
 }
 window.updateAccountPage = updateAccountPage;
+
+/* ══════════════ WEB VERSION CONTROLLER (desktop only) ══════════════ */
+function wvIsDesktop() { return window.matchMedia && window.matchMedia('(min-width: 861px)').matches; }
+window.wvIsDesktop = wvIsDesktop;
+
+function wvEnterApp(silent) {
+  document.body.classList.add('wv-app-on');
+  try { localStorage.setItem('archon_wv_entered', '1'); } catch (e) {}
+  var target = (typeof currentPage !== 'undefined' && currentPage) ? currentPage : 'page-wallet';
+  showPage(target === 'page-splash' ? 'page-wallet' : target);
+  wvSyncSidebar();
+  if (typeof updateAccountPage === 'function') updateAccountPage();
+  if (!silent && typeof cxToast === 'function') cxToast('Welcome to Archon', 'ok');
+}
+window.wvEnterApp = wvEnterApp;
+
+function wvGoSection(id) {
+  var land = document.getElementById('wvLanding');
+  var el = document.getElementById(id);
+  if (land && el) land.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+}
+window.wvGoSection = wvGoSection;
+
+function wvSyncSidebar() {
+  var cur = (typeof currentPage !== 'undefined') ? currentPage : '';
+  var tab = cur.replace('page-', '');
+  var tabs = ['wallet', 'gifts', 'games', 'courses', 'account'];
+  var active = tabs.indexOf(tab) > -1 ? tab : '';
+  document.querySelectorAll('.wv-snav').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.tab === active);
+  });
+  /* address line */
+  var sa = $('wvSideAddr');
+  if (sa) {
+    var addr = '';
+    try { if (window.WalletEngine && window.WalletEngine.isInitialized && window.WalletEngine.isInitialized()) addr = window.WalletEngine.getAddress(); } catch (e) {}
+    sa.textContent = addr ? (addr.slice(0, 6) + '…' + addr.slice(-4)) : '0x0000…0000';
+  }
+  if (typeof wvSyncThemeUI === 'function') wvSyncThemeUI();
+}
+window.wvSyncSidebar = wvSyncSidebar;
+
+/* back to the landing site (logo click) */
+function wvExitToLanding() {
+  if (!wvIsDesktop()) return;
+  document.body.classList.remove('wv-app-on');
+  try { localStorage.removeItem('archon_wv_entered'); } catch (e) {}
+  var land = document.getElementById('wvLanding');
+  if (land) land.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.wvExitToLanding = wvExitToLanding;
+
+/* clean dark / white switcher */
+function wvToggleTheme() {
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (typeof fxSetTheme === 'function') fxSetTheme(dark ? 'light' : 'dark');
+  wvSyncThemeUI();
+}
+window.wvToggleTheme = wvToggleTheme;
+
+function wvSyncThemeUI() {
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var sun = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>';
+  var moon = '<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
+  document.querySelectorAll('.wv-theme').forEach(function(el) { el.classList.toggle('dark', dark); });
+  document.querySelectorAll('[data-wv-theme-knob]').forEach(function(el) { el.innerHTML = dark ? moon : sun; });
+  document.querySelectorAll('[data-wv-theme-icon]').forEach(function(el) { el.innerHTML = dark ? moon : sun; });
+}
+window.wvSyncThemeUI = wvSyncThemeUI;
+
+function wvInitLanding() {
+  /* scroll reveals */
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.wv-rev').forEach(function(el) { el.classList.add('wv-in'); });
+    return;
+  }
+  var land = document.getElementById('wvLanding');
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(en) {
+      if (en.isIntersecting) { en.target.classList.add('wv-in'); io.unobserve(en.target); }
+    });
+  }, { root: land, threshold: 0.12 });
+  document.querySelectorAll('.wv-rev').forEach(function(el) { io.observe(el); });
+
+  /* animated stat counters */
+  var statIO = new IntersectionObserver(function(entries) {
+    entries.forEach(function(en) {
+      if (!en.isIntersecting) return;
+      var el = en.target;
+      var raw = el.getAttribute('data-wv-count');
+      if (!raw) return;
+      var target = parseFloat(raw);
+      var suffix = el.getAttribute('data-wv-suffix') || '';
+      var prefix = el.getAttribute('data-wv-prefix') || '';
+      var dur = 1200, start = performance.now();
+      function tick(now) {
+        var p = Math.min((now - start) / dur, 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        var val = Math.round(target * ease);
+        el.textContent = prefix + val.toLocaleString() + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      statIO.unobserve(el);
+    });
+  }, { root: land, threshold: 0.5 });
+  document.querySelectorAll('[data-wv-count]').forEach(function(el) { statIO.observe(el); });
+
+  /* magnetic buttons */
+  document.querySelectorAll('.wv-btn-ink').forEach(function(btn) {
+    btn.addEventListener('mousemove', function(e) {
+      var r = btn.getBoundingClientRect();
+      var x = e.clientX - r.left - r.width / 2;
+      var y = e.clientY - r.top - r.height / 2;
+      btn.style.transform = 'translate(' + (x * .15) + 'px,' + (y * .15) + 'px)';
+    });
+    btn.addEventListener('mouseleave', function() {
+      btn.style.transform = '';
+    });
+  });
+}
+window.wvInitLanding = wvInitLanding;
+
+(function wvBoot() {
+  wvInitLanding();
+  /* returning desktop users skip the landing */
+  try {
+    if (wvIsDesktop() && localStorage.getItem('archon_wv_entered') === '1') wvEnterApp(true);
+  } catch (e) {}
+  /* keep state coherent when resizing between phone ↔ web */
+  if (window.matchMedia) {
+    window.matchMedia('(min-width: 861px)').addEventListener('change', function(m) {
+      if (m.matches && document.body.classList.contains('wv-app-on')) wvSyncSidebar();
+    });
+  }
+})();
 
 /* ── QR CODE GENERATORS ── */
 function _drawQRGrid(gridId, pattern) {
@@ -4713,14 +5463,28 @@ window.cxSelectAvatar = cxSelectAvatar;
 function cxSaveProfile() {
   var name = ($('cxEditName') || {}).value || '';
   var email = ($('cxEditEmail') || {}).value || '';
+  var bio = ($('cxEditBio') || {}).value || '';
   profile.name = name.trim() || 'User';
   profile.email = email.trim();
+  profile.bio = bio;
   localStorage.setItem('archon_profile', JSON.stringify(profile));
+  localStorage.setItem('fx_bio', bio);
   cxToast('Profile saved!', 'ok');
   updateAccountPage();
-  goBack();
+  cxApplyProfile();
+  if (typeof fxRenderProfile === 'function') fxRenderProfile();
+  navigateTo('page-account');
 }
 window.cxSaveProfile = cxSaveProfile;
+function cxOpenEditProfile() {
+  var av = profile.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
+  var ea = $('cxEditAvatar'); if (ea) ea.src = av;
+  var en = $('cxEditName'); if (en) en.value = profile.name || '';
+  var ee = $('cxEditEmail'); if (ee) ee.value = profile.email || '';
+  var eb = $('cxEditBio'); if (eb) eb.value = profile.bio || localStorage.getItem('fx_bio') || '';
+  navigateTo('page-edit-profile');
+}
+window.cxOpenEditProfile = cxOpenEditProfile;
 function cxUploadPfp(e) {
   var file = e.target.files && e.target.files[0];
   if (!file) return;
@@ -4749,20 +5513,17 @@ window.cxRemovePfp = cxRemovePfp;
 function cxApplyProfile() {
   var av = profile.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
   var nm = profile.name || 'Archon User';
-  var bio = profile.bio || '';
   /* wallet top bar */
   var ha = $('homeAvatar'); if (ha) ha.src = av;
   var gn = $('homeGreetName'); if (gn) gn.textContent = nm.split(' ')[0];
   /* account page */
   var aa = $('cxAcctAvatar'); if (aa) aa.src = av;
   var an = $('cxAcctName'); if (an) an.textContent = nm;
-  /* edit profile page */
+  /* edit profile page — avatar only; inputs are filled when the page opens (no typing fights) */
   var ea = $('cxEditAvatar'); if (ea) ea.src = av;
-  var en = $('cxEditName'); if (en && !en.value) en.value = nm;
-  /* settings profile page */
+  /* settings profile page — avatar + labels only */
   var fa = $('fxProfAvatar'); if (fa) fa.src = av;
-  var fn = $('fxProfName'); if (fn && !fn.value) fn.value = nm;
-  var fb = $('fxProfBio'); if (fb && !fb.value) fb.value = bio;
+  var fe = $('fxProfEmail'); if (fe) fe.textContent = profile.email || 'No email set';
 }
 window.cxApplyProfile = cxApplyProfile;
 /* apply profile on load */
@@ -5962,6 +6723,7 @@ function fxApplyTheme() {
   var id = FX.theme;
   var dark = id === 'dark' || (id === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  if (typeof wvSyncThemeUI === 'function') wvSyncThemeUI();
 }
 window.fxApplyTheme = fxApplyTheme;
 function fxApplyAccent() {
