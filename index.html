@@ -926,6 +926,98 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 .cx-catch-overlay .btn{width:auto}
 .cx-guess-num{font-family:var(--f-disp);font-weight:800;font-size:64px;letter-spacing:-.03em;text-align:center;padding:18px 0}
 
+/* ═══════════════════════════════════════════════════════════
+   CVI — Cleanverse Verified Identity (fintech illustration UI)
+   ═══════════════════════════════════════════════════════════ */
+.cv-card{position:relative;border-radius:20px;padding:18px;margin-bottom:14px;border:1.5px solid var(--line);background:var(--surface);overflow:hidden;animation:cvIn .5s cubic-bezier(.22,1,.36,1) both}
+.cv-card.warn{border-color:rgba(245,158,11,.55);background:linear-gradient(140deg,rgba(245,158,11,.09),var(--surface) 62%)}
+.cv-card.ok{border-color:rgba(132,204,22,.5);background:linear-gradient(140deg,rgba(132,204,22,.10),var(--surface) 62%)}
+[data-theme="dark"] .cv-card.warn{background:linear-gradient(140deg,rgba(245,158,11,.12),var(--surface) 62%)}
+[data-theme="dark"] .cv-card.ok{background:linear-gradient(140deg,rgba(132,204,22,.12),var(--surface) 62%)}
+.cv-deco{position:absolute;right:-14px;top:-16px;width:104px;height:104px;pointer-events:none;opacity:.9}
+.cv-head{display:flex;align-items:center;gap:12px;position:relative}
+.cv-logo{width:40px;height:40px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);padding:6px;flex:none;display:flex;align-items:center;justify-content:center}
+.cv-logo img{width:100%;height:100%;object-fit:contain;display:block}
+.cv-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:800;white-space:nowrap}
+.cv-badge.ok{background:rgba(101,163,13,.16);color:#3f6212}
+.cv-badge.warn{background:rgba(245,158,11,.18);color:#b45309}
+.cv-badge.mute{background:var(--surface-2);color:var(--muted)}
+[data-theme="dark"] .cv-badge.ok{background:rgba(163,230,53,.16);color:#a3e635}
+[data-theme="dark"] .cv-badge.warn{background:rgba(251,191,36,.16);color:#fbbf24}
+.cv-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.cv-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.cv-btn{width:100%;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#A6CC1C,#C5F032);color:#15260f;border:none;border-radius:14px;padding:13px;font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px -8px rgba(132,204,22,.6);transition:transform .18s,box-shadow .18s;position:relative}
+.cv-btn:hover{transform:translateY(-1px);box-shadow:0 12px 24px -8px rgba(132,204,22,.7)}
+.cv-btn:active{transform:scale(.985)}
+.cv-btn.ghost{background:var(--surface-2);color:var(--ink);box-shadow:none;border:1px solid var(--line)}
+.cv-btn.amber{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#451a03;box-shadow:0 8px 20px -8px rgba(245,158,11,.6)}
+.cv-foot{display:flex;align-items:center;gap:6px;margin-top:11px;font-size:10.5px;font-weight:600;color:var(--muted2)}
+.cv-foot img{width:13px;height:13px;object-fit:contain;opacity:.75}
+.cv-shimmer{position:relative;overflow:hidden;background:var(--surface-2)!important;color:transparent!important}
+.cv-shimmer::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:cvShim 1.4s infinite}
+[data-theme="dark"] .cv-shimmer::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
+@keyframes cvShim{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes cvIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.cv-ov{position:fixed;inset:0;z-index:4200;background:rgba(10,12,18,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
+.cv-ov.on{opacity:1;pointer-events:auto}
+@media(min-width:700px){.cv-ov{align-items:center;padding:20px}}
+.cv-sheet{width:min(440px,100%);background:var(--surface);border-radius:26px 26px 0 0;padding:28px 22px calc(26px + env(safe-area-inset-bottom));transform:translateY(46px) scale(.97);transition:transform .38s cubic-bezier(.34,1.4,.64,1);position:relative;overflow:hidden;max-height:90vh;overflow-y:auto;text-align:center}
+@media(min-width:700px){.cv-sheet{border-radius:26px}}
+.cv-ov.on .cv-sheet{transform:none}
+.cv-sheet::before{content:'';position:absolute;left:-40px;right:-40px;top:-70px;height:150px;background:radial-gradient(closest-side,rgba(132,204,22,.22),transparent);pointer-events:none}
+.cv-mlogo{width:74px;height:74px;border-radius:22px;background:var(--surface-2);border:1px solid var(--line);padding:13px;margin:6px auto 14px;position:relative;animation:cvPop .55s cubic-bezier(.34,1.56,.64,1) both}
+.cv-mlogo img{width:100%;height:100%;object-fit:contain}
+.cv-mtitle{font-size:19px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+.cv-msub{font-size:13px;color:var(--muted);line-height:1.55;margin:0 auto 18px;max-width:320px}
+.cv-perks{display:flex;flex-direction:column;gap:9px;margin:0 0 20px;text-align:left}
+.cv-perk{display:flex;align-items:center;gap:11px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:11px 13px;font-size:12.5px;font-weight:700}
+.cv-perk .pk{width:30px;height:30px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px}
+.cv-addrbox{font-family:'Space Mono',monospace;font-size:12px;background:var(--surface-2);border:1px dashed var(--line);border-radius:12px;padding:11px;margin:0 0 16px;word-break:break-all;color:var(--muted)}
+.cv-ring{width:54px;height:54px;border-radius:50%;border:4px solid var(--surface-2);border-top-color:#84cc16;margin:8px auto 16px;animation:cvSpin 1s linear infinite}
+@keyframes cvSpin{to{transform:rotate(360deg)}}
+@keyframes cvPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+.cv-success-ico{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#A6CC1C,#C5F032);display:flex;align-items:center;justify-content:center;margin:8px auto 16px;box-shadow:0 16px 36px -12px rgba(132,204,22,.7);animation:cvPop .6s cubic-bezier(.34,1.56,.64,1) both}
+.cv-spark{position:absolute;width:7px;height:7px;border-radius:50%;pointer-events:none;animation:cvFly 1s ease-out both}
+@keyframes cvFly{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+.cv-x{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+.cv-note{font-size:11px;color:var(--muted2);margin-top:12px;line-height:1.5}
+.cv-stepdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--surface-2);margin:0 3px;transition:all .3s}
+.cv-stepdot.on{background:#84cc16;width:20px;border-radius:99px}
+.cv-frame{position:relative;width:100%;height:100%;border:none;overflow:hidden;background:#fff;margin:0}
+.cv-frame iframe{width:100%;height:100%;border:none;display:block;background:#fff}
+.cv-fload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:linear-gradient(160deg,#f7f8fa,#eef1f5);z-index:1;transition:opacity .35s}
+.cv-fload.off{opacity:0;pointer-events:none}
+.cv-fload .cv-ring{margin:0}
+.cv-fload span{font-size:12px;font-weight:700;color:var(--muted)}
+/* full-screen embed floating controls */
+.cv-fback{position:absolute;top:calc(14px + env(safe-area-inset-top));left:14px;z-index:30;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;cursor:pointer;color:#1c1e24;box-shadow:0 6px 18px -6px rgba(15,23,42,.35);animation:cvPop .5s cubic-bezier(.34,1.56,.64,1) both}
+html[data-theme="dark"] .cv-fback{background:rgba(23,24,28,.92);color:#fff}
+.cv-fwallet{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));z-index:30;display:flex;align-items:center;gap:8px;padding:12px 22px;border-radius:99px;border:none;background:linear-gradient(135deg,#A6CC1C,#C5F032);color:#15260f;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 12px 26px -10px rgba(132,204,22,.75);animation:cvPop .55s cubic-bezier(.34,1.56,.64,1) both;transition:transform .18s}
+.cv-fwallet:active{transform:translateX(-50%) scale(.96)}
+/* verified celebration page */
+.cv-ok-wrap{position:absolute;inset:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 22px calc(24px + env(safe-area-inset-bottom));text-align:center;background:radial-gradient(60% 42% at 50% 0%,rgba(132,204,22,.16),transparent)}
+.cv-ok-wrap .cv-apass-card{width:100%;max-width:420px;margin:14px 0 18px;text-align:left}
+.cv-ok-wrap .cv-btn{width:100%;max-width:420px;margin-top:0}
+/* wallet-page A-Pass mark */
+.cv-mark{display:flex;align-items:center;gap:10px;border-radius:16px;padding:11px 14px;border:1.5px solid var(--line);background:var(--surface);animation:cvIn .5s cubic-bezier(.22,1,.36,1) both;cursor:pointer}
+.cv-mark.ok{border-color:rgba(132,204,22,.55);background:linear-gradient(135deg,rgba(132,204,22,.18),rgba(197,240,50,.08))}
+.cv-mark.warn{border-color:rgba(245,158,11,.55);background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(251,191,36,.06))}
+.cv-mark-ico{width:32px;height:32px;border-radius:10px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;flex:none;box-shadow:0 3px 8px -3px rgba(15,23,42,.2)}
+.cv-mark-ico img{width:23px;height:23px;object-fit:contain;display:block}
+.cv-mark-txt{font-size:12.5px;font-weight:700;flex:1;line-height:1.35}
+.cv-mark-txt small{display:block;font-size:10.5px;font-weight:600;color:var(--muted);margin-top:1px}
+.cv-mark-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:99px;background:rgba(101,163,13,.18);color:#3f6212;white-space:nowrap}
+.cv-mark.warn .cv-mark-badge{background:rgba(245,158,11,.2);color:#b45309}
+/* fail state on verify page */
+.cv-errbox{border-radius:16px;border:1.5px solid rgba(239,68,68,.5);background:linear-gradient(140deg,rgba(239,68,68,.10),var(--surface) 65%);padding:16px;margin:6px 0 14px;text-align:left;animation:cvIn .4s cubic-bezier(.22,1,.36,1) both}
+.cv-errbox .t{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:#dc2626}
+.cv-errbox p{font-size:12px;font-weight:600;color:var(--muted);margin:7px 0 0;line-height:1.55}
+html[data-theme="dark"] .cv-errbox .t{color:#f87171}
+html[data-theme="dark"] .cv-mark-ico{background:#17181c}
+html[data-theme="dark"] .cv-mark-badge{color:#bef264}
+/* verify-page success card */
+.cv-apass-card{border-radius:18px;border:1.5px solid rgba(132,204,22,.5);background:linear-gradient(140deg,rgba(132,204,22,.14),var(--surface) 70%);padding:16px;margin:6px 0 16px;text-align:left;position:relative;overflow:hidden;animation:cvPop .55s cubic-bezier(.34,1.56,.64,1) both}
+
 /* ═══════════════════════════════════════════════════════════════
    WEB VERSION — desktop landing site + widescreen app shell
    ≥861px  → website experience (landing + sidebar app)
@@ -1825,6 +1917,9 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
         <div id="walletCardFullAddr" class="num" style="display:none">Loading…</div>
       </div>
     </div>
+
+    <!-- Cleanverse A-Pass mark — always-on identity badge -->
+    <div id="cvWalletMark" style="padding:12px 20px 0"></div>
 
     <!-- quick actions — Creso SVG icons -->
     <div class="qa-row">
@@ -2799,6 +2894,11 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
   </div>
 </div>
 
+<!-- ==================== CLEANVERSE A-PASS VERIFY (CVI) — full-screen embed ==================== -->
+<div class="page" id="page-cv-verify">
+  <div id="cvvZone" style="position:absolute;inset:0;background:var(--bg)"></div>
+</div>
+
 <!-- ==================== ACCOUNT (ME) ==================== -->
 <div class="page" id="page-account">
   <div class="topbar"><button class="backbtn press" onclick="switchTabMain('wallet')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><div class="flex-1"><h1 class="ph">Account</h1><p class="ps">Profile &amp; settings</p></div></div>
@@ -2811,6 +2911,7 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
       </div>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </div>
+    <div id="cvCardSlot"></div>
     <div class="fx-card" style="padding:0;margin-bottom:14px">
       <div class="fx-srow press" onclick="navigateTo('page-tx-history');renderTxHistory()"><span class="fx-sico" style="background:#e0f2fe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span><span class="flex-1">Activity</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
       <div class="fx-srow press" onclick="navigateTo('page-wallet-address')"><span class="fx-sico" style="background:#eef6d8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M17.5 17.5H21V21h-3.5z"/></svg></span><span class="flex-1">Wallet address &amp; QR</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
@@ -3638,6 +3739,7 @@ function updateAccountPage() {
   /* web sidebar user card */
   var sa = $('wvSideAvatar'); if (sa) sa.src = p.avatar || aUrl(p.seed);
   var sn = $('wvSideName'); if (sn) sn.textContent = p.name || 'Archon User';
+  try { if (window.CV) { window.CV.renderCard(); window.CV.boot(); } } catch (e) {}
 }
 window.updateAccountPage = updateAccountPage;
 
@@ -7994,6 +8096,328 @@ function doRefresh() {
 }
 </script>
 
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   CLEANVERSE CVI · A-Pass identity integration (live sandbox API)
+   Archon × Cleanverse — Trusted Assets Hackathon
+   Flow: card on Account → verify modal → Cleanverse magic-link KYC
+   → live verify_apass + query_apass via local secure proxy (:8898)
+   ═══════════════════════════════════════════════════════════════ */
+(function() {
+  var LOGO = 'https://res.cloudinary.com/dguexkgjw/image/upload/v1785767640/DUVXWP_W_400x400_1_ruab5c.jpg';
+  var MAGIC = 'https://test-magiclink.cleanverse.com/';
+  var PROXY = 'http://localhost:8898/cv';
+  var ATOKEN = '0xaC0893567D43C3E7e6e35a72803df05416C1f20D'; /* aUSDC on Monad (sandbox) */
+  var CHAIN = 'monad';
+  var K_STATE = 'archon_cvi', K_OPENS = 'archon_cv_opens';
+
+  var S = { verified: false, tier: null, status: null, checkedAt: 0, addr: '', booted: false, checking: false, offline: false };
+  try {
+    var sv = JSON.parse(localStorage.getItem(K_STATE) || '{}');
+    if (sv && typeof sv === 'object') { S.verified = !!sv.verified; S.tier = sv.tier != null ? sv.tier : null; S.status = sv.status != null ? sv.status : null; S.checkedAt = sv.checkedAt || 0; S.addr = sv.addr || ''; }
+  } catch (e) {}
+
+  function save() { try { localStorage.setItem(K_STATE, JSON.stringify({ verified: S.verified, tier: S.tier, status: S.status, checkedAt: S.checkedAt, addr: S.addr })); } catch (e) {} }
+
+  function addr() {
+    try { if (window.WalletEngine && WalletEngine.isInitialized()) return WalletEngine.getAddress(); } catch (e) {}
+    try { var w = JSON.parse(localStorage.getItem('archon_wallet_v1') || '{}'); return (w && w.address) || ''; } catch (e) { return ''; }
+  }
+
+  function tierLabel() {
+    var t = String(S.tier || '');
+    if (t === '10') return 'Tier 1';
+    if (t === '20') return 'Tier 2';
+    if (t === '30') return 'Tier 3';
+    return t ? 'Tier ' + t : 'Tier 2';
+  }
+
+  /* ── live sandbox calls through the local proxy (key stays server-side) ── */
+  function api(name, payload, cb) {
+    fetch(PROXY + '/' + name, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function(r) { return r.json(); })
+      .then(function(j) {
+        var env = (j && j.body) ? j.body : null;
+        if (j && j.status === 200 && env && env.code === '0000') cb(null, env.data || {});
+        else cb(new Error((env && env.message) || 'Cleanverse API error'), null);
+      })
+      .catch(function(e) { cb(e, null); });
+  }
+
+  function check(done) {
+    var a = addr();
+    if (!a) { if (done) done(false); return; }
+    S.checking = true; S.offline = false; renderCard();
+    api('verify_apass', { chain: CHAIN, address: a, atoken: ATOKEN }, function(err, d) {
+      S.checking = false;
+      if (err) { S.offline = true; renderCard(); if (done) done(false); return; }
+      S.offline = false;
+      if (d && d.code === 4) {
+        var wasVerified = S.verified;
+        S.verified = true; S.addr = a; S.checkedAt = Date.now();
+        api('query_apass', { chain: CHAIN, address: a }, function(e2, q) {
+          if (!e2 && q) { if (q.tier != null) S.tier = q.tier; if (q.status != null) S.status = q.status; }
+          save(); renderCard();
+          if (!wasVerified && typeof cxToast === 'function') cxToast('Congratulations! Your A-Pass is verified', 'ok');
+          if (done) done(true);
+        });
+      } else {
+        S.verified = false; save(); renderCard(); if (done) done(false);
+      }
+    });
+  }
+
+  /* ── tiny svg bits ── */
+  var IC_SHIELD = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6l7-3z"/><path d="M9.5 12l1.8 1.8 3.4-3.6"/></svg>';
+  var IC_X = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  var IC_ARROW = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  var IC_WALLET = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="3"/><path d="M2.5 10.5h19M16 14.8h2.2"/></svg>';
+  var IC_MAIL = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M3.5 7.5l8.5 6 8.5-6"/></svg>';
+
+  function deco(c) {
+    return '<svg class="cv-deco" viewBox="0 0 100 100" fill="none">' +
+      '<path d="M50 6l34 13v24c0 22-14 40-34 48-20-8-34-26-34-48V19L50 6z" stroke="' + c + '" stroke-opacity=".5" stroke-width="2" fill="' + c + '" fill-opacity=".07"/>' +
+      '<path d="M50 20l22 8.5v15.5c0 14-9 26-22 31-13-5-22-17-22-31V28.5L50 20z" stroke="' + c + '" stroke-opacity=".3" stroke-width="1.5"/>' +
+      '<circle cx="50" cy="47" r="5.5" fill="' + c + '" fill-opacity=".55"/>' +
+      '<path d="M50 26v15M50 52.5v14M33 43l11.5 4M67 43l-11.5 4" stroke="' + c + '" stroke-opacity=".35" stroke-width="1.5"/></svg>';
+  }
+  function head(title, sub, badge) {
+    return '<div class="cv-head">' +
+      '<div class="cv-logo"><img src="' + LOGO + '" alt="Cleanverse"/></div>' +
+      '<div class="flex-1" style="min-width:0">' +
+        '<div style="font-weight:800;font-size:14px;letter-spacing:-.01em">' + title + '</div>' +
+        '<div style="font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px">' + sub + '</div>' +
+      '</div>' + badge + '</div>';
+  }
+  function foot() { return '<div class="cv-foot"><img src="' + LOGO + '" alt=""/> Powered by Cleanverse CVI · sandbox</div>'; }
+  function chip(t) { return '<span class="cv-chip">' + t + '</span>'; }
+  function perk(ico, tint, txt) { return '<div class="cv-perk"><span class="pk" style="background:' + tint + '">' + ico + '</span><span>' + txt + '</span></div>'; }
+  function dots(n) {
+    var h = '<div style="margin:0 0 16px">';
+    for (var i = 1; i <= 3; i++) h += '<span class="cv-stepdot' + (i === n ? ' on' : '') + '"></span>';
+    return h + '</div>';
+  }
+
+  /* ── Account-page card (states: checking / warn / ok / offline) ── */
+  function cardChecking() {
+    return '<div class="cv-card">' + deco('#9aa3b2') +
+      head('Cleanverse A-Pass', 'Checking your identity on-chain…', '<span class="cv-badge mute">Checking</span>') +
+      '<div class="cv-shimmer" style="height:12px;border-radius:8px;margin-top:13px">&nbsp;</div>' +
+      '<div class="cv-shimmer" style="height:38px;border-radius:13px;margin-top:10px">&nbsp;</div>' +
+      foot() + '</div>';
+  }
+  function cardWarn() {
+    return '<div class="cv-card warn">' + deco('#f59e0b') +
+      head('Cleanverse A-Pass', 'Identity verification needed', '<span class="cv-badge warn">Action needed</span>') +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:11px;position:relative">Verify once with Cleanverse KYC to unlock compliant transfers, validator-trusted gifts and the full Cleanverse rail stack on Monad.</div>' +
+      '<button class="cv-btn amber" onclick="cvOpenVerify()">' + IC_SHIELD + 'Verify A-Pass now</button>' +
+      foot() + '</div>';
+  }
+  function cardOk() {
+    return '<div class="cv-card ok">' + deco('#84cc16') +
+      head('Cleanverse A-Pass', 'Compliant identity active', '<span class="cv-badge ok">&#10003; Verified</span>') +
+      '<div class="cv-chips">' + chip(tierLabel()) + chip('Monad') + chip(S.status === 1 ? 'Status · Active' : 'A-Token ready') + '</div>' +
+      foot() + '</div>';
+  }
+  function cardOffline() {
+    return '<div class="cv-card">' + deco('#9aa3b2') +
+      head('Cleanverse A-Pass', 'Cleanverse is unreachable right now', '<span class="cv-badge mute">Offline</span>') +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:11px;position:relative">We could not reach the Cleanverse sandbox. Your status will re-check automatically, or retry now.</div>' +
+      '<button class="cv-btn ghost" onclick="CV.retry()">Retry check</button>' +
+      foot() + '</div>';
+  }
+  /* always-on A-Pass mark on the wallet page */
+  function renderWalletMark() {
+    var slot = document.getElementById('cvWalletMark');
+    if (!slot) return;
+    if (!addr()) { slot.innerHTML = ''; return; }
+    var chev = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted2);flex:none"><path d="M9 6l6 6-6 6"/></svg>';
+    if (S.verified) {
+      slot.innerHTML = '<div class="cv-mark ok press" onclick="cvOpenVerify()">' +
+        '<span class="cv-mark-ico"><img src="' + LOGO + '" alt="Cleanverse"/></span>' +
+        '<span class="cv-mark-txt">A-Pass Verified<small>' + tierLabel() + ' · Cleanverse CVI · Monad</small></span>' +
+        '<span class="cv-mark-badge">&#10003; Compliant</span>' + chev + '</div>';
+    } else if (S.checking || S.offline) {
+      slot.innerHTML = '';
+    } else {
+      slot.innerHTML = '<div class="cv-mark warn press" onclick="cvOpenVerify()">' +
+        '<span class="cv-mark-ico"><img src="' + LOGO + '" alt="Cleanverse"/></span>' +
+        '<span class="cv-mark-txt">A-Pass not verified<small>Verify once to unlock compliant transfers</small></span>' +
+        '<span class="cv-mark-badge">Verify &rarr;</span></div>';
+    }
+  }
+
+  function renderCard() {
+    renderWalletMark();
+    var slot = document.getElementById('cvCardSlot');
+    if (!slot) return;
+    if (!addr()) { slot.innerHTML = ''; return; }
+    var h;
+    if (S.checking) h = cardChecking();
+    else if (S.offline && !S.verified) h = cardOffline();
+    else if (S.verified) h = cardOk();
+    else h = cardWarn();
+    slot.innerHTML = h;
+  }
+
+  /* ── modal system ── */
+  function sheet() {
+    var ov = document.getElementById('cvOv');
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'cvOv'; ov.className = 'cv-ov';
+      ov.innerHTML = '<div class="cv-sheet" id="cvSheet"></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e) { if (e.target === ov) closeOv(); });
+    }
+    return document.getElementById('cvSheet');
+  }
+  function openOv(html) {
+    var sh = sheet();
+    sh.innerHTML = html;
+    requestAnimationFrame(function() { requestAnimationFrame(function() { document.getElementById('cvOv').classList.add('on'); }); });
+  }
+  function closeOv() { var ov = document.getElementById('cvOv'); if (ov) ov.classList.remove('on'); }
+  function xbtn() { return '<div class="cv-x" onclick="cvCloseModal()">' + IC_X + '</div>'; }
+
+  function perkSvg(stroke, d) {
+    return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
+  }
+  var PERKS =
+    perk(perkSvg('#4d7c0f', '<path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6l7-3z"/><path d="M9.5 12l1.8 1.8 3.4-3.6"/>'), '#eef6d8', 'KYC-backed on-chain identity, linked to your wallet in one tap') +
+    perk(perkSvg('#b45309', '<path d="M13 2L4.5 13.5H11L9.5 22 18 10.5h-6.5L13 2z"/>'), '#fff3c4', 'Unlocks compliant aUSDC (A-Token) transfers on Monad') +
+    perk(perkSvg('#0369a1', '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.3 2.3 4.7-4.9"/>'), '#e0f2fe', 'Validator-trusted — CCP checks and Travel Rule ready');
+
+  /* ── dedicated full-screen verify page (page-cv-verify) — just the embedded magic link ── */
+  var _cvFrom = 'page-account';
+  function zone() { return document.getElementById('cvvZone'); }
+  function openVerifyPage() {
+    try { _cvFrom = currentPage || 'page-account'; } catch (e) {}
+    try { navigateTo('page-cv-verify'); } catch (e) { try { showPage('page-cv-verify'); } catch (e2) {} }
+    cvvRender();
+  }
+
+  function cvvRender() {
+    var z = zone(); if (!z) return;
+    if (S.verified) { cvvRenderOk(); return; }
+    /* full-screen embedded Cleanverse magic link — nothing else on the page */
+    z.innerHTML =
+      '<div class="cv-frame">' +
+        '<div class="cv-fload" id="cvFload"><div class="cv-ring"></div><span>Loading Cleanverse…</span></div>' +
+        '<iframe id="cvKycFrame" src="' + MAGIC + '" title="Cleanverse A-Pass KYC" referrerpolicy="no-referrer" allow="camera; clipboard-write"></iframe>' +
+      '</div>' +
+      '<button class="cv-fback press" onclick="cvvBack()" title="Cancel">' +
+        '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>' +
+      '</button>' +
+      '<button class="cv-fwallet press" onclick="cvvToWallet()">' +
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>' +
+        ' Done — go back to wallet' +
+      '</button>';
+    var f = document.getElementById('cvKycFrame');
+    if (f) f.addEventListener('load', function() { var l = document.getElementById('cvFload'); if (l) l.classList.add('off'); });
+  }
+
+  /* leave the embed → run a live sandbox check so the mark/card updates */
+  function cvvBack() {
+    check(); /* silent live re-check; result lands on the mark/card behind */
+    var to = _cvFrom;
+    if (to === 'page-cv-verify' || to === 'page-splash' || !to) to = 'page-account';
+    try { navigateTo(to); } catch (e) { try { showPage(to); } catch (e2) {} }
+  }
+  function cvvToWallet() {
+    check();
+    try { navigateTo('page-wallet'); } catch (e) { try { showPage('page-wallet'); } catch (e2) {} }
+  }
+
+  /* verified — congratulations + clean A-Pass card */
+  function cvvRenderOk() {
+    var z = zone(); if (!z) return;
+    z.innerHTML =
+      '<div class="cv-ok-wrap" id="cvOkWrap">' +
+        '<div class="cv-success-ico"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#15260f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>' +
+        '<h3 class="cv-mtitle">Congratulations!</h3>' +
+        '<p class="cv-msub">Your A-Pass is verified on Cleanverse. Compliant transfers, validator-trusted gifts and Cleanverse rails are unlocked in Archon.</p>' +
+        '<div class="cv-apass-card">' + deco('#84cc16') +
+          head('My A-Pass', 'Cleanverse identity · Monad', '<span class="cv-badge ok">&#10003; Verified</span>') +
+          '<div class="cv-chips">' + chip(tierLabel()) + chip('Monad') + chip(S.status === 1 ? 'Status · Active' : 'A-Token ready') + '</div>' +
+        '</div>' +
+        '<button class="cv-btn" onclick="cvvToWallet()">Go back to wallet</button>' +
+      '</div>';
+    var w = document.getElementById('cvOkWrap');
+    if (w) sparkleBurst(w);
+  }
+
+  function sparkleBurst(root) {
+    var sh = root || document.getElementById('cvSheet');
+    if (!sh) return;
+    var colors = ['#C5F032', '#84cc16', '#fbbf24', '#34d399', '#a3e635'];
+    for (var i = 0; i < 16; i++) {
+      var s = document.createElement('span');
+      s.className = 'cv-spark';
+      var ang = (Math.PI * 2 * i) / 16, dist = 90 + Math.random() * 110;
+      s.style.left = '50%'; s.style.top = '120px';
+      s.style.background = colors[i % colors.length];
+      s.style.setProperty('--dx', (Math.cos(ang) * dist) + 'px');
+      s.style.setProperty('--dy', (Math.sin(ang) * dist) + 'px');
+      s.style.animationDelay = (Math.random() * 0.12) + 's';
+      sh.appendChild(s);
+      (function(el) { setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 1400); })(s);
+    }
+  }
+
+  /* ── announcement popup — every 5th app open (+ first) while unverified ── */
+  function bumpOpens() {
+    var n = 0;
+    try { n = parseInt(localStorage.getItem(K_OPENS) || '0', 10) || 0; } catch (e) {}
+    n += 1;
+    try { localStorage.setItem(K_OPENS, String(n)); } catch (e) {}
+    return n;
+  }
+  function announce() {
+    var ov = document.getElementById('cvOv');
+    if (ov && ov.classList.contains('on')) return;
+    openOv(xbtn() +
+      '<div class="cv-mlogo"><img src="' + LOGO + '" alt="Cleanverse"/></div>' +
+      '<span class="cv-badge warn" style="margin:0 auto 12px;display:flex;width:max-content">ANNOUNCEMENT</span>' +
+      '<h3 class="cv-mtitle">Cleanverse compliance is now inside Archon</h3>' +
+      '<p class="cv-msub">Archon is powered by Cleanverse CVI. Verify your A-Pass once to unlock trusted, compliant transfers across Monad — judges and rails approved.</p>' +
+      '<div class="cv-perks">' + PERKS + '</div>' +
+      '<button class="cv-btn" onclick="cvAnnounceGo()">' + IC_SHIELD + ' Verify my A-Pass</button>' +
+      '<button class="cv-btn ghost" onclick="cvCloseModal()">Remind me later</button>' +
+      '<div class="cv-note">You will only see this again every 5 opens until you verify.</div>');
+  }
+  function maybeAnnounce(n) {
+    if (S.verified) return;
+    if (n === 1 || n % 5 === 0) setTimeout(announce, 1400);
+  }
+
+  /* ── lifecycle ── */
+  function boot() {
+    if (S.booted) return;
+    S.booted = true;
+    var n = bumpOpens();
+    renderCard();
+    setTimeout(function() { check(); }, 1200); /* silent live re-check */
+    maybeAnnounce(n);
+  }
+
+  /* ── global hooks (onclick handlers) ── */
+  window.cvOpenVerify = openVerifyPage;
+  window.cvCloseModal = closeOv;
+  window.cvvBack = cvvBack;
+  window.cvvToWallet = cvvToWallet;
+  window.cvAnnounceGo = function() { closeOv(); setTimeout(openVerifyPage, 280); };
+
+  window.CV = {
+    boot: boot,
+    renderCard: renderCard,
+    retry: function() { check(); },
+    openVerify: openVerifyPage,
+    announce: announce,
+    state: function() { return { verified: S.verified, tier: S.tier, status: S.status, offline: S.offline }; }
+  };
+})();
+</script>
+
 <script src="wallet-engine.js?v=17"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════
@@ -8020,6 +8444,7 @@ function doRefresh() {
   if (typeof gvRenderGiftGrid === 'function') gvRenderGiftGrid();
           updatePinToggleUI();
           if (typeof fetchLivePrices === 'function') fetchLivePrices();
+          try { if (window.CV) window.CV.boot(); } catch (e) {}
         }, 300);
         return;
       }
