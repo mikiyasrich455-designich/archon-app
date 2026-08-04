@@ -11,10 +11,10 @@ var MON_EXPLORER = 'https://testnet.monadexplorer.com';
 var MON_CURRENCY = 'MON';
 var NETWORKS = {
   BOT: {
-    chainId: 968,
-    chainIdHex: '0x3C8',
-    rpc: 'https://rpc.bohr.life',
-    explorer: 'https://scan.bohr.life/',
+    chainId: 677,
+    chainIdHex: '0x2a5',
+    rpc: 'https://rpc.botchain.ai',
+    explorer: 'https://scan.botchain.ai',
     symbol: 'BOT',
     name: 'Botchain'
   },
@@ -38,7 +38,7 @@ var WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
 var WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';
 var MON_PRICE_USD = 0.021;
 var ethBalances = {ETH:0, USDT:0, WETH:0, WBTC:0};
-var SBT_ADDRESS = '0x740e1ce98364EfF4d5e3d89b2b1fa513e0F75b16';
+var SBT_ADDRESS = '0x29F624c97FF1623697592EEe5c63Eb657A2DC9F3';
 var SBT_ABI = [
   'function mintSoulboundGift(address _recipient, string _tokenURI, string _message) payable returns (uint256)',
   'function convertToBot(uint256 _tokenId)',

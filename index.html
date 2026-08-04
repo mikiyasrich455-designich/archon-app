@@ -2,6 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+/* If the app was opened by double-clicking (file://), the embedded Cleanverse
+   magic link cannot keep its session (third-party cookie blocking) and the KYC
+   flow resets after the email code. When the local dev server is running, hop
+   onto it automatically so verification works end-to-end. */
+(function () {
+  if (location.protocol !== 'file:') return;
+  var target = 'http://127.0.0.1:8899/';
+  try {
+    var ctl = new AbortController();
+    var t = setTimeout(function () { ctl.abort(); }, 2000);
+    fetch(target, { cache: 'no-store', signal: ctl.signal }).then(function (r) {
+      clearTimeout(t);
+      if (r.ok) location.replace(target);
+    }).catch(function () { clearTimeout(t); });
+  } catch (e) {}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Archon</title>
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dguexkgjw/image/upload/v1785617574/cropped_circle_image__21_-removebg-preview_kmbpwx.png">
@@ -983,19 +1001,122 @@ textarea.standalone:focus{border-color:var(--lime-deep);box-shadow:0 0 0 4px rgb
 .cv-note{font-size:11px;color:var(--muted2);margin-top:12px;line-height:1.5}
 .cv-stepdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--surface-2);margin:0 3px;transition:all .3s}
 .cv-stepdot.on{background:#84cc16;width:20px;border-radius:99px}
-.cv-frame{position:relative;width:100%;height:100%;border:none;overflow:hidden;background:#fff;margin:0}
+.cv-frame{position:relative;flex:1;min-height:0;width:100%;border:none;overflow:hidden;background:#fff;margin:0}
 .cv-frame iframe{width:100%;height:100%;border:none;display:block;background:#fff}
 .cv-fload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:linear-gradient(160deg,#f7f8fa,#eef1f5);z-index:1;transition:opacity .35s}
 .cv-fload.off{opacity:0;pointer-events:none}
 .cv-fload .cv-ring{margin:0}
 .cv-fload span{font-size:12px;font-weight:700;color:var(--muted)}
+/* in-app browser chrome */
+.cv-topback{position:absolute;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));pointer-events:none}
+.cv-topback-btn{pointer-events:auto;display:flex;align-items:center;gap:7px;padding:9px 16px 9px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px -10px rgba(15,23,42,.35);transition:transform .18s,background .18s;animation:cvIn .4s cubic-bezier(.22,1,.36,1) both}
+.cv-topback-btn:active{transform:scale(.94)}
+.cv-zone-browser{display:flex;flex-direction:column;height:100%;animation:cvIn .35s cubic-bezier(.22,1,.36,1) both}
+.cv-bchrome{display:flex;align-items:center;gap:8px;padding:6px 12px 8px;background:var(--surface);border-bottom:1px solid var(--line);flex:none}
+.cv-bnav{width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;cursor:pointer;color:var(--text);flex:none;transition:transform .15s,background .15s}
+.cv-bnav:active{transform:scale(.92)}
+.cv-baddr{flex:1;display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:99px;background:var(--surface-2);font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.cv-baddr svg{flex:none;color:#65a30d}
+.cv-baddr span{overflow:hidden;text-overflow:ellipsis}
+.cv-bprog{height:2.5px;flex:none;overflow:hidden;background:transparent}
+.cv-bprog-bar{height:100%;width:0;background:linear-gradient(90deg,#A6CC1C,#C5F032);transition:width .35s ease;opacity:0}
+.cv-bprog-bar.run{width:78%;opacity:1}
+.cv-bprog-bar.done{width:100%;opacity:1;transition:width .25s ease,opacity .4s ease .5s}
+.cv-bprog-bar.hide{opacity:0}
+.cv-bnote{flex:none;padding:7px 14px;font-size:11px;line-height:1.45;font-weight:600;color:#8a6d1a;background:linear-gradient(90deg,rgba(250,204,21,.16),rgba(250,204,21,.06));border-bottom:1px solid rgba(250,204,21,.35)}
+.cv-bnote b{font-weight:800}
+/* waiting room — third-party tab verification with auto-detect */
+.cvw-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto;background:var(--bg)}
+.cvw-card{position:relative;width:100%;max-width:430px;border-radius:24px;border:1px solid var(--line);background:var(--surface);padding:26px 22px 20px;text-align:center;box-shadow:0 24px 60px -30px rgba(0,0,0,.35);animation:cvIn .5s cubic-bezier(.22,1,.36,1) both}
+.cvw-radar{position:relative;width:118px;height:118px;margin:0 auto 14px}
+.cvw-radar span{position:absolute;border-radius:50%}
+.cvw-r1,.cvw-r2,.cvw-r3{inset:0;border:2px solid rgba(166,204,28,.5);animation:cvwPing 2.4s ease-out infinite}
+.cvw-r2{animation-delay:.8s}
+.cvw-r3{animation-delay:1.6s}
+.cvw-core{inset:26px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden}
+.cvw-core img{width:70%;height:70%;object-fit:cover;border-radius:50%}
+@keyframes cvwPing{0%{transform:scale(.55);opacity:.9}80%{opacity:0}100%{transform:scale(1.25);opacity:0}}
+.cvw-kicker{font-size:10px;font-weight:800;letter-spacing:.14em;color:#84cc16}
+.cvw-title{font-size:19px;font-weight:800;letter-spacing:-.02em;margin:6px 0}
+.cvw-sub{font-size:12.5px;line-height:1.55;color:var(--muted);font-weight:600}
+.cvw-steps{list-style:none;margin:16px 0 0;padding:0;text-align:left;display:flex;flex-direction:column;gap:9px}
+.cvw-steps li{display:flex;gap:10px;align-items:center;font-size:12px;font-weight:700;color:var(--muted)}
+.cvw-steps li i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:800;background:var(--surface-2);border:1px solid var(--line);flex:none}
+.cvw-steps li.on{color:var(--text)}
+.cvw-steps li.on i{background:linear-gradient(135deg,#A6CC1C,#C5F032);color:#15260f;border:none}
+.cvw-status{margin:14px 0 0;padding:10px 12px;border-radius:12px;font-size:11.5px;font-weight:700;color:var(--muted);background:var(--surface-2);border:1px dashed var(--line);display:flex;align-items:center;gap:8px;justify-content:center;min-height:40px}
+.cvw-spin{width:12px;height:12px;border-radius:50%;border:2px solid rgba(132,204,22,.35);border-top-color:#84cc16;animation:cvwRot .8s linear infinite;flex:none;display:inline-block}
+@keyframes cvwRot{to{transform:rotate(360deg)}}
+.cvw-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+.cvw-foot{margin-top:14px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.cvw-embed{font-size:11px;font-weight:700;color:var(--muted);text-decoration:underline;cursor:pointer}
 /* full-screen embed floating controls */
-.cv-fback{position:absolute;top:calc(14px + env(safe-area-inset-top));left:14px;z-index:30;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;cursor:pointer;color:#1c1e24;box-shadow:0 6px 18px -6px rgba(15,23,42,.35);animation:cvPop .5s cubic-bezier(.34,1.56,.64,1) both}
-html[data-theme="dark"] .cv-fback{background:rgba(23,24,28,.92);color:#fff}
 .cv-fwallet{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));z-index:30;display:flex;align-items:center;gap:8px;padding:12px 22px;border-radius:99px;border:none;background:linear-gradient(135deg,#A6CC1C,#C5F032);color:#15260f;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 12px 26px -10px rgba(132,204,22,.75);animation:cvPop .55s cubic-bezier(.34,1.56,.64,1) both;transition:transform .18s}
 .cv-fwallet:active{transform:translateX(-50%) scale(.96)}
+/* post-check status element on the wallet */
+.cv-result{display:flex;gap:11px;align-items:flex-start;border-radius:15px;padding:13px 14px;border:1.5px solid var(--line);background:var(--surface);animation:cvIn .45s cubic-bezier(.22,1,.36,1) both}
+.cv-result .ri{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.cv-result.ok{border-color:rgba(132,204,22,.55);background:linear-gradient(135deg,rgba(132,204,22,.16),rgba(197,240,50,.06))}
+.cv-result.ok .ri{background:linear-gradient(135deg,#A6CC1C,#C5F032);color:#15260f}
+.cv-result.err{border-color:rgba(245,158,11,.55);background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(251,191,36,.05))}
+.cv-result.err .ri{background:rgba(245,158,11,.2);color:#b45309}
+.cv-result .rt{font-size:13px;font-weight:800;line-height:1.3}
+.cv-result .rs{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px;line-height:1.45}
+.cv-result .rs a{color:#65a30d;font-weight:700;cursor:pointer}
+/* home-page illustrated verify card */
+.cv-banner{position:relative;display:flex;align-items:center;gap:13px;border-radius:20px;border:1.5px solid var(--line);background:var(--surface);padding:16px;overflow:hidden;cursor:pointer;animation:cvIn .5s cubic-bezier(.22,1,.36,1) both;box-shadow:0 10px 26px -18px rgba(15,23,42,.3)}
+.cv-banner::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(197,240,50,.16),rgba(132,204,22,.05) 55%,transparent);pointer-events:none}
+.cv-banner-art{width:88px;height:88px;flex:none;position:relative;animation:cvFloat 4.5s ease-in-out infinite}
+@keyframes cvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.cv-banner-body{flex:1;min-width:0;position:relative}
+.cv-banner-t{font-size:14px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:7px}
+.cv-banner-t img{width:19px;height:19px;border-radius:6px;object-fit:cover;border:1px solid var(--line)}
+.cv-banner-s{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:3px;line-height:1.5}
+.cv-banner .cv-btn{margin-top:11px;padding:10px 18px;font-size:12.5px;width:auto;display:inline-flex}
+/* notification-style verify reminder (every open, unverified users) */
+.cv-nudge{position:relative;display:flex;align-items:center;gap:11px;border-radius:16px;border:1.5px solid rgba(132,204,22,.55);background:linear-gradient(135deg,rgba(197,240,50,.25),var(--surface) 68%);padding:11px 12px;cursor:pointer;animation:cvNudge .65s cubic-bezier(.34,1.56,.64,1) both;box-shadow:0 12px 26px -16px rgba(101,163,13,.55)}
+@keyframes cvNudge{0%{opacity:0;transform:translateY(-16px) scale(.9)}60%{opacity:1;transform:translateY(3px) scale(1.02)}100%{opacity:1;transform:none}}
+.cv-nudge-ico{position:relative;width:36px;height:36px;border-radius:12px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;flex:none;animation:cvWiggle 2.6s ease-in-out infinite}
+html[data-theme="dark"] .cv-nudge-ico{background:#17181c}
+.cv-nudge-ico img{width:26px;height:26px;object-fit:contain;border-radius:6px;display:block}
+@keyframes cvWiggle{0%,100%{transform:rotate(0)}15%{transform:rotate(-8deg)}35%{transform:rotate(7deg)}55%{transform:rotate(-4deg)}75%{transform:rotate(2deg)}}
+.cv-nudge-dot{position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:#ef4444;z-index:1}
+.cv-nudge-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(239,68,68,.5);animation:cvPing 1.6s ease-out infinite}
+@keyframes cvPing{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.cv-nudge-txt{flex:1;min-width:0;font-size:12.5px;font-weight:800;line-height:1.3}
+.cv-nudge-txt small{display:block;font-size:10.5px;font-weight:600;color:var(--muted);margin-top:2px}
+.cv-nudge-cta{font-size:11px;font-weight:800;padding:6px 13px;border-radius:99px;background:linear-gradient(135deg,#A6CC1C,#C5F032);color:#15260f;flex:none}
+.cv-nudge-x{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--muted);flex:none;cursor:pointer;transition:background .15s}
+.cv-nudge-x:active{background:var(--surface-2)}
+/* gift intro page — animated fintech opener */
+.gi-zone{position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:76px 26px calc(30px + env(safe-area-inset-bottom))}
+.gi-float{position:absolute;border-radius:50%;opacity:.16;animation:obBob 5.5s ease-in-out infinite;pointer-events:none}
+.gi-ico{width:112px;height:112px;border-radius:36px;display:grid;place-items:center;color:#fff;box-shadow:0 26px 54px -18px var(--gi-glow,rgba(166,204,18,.6));animation:giPop .7s cubic-bezier(.34,1.56,.64,1) both, giFloaty 4s ease-in-out .7s infinite;position:relative;z-index:2}
+.gi-ico svg{width:56px;height:56px}
+@keyframes giPop{0%{transform:scale(.35) rotate(-10deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes giFloaty{0%,100%{translate:0 0}50%{translate:0 -8px}}
+.gi-kick{font-size:10px;font-weight:800;letter-spacing:.18em;color:var(--muted);margin-top:22px;animation:cvIn .5s .15s cubic-bezier(.22,1,.36,1) both}
+.gi-title{font-family:var(--f-disp);font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:6px;animation:cvIn .5s .22s cubic-bezier(.22,1,.36,1) both}
+.gi-sub{font-size:12.5px;font-weight:600;color:var(--muted);line-height:1.6;max-width:270px;margin:8px auto 0;animation:cvIn .5s .3s cubic-bezier(.22,1,.36,1) both}
+.gi-steps{display:flex;align-items:center;gap:7px;margin-top:20px;animation:cvIn .5s .38s cubic-bezier(.22,1,.36,1) both}
+.gi-step{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:var(--muted2)}
+.gi-step i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:10px;background:var(--surface-2);border:1px solid var(--line)}
+.gi-step.on{color:var(--ink)}
+.gi-step.on i{background:linear-gradient(135deg,#A6CC12,#C5F032);color:#15260f;border-color:transparent}
+.gi-step .ln{width:16px;height:1.5px;background:var(--line)}
+.gi-cta{margin-top:26px;width:100%;max-width:320px;animation:cvIn .5s .46s cubic-bezier(.22,1,.36,1) both}
+/* token choice rows */
+.gtk-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:14px 14px;cursor:pointer;transition:transform .15s,border-color .15s;animation:cvIn .45s cubic-bezier(.22,1,.36,1) both}
+.gtk-row:active{transform:scale(.97)}
+.gtk-row img{width:38px;height:38px;border-radius:50%;background:var(--surface-2)}
+.gtk-row .n{flex:1;min-width:0}
+.gtk-row .n b{display:block;font-size:13.5px;font-weight:800}
+.gtk-row .n small{display:block;font-size:10.5px;font-weight:600;color:var(--muted);margin-top:1px}
+.gtk-row .b{text-align:right}
+.gtk-row .b b{display:block;font-size:13px;font-weight:800}
+.gtk-row .b small{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-top:1px}
 /* verified celebration page */
-.cv-ok-wrap{position:absolute;inset:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 22px calc(24px + env(safe-area-inset-bottom));text-align:center;background:radial-gradient(60% 42% at 50% 0%,rgba(132,204,22,.16),transparent)}
+.cv-ok-wrap{position:absolute;inset:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(56px + env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom));text-align:center;background:radial-gradient(60% 42% at 50% 0%,rgba(132,204,22,.16),transparent)}
 .cv-ok-wrap .cv-apass-card{width:100%;max-width:420px;margin:14px 0 18px;text-align:left}
 .cv-ok-wrap .cv-btn{width:100%;max-width:420px;margin-top:0}
 /* wallet-page A-Pass mark */
@@ -1918,8 +2039,8 @@ html[data-theme="dark"] .cv-mark-badge{color:#bef264}
       </div>
     </div>
 
-    <!-- Cleanverse A-Pass mark — always-on identity badge -->
-    <div id="cvWalletMark" style="padding:12px 20px 0"></div>
+    <!-- Cleanverse A-Pass — single illustrated verify banner -->
+    <div id="cvBannerSlot" style="padding:14px 20px 0"></div>
 
     <!-- quick actions — Creso SVG icons -->
     <div class="qa-row">
@@ -2051,44 +2172,18 @@ html[data-theme="dark"] .cv-mark-badge{color:#bef264}
 <div class="page" id="page-create-voucher">
   <div class="page-header center"><div class="back-btn press" onclick="goBack()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></div><span class="ph-title">Create Gift</span></div>
   <div class="page-scroll" style="position:relative"><div class="page-pad" style="padding-top:4px;display:flex;flex-direction:column;gap:18px;position:relative;z-index:1">
-    <!-- per-gift themed hero (transforms the whole page per occasion) -->
-    <div id="gvHero" class="gv-hero">
-      <div class="gv-hero-particles" id="gvHeroParticles"></div>
-      <div class="gv-hero-watermark" id="gvHeroWm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 000-5C13 3 12 8 12 8"/></svg></div>
-      <div class="gv-hero-kicker" id="gvHeroKicker">ON-CHAIN GIFT</div>
-      <div class="gv-hero-title" id="gvHeroTitle">Gift Voucher</div>
-      <div class="gv-hero-sub" id="gvHeroSub">A clean cash ticket, sealed on-chain.</div>
+    <!-- compact themed header -->
+    <div style="display:flex;align-items:center;gap:13px;position:relative;z-index:1">
+      <div id="gvHowIco" style="width:54px;height:54px;border-radius:17px;background:linear-gradient(135deg,#A6CC12,#C5F032);color:#fff;display:grid;place-items:center;box-shadow:0 12px 24px -10px rgba(166,204,18,.6);flex:none"></div>
+      <div style="min-width:0">
+        <div id="gvHowKick" style="font-size:9.5px;font-weight:800;letter-spacing:.15em;color:#8a8f98">ON-CHAIN GIFT</div>
+        <div id="gvHowTitle" style="font-size:20px;font-weight:800;letter-spacing:-.01em;margin-top:2px;color:#17181c">Secret Gift</div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);margin-top:2px">Step 3 of 3 &middot; details &amp; send</div>
+      </div>
     </div>
 
     <!-- per-type floating decorations (injected by gvApplyTheme) -->
     <div id="gvFloaters" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0"></div>
-
-    <!-- live gift card preview -->
-    <div id="gvCCard" class="gv-card-flash" style="border-radius:24px;padding:20px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--gv-a1),var(--gv-a2));box-shadow:0 20px 40px -16px var(--gv-glow);min-height:170px">
-      <div id="gvCardArt" style="position:absolute;right:-16px;bottom:-24px;width:150px;height:150px;color:#fff;opacity:.24;transform:rotate(12deg);transition:.4s var(--spring)"></div>
-      <div style="position:absolute;inset:0;background:radial-gradient(120% 100% at 100% 0%,rgba(255,255,255,.22),transparent 55%);pointer-events:none"></div>
-      <div style="position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-start">
-        <div>
-          <div id="gvCardType" style="font-size:10.5px;font-weight:800;letter-spacing:.14em;opacity:.85">LOVE GIFT</div>
-          <div style="display:flex;align-items:baseline;gap:8px;margin-top:10px">
-            <span id="gvCAmt" class="num" style="font-size:36px;font-weight:800;letter-spacing:-.02em">0</span>
-            <span id="gvCSym" style="font-size:15px;font-weight:800;opacity:.9">$BOT</span>
-          </div>
-          <div id="gvCUsd" style="font-size:12px;font-weight:700;opacity:.85;margin-top:3px">≈ $0</div>
-        </div>
-        <div id="gvCBadge" class="gv-badge"><img id="gvCBadgeImg" src="" alt="token"/></div>
-      </div>
-      <div style="position:relative;z-index:2;margin-top:16px;display:flex;align-items:center;gap:8px">
-        <span style="width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-family:var(--f-disp);font-weight:700;font-size:14px">A</span>
-        <span style="font-size:10px;font-weight:800;letter-spacing:.12em;opacity:.8">ARCHON GIFT · ON-CHAIN</span>
-      </div>
-    </div>
-
-    <!-- token selector -->
-    <div>
-      <label class="field-label">Fund with</label>
-      <div id="gvTokens" style="display:flex;flex-direction:column;gap:8px"></div>
-    </div>
 
     <!-- amount -->
     <div id="gvAmtRow">
@@ -2576,7 +2671,7 @@ html[data-theme="dark"] .cv-mark-badge{color:#bef264}
     <p class="t-small t-muted" style="margin-bottom:4px">Select the active network for your wallet.</p>
     <button class="list-row" onclick="switchChain('bot')">
       <span class="lr-ico" style="background:var(--lime-soft);padding:0;overflow:hidden"><img src="https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:13px"/></span>
-      <span class="lr-body"><span class="lr-title">Botchain</span><span class="lr-sub">Testnet · BOT · Chain 968</span></span>
+      <span class="lr-body"><span class="lr-title">Botchain</span><span class="lr-sub">Mainnet · BOT · Chain 677</span></span>
       <span class="chip" style="background:var(--green-soft);color:var(--green)">Active</span>
     </button>
     <button class="list-row" onclick="switchChain('monad')">
@@ -2894,9 +2989,33 @@ html[data-theme="dark"] .cv-mark-badge{color:#bef264}
   </div>
 </div>
 
+<!-- ==================== GIFT FLOW — step 1: illustrated intro ==================== -->
+<div class="page" id="page-gift-intro">
+  <div class="page-header center" style="position:relative;z-index:5"><div class="back-btn press" onclick="gvBackGifts()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></div><span class="ph-title">Gift</span></div>
+  <div id="giZone" class="gi-zone"></div>
+</div>
+
+<!-- ==================== GIFT FLOW — step 2: choose token ==================== -->
+<div class="page" id="page-gift-token">
+  <div class="page-header center"><div class="back-btn press" onclick="gvBackIntro()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></div><span class="ph-title">Fund your gift</span></div>
+  <div class="page-scroll"><div class="page-pad">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      <div id="gtkIco" style="width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#A6CC12,#C5F032);color:#fff;display:grid;place-items:center;box-shadow:0 12px 24px -10px rgba(166,204,18,.6);flex:none"></div>
+      <div>
+        <div id="gtkTitle" style="font-size:18px;font-weight:800;letter-spacing:-.01em">Secret Gift</div>
+        <div style="font-size:11px;font-weight:600;color:var(--muted);margin-top:1px">Step 2 of 3 · pick the token to send</div>
+      </div>
+    </div>
+    <div class="section-title" style="padding:0;margin-top:18px">CHOOSE TOKEN</div>
+    <div id="gtkList" style="display:flex;flex-direction:column;gap:10px"></div>
+    <p style="font-size:10px;font-weight:700;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6">Balances update live · aUSDC is Cleanverse's compliant A-Token</p>
+  </div></div>
+</div>
+
 <!-- ==================== CLEANVERSE A-PASS VERIFY (CVI) — full-screen embed ==================== -->
 <div class="page" id="page-cv-verify">
-  <div id="cvvZone" style="position:absolute;inset:0;background:var(--bg)"></div>
+  <div class="cv-topback"><button class="cv-topback-btn press" onclick="cvvBack()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back</button></div>
+  <div id="cvvZone" style="position:absolute;inset:0;padding-top:calc(52px + env(safe-area-inset-top));background:var(--bg)"></div>
 </div>
 
 <!-- ==================== ACCOUNT (ME) ==================== -->
@@ -3351,10 +3470,10 @@ var APP_CONFIG = {
   },
   chains: {
     bot: {
-      id: 'bot', name: 'Botchain', short: 'BOT', label: 'Botchain Testnet',
-      chainId: 968, chainIdHex: '0x3C8',
-      rpc: 'https://rpc.bohr.life',
-      explorer: 'https://scan.bohr.life',
+      id: 'bot', name: 'Botchain', short: 'BOT', label: 'Botchain Mainnet',
+      chainId: 677, chainIdHex: '0x2A5',
+      rpc: 'https://rpc.botchain.ai',
+      explorer: 'https://scan.botchain.ai',
       native: { sym: 'BOT', name: 'Botchain Token', decimals: 18 },
       color: '#7c3aed',
       img: 'https://res.cloudinary.com/dguexkgjw/image/upload/v1783934565/Y9jDf0A3_400x400_1_nppzje.jpg',
@@ -3413,6 +3532,13 @@ var APP_CONFIG = {
       contract: '0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0',
       decimals: 6, price: 1, color: '#26a17b',
       img: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/usdt.png',
+      presets: [10, 50, 100, 500]
+    },
+    AUSDC: {
+      id: 'AUSDC', sym: 'aUSDC', name: 'Cleanverse aUSDC (A-Token)', chain: 'monad', type: 'erc20',
+      contract: '0xaC0893567D43C3E7e6e35a72803df05416C1f20D',
+      decimals: 6, price: 1, color: '#2775CA',
+      img: 'https://images.cleanverse.com/app/token_icon/A_USDC.svg',
       presets: [10, 50, 100, 500]
     }
   },
@@ -3959,7 +4085,10 @@ var chainDatabase = {
   },
   monad: {
     label: 'MON', name: 'Monad', balance: '0.00', price: '0.0207', usdBalance: '0.00', change24h: '-2.7%', changeDir: 'down',
-    tokens: [{ sym: '$MON', name: 'Monad', bal: '0.00', usd: '$0.0207', color: '#836EF9', bg: 'bg-purple-50', svg: '<img src="' + APP_CONFIG.tokens.MON.img + '" style="width:20px;height:20px;border-radius:50%;" />' }]
+    tokens: [
+      { sym: '$MON', name: 'Monad', bal: '0.00', usd: '$0.0207', color: '#836EF9', bg: 'bg-purple-50', svg: '<img src="' + APP_CONFIG.tokens.MON.img + '" style="width:20px;height:20px;border-radius:50%;" />' },
+      { sym: 'aUSDC', name: 'Cleanverse aUSDC', bal: '0.00', usd: '$0.00', color: '#2775CA', bg: 'bg-blue-50', svg: '<img src="' + APP_CONFIG.tokens.AUSDC.img + '" style="width:20px;height:20px;border-radius:50%;" />' }
+    ]
   },
   eth: {
     label: 'USDT', name: 'Ethereum', balance: '0.00', price: '1', usdBalance: '0.00', change24h: '+0.01%', changeDir: 'up',
@@ -4378,7 +4507,7 @@ function redeemGift() {
     /* resolve provider for the gift's chain */
     var provider = (chain === 'mon')
       ? new ethers.JsonRpcProvider('https://rpc.testnet.monad.xyz', 10143)
-      : new ethers.JsonRpcProvider('https://rpc.bohr.life', 968);
+      : new ethers.JsonRpcProvider('https://rpc.botchain.ai', 677);
 
     _gvDecryptVault(gift.encrypted_pk, code).then(function(pk) {
       if (!pk || !pk.startsWith('0x')) throw new Error('Invalid vault key');
@@ -4558,8 +4687,8 @@ function daoExecute() {
   if (btn) { btn.disabled = true; btn.textContent = 'Distributing...'; }
   /* Use correct RPC based on selected token chain */
   var daoChain = (typeof GV !== 'undefined' && GV.tok && GV.tok.chain === 'mon') ? 'mon' : 'bot';
-  var RPC_URL = daoChain === 'mon' ? 'https://rpc.testnet.monad.xyz' : 'https://rpc.bohr.life';
-  var CHAIN_ID = daoChain === 'mon' ? 10143 : 968;
+  var RPC_URL = daoChain === 'mon' ? 'https://rpc.testnet.monad.xyz' : 'https://rpc.botchain.ai';
+  var CHAIN_ID = daoChain === 'mon' ? 10143 : 677;
   var provider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID);
   var signer = new ethers.Wallet(window.WalletEngine.getPrivateKey(), provider);
   var gasLimit = 21000n;
@@ -4928,7 +5057,8 @@ var cxState = { swapFrom: 'BOT', swapTo: 'USDT', sendTok: 'BOT', wdTok: 'BOT', d
 var cxTOKENS = [
   { id: 'BOT', name: 'Botchain', sym: '$BOT', bal: 0, price: 9.82, chg: '+3.2%', dir: 'up', chain: 'bot', type: 'native', decimals: 18, logo: APP_CONFIG.tokens.BOT.img, color: '#7c3aed' },
   { id: 'MON', name: 'Monad', sym: '$MON', bal: 0, price: 0.0207, chg: '-2.7%', dir: 'down', chain: 'monad', type: 'native', decimals: 18, logo: APP_CONFIG.tokens.MON.img, color: '#836EF9' },
-  { id: 'USDT', name: 'Tether USD', sym: '$USDT', bal: 0, price: 1.00, chg: '+0.01%', dir: 'up', chain: 'eth', type: 'erc20', contract: APP_CONFIG.tokens.USDT.contract, decimals: 6, logo: APP_CONFIG.tokens.USDT.img, color: '#26a17b' }
+  { id: 'USDT', name: 'Tether USD', sym: '$USDT', bal: 0, price: 1.00, chg: '+0.01%', dir: 'up', chain: 'eth', type: 'erc20', contract: APP_CONFIG.tokens.USDT.contract, decimals: 6, logo: APP_CONFIG.tokens.USDT.img, color: '#26a17b' },
+  { id: 'AUSDC', name: 'Cleanverse aUSDC', sym: 'aUSDC', bal: 0, price: 1.00, chg: '+0.00%', dir: 'up', chain: 'monad', type: 'erc20', contract: APP_CONFIG.tokens.AUSDC.contract, decimals: 6, logo: APP_CONFIG.tokens.AUSDC.img, color: '#2775CA', apass: true }
 ];
 window.cxTOKENS = cxTOKENS;
 function cxTok(id) { return cxTOKENS.find(function(t) { return t.id === id; }); }
@@ -4953,7 +5083,7 @@ function updateTicker() {
 window.updateTicker = updateTicker;
 
 /* ── LIVE PRICES: MON + USDT via DeFiLlama (free, CORS) → CoinGecko fallback.
-   BOT (bohr.life) has NO public oracle, so it keeps its protocol reference price. ── */
+   BOT (botchain.ai mainnet) has NO public oracle, so it keeps its protocol reference price. ── */
 function fetchLivePrices() {
   var llama = 'https://coins.llama.fi/prices/current/coingecko:monad,coingecko:tether';
   var cg = 'https://api.coingecko.com/api/v3/simple/price?ids=monad,tether&vs_currencies=usd&include_24hr_change=true';
@@ -5998,7 +6128,8 @@ cxRenderAvatarGrid();
 var GVT = [
   { sym: '$BOT', name: 'Botchain', chain: 'bot', type: 'native', decimals: 18, price: 9.82, bal: 0, logo: APP_CONFIG.tokens.BOT.img, color: '#7c3aed' },
   { sym: '$MON', name: 'Monad', chain: 'monad', type: 'native', decimals: 18, price: 0.02, bal: 0, logo: APP_CONFIG.tokens.MON.img, color: '#836EF9' },
-  { sym: '$USDT', name: 'Tether USD', chain: 'eth', type: 'erc20', contract: APP_CONFIG.tokens.USDT.contract, decimals: 6, price: 1, bal: 0, logo: APP_CONFIG.tokens.USDT.img, color: '#26a17b' }
+  { sym: '$USDT', name: 'Tether USD', chain: 'eth', type: 'erc20', contract: APP_CONFIG.tokens.USDT.contract, decimals: 6, price: 1, bal: 0, logo: APP_CONFIG.tokens.USDT.img, color: '#26a17b' },
+  { sym: 'aUSDC', name: 'Cleanverse aUSDC', chain: 'monad', type: 'erc20', contract: APP_CONFIG.tokens.AUSDC.contract, decimals: 6, price: 1, bal: 0, logo: APP_CONFIG.tokens.AUSDC.img, color: '#2775CA' }
 ];
 window._GVT = GVT;
 var _gvSavedTok = parseInt(localStorage.getItem('archon_gv_tok') || '0', 10);
@@ -6041,6 +6172,86 @@ function gvSelectType(id) {
   gvRenderCard();
 }
 window.gvSelectType = gvSelectType;
+
+/* ── gift flow: intro → token → details ── */
+function gvOpenIntro(typeId) {
+  if (typeId) GV.type = typeId;
+  gvRenderTypes(); gvApplyTheme();
+  giRender();
+  try { navigateTo('page-gift-intro'); } catch (e) {}
+}
+window.gvOpenIntro = gvOpenIntro;
+
+function giRender() {
+  var z = $('giZone'); if (!z) return;
+  var th = GV_THEME[GV.type] || GV_THEME.voucher;
+  var meta = gvTypeMeta(GV.type);
+  var icon = GV_ICONS[GV.type] || GV_ICONS.voucher;
+  var floats = [
+    { w: 150, t: '-40px', l: '-50px', c: meta.grad[0], d: '0s' },
+    { w: 90, t: '18%', l: '80%', c: meta.grad[1], d: '.8s' },
+    { w: 60, t: '66%', l: '-18px', c: meta.grad[1], d: '1.4s' },
+    { w: 110, t: '74%', l: '72%', c: meta.grad[0], d: '.4s' }
+  ].map(function(f) {
+    return '<div class="gi-float" style="width:' + f.w + 'px;height:' + f.w + 'px;top:' + f.t + ';left:' + f.l + ';background:' + f.c + ';animation-delay:' + f.d + '"></div>';
+  }).join('');
+  z.innerHTML = floats +
+    '<div style="position:absolute;inset:0;background:radial-gradient(85% 55% at 50% -10%,' + meta.grad[0] + '26,transparent),radial-gradient(70% 45% at 85% 110%,' + meta.grad[1] + '22,transparent);pointer-events:none"></div>' +
+    '<div class="gi-ico" style="background:linear-gradient(135deg,' + meta.grad[0] + ',' + meta.grad[1] + ');--gi-glow:' + meta.grad[0] + 'aa">' + icon + '</div>' +
+    '<div class="gi-kick">' + th.kicker + '</div>' +
+    '<div class="gi-title">' + th.title + '</div>' +
+    '<div class="gi-sub">' + th.sub + '</div>' +
+    '<div class="gi-steps">' +
+      '<span class="gi-step on"><i>1</i>Intro</span><span class="gi-step"><span class="ln"></span><i>2</i>Token</span><span class="gi-step"><span class="ln"></span><i>3</i>Details</span>' +
+    '</div>' +
+    '<button class="btn btn-primary gi-cta" onclick="gvGoTokenPage()">Continue — choose token <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-left:7px"><path d="M9 6l6 6-6 6"/></svg></button>';
+}
+
+function gvGoTokenPage() {
+  var th = GV_THEME[GV.type] || GV_THEME.voucher;
+  var meta = gvTypeMeta(GV.type);
+  var ico = $('gtkIco');
+  if (ico) { ico.innerHTML = '<span style="width:22px;height:22px;display:block;color:#fff">' + (GV_ICONS[GV.type] || GV_ICONS.voucher) + '</span>'; ico.style.background = 'linear-gradient(135deg,' + meta.grad[0] + ',' + meta.grad[1] + ')'; }
+  var ttl = $('gtkTitle'); if (ttl) ttl.textContent = th.title;
+  gtkRender();
+  try { navigateTo('page-gift-token'); } catch (e) {}
+}
+window.gvGoTokenPage = gvGoTokenPage;
+
+function gtkRender() {
+  var box = $('gtkList'); if (!box) return;
+  box.innerHTML = GVT.map(function(t, i) {
+    return '<div class="gtk-row press" style="animation-delay:' + (i * 0.06) + 's" onclick="gvChooseTok(' + i + ')">' +
+      '<img src="' + t.logo + '" alt="' + t.sym + '" onerror="this.src=\'' + APP_CONFIG.tokens.BOT.img + '\'"/>' +
+      '<span class="n"><b>' + t.name + '</b><small>' + t.sym + ' · ' + (t.chain || '').toUpperCase() + '</small></span>' +
+      '<span class="b"><b class="num">' + (+t.bal || 0) + '</b><small>available</small></span>' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted2);flex:none"><path d="M9 6l6 6-6 6"/></svg>' +
+    '</div>';
+  }).join('');
+}
+
+function gvChooseTok(i) {
+  gvSelectTok(i);
+  try { navigateTo('page-create-voucher'); } catch (e) {}
+}
+window.gvChooseTok = gvChooseTok;
+
+/* deterministic gift-flow back navigation (never falls through to the wrong page) */
+function gvBackGifts() {
+  try { switchTabMain('gifts'); }
+  catch (e) { try { showPage('page-gifts'); } catch (e2) {} }
+}
+window.gvBackGifts = gvBackGifts;
+function gvBackIntro() {
+  try { giRender(); } catch (e) {}
+  try { showPage('page-gift-intro'); } catch (e) {}
+}
+window.gvBackIntro = gvBackIntro;
+function gvBackToken() {
+  try { gtkRender(); } catch (e) {}
+  try { showPage('page-gift-token'); } catch (e) {}
+}
+window.gvBackToken = gvBackToken;
 function gvRenderTokens() {
   var row = $('gvTokens');
   if (!row) return;
@@ -6154,7 +6365,7 @@ function gvRenderGiftGrid() {
     var tag = g.tag ? '<span class="gc-tag">' + g.tag + '</span>' : '';
     var onclick = (g.route === 'dao')
       ? 'navigateTo(\'page-gift-dao\')'
-      : 'gvSelectType(\'' + g.gtype + '\');navigateTo(\'page-create-voucher\')';
+      : 'gvOpenIntro(\'' + g.gtype + '\')';
     var vars = 'style="--gc-accent:' + g.accent + ';--gc-tint:' + g.accent + '1f;--gc-glow:' + g.accent + '66"';
     return '<div class="gcard press" ' + vars + ' onclick="' + onclick + '">' + tag +
       '<div class="gc-art">' + GV_ICONS[g.id] + '</div>' +
@@ -6200,10 +6411,11 @@ function gvApplyTheme() {
     hero.style.setProperty('--gv-a2', meta.grad[1]);
     hero.style.setProperty('--gv-glow', meta.grad[0] + '80');
   }
-  var k = $('gvHeroKicker'); if (k) k.textContent = th.kicker;
-  var tt = $('gvHeroTitle'); if (tt) tt.textContent = th.title;
-  var ss = $('gvHeroSub'); if (ss) ss.textContent = th.sub;
-  var wm = $('gvHeroWm'); if (wm) wm.innerHTML = GV_ICONS[GV.type] || GV_ICONS.voucher;
+  /* compact illustrated header */
+  var ico = $('gvHowIco');
+  if (ico) { ico.innerHTML = '<span style="width:26px;height:26px;display:block;color:#fff">' + (GV_ICONS[GV.type] || GV_ICONS.voucher) + '</span>'; ico.style.background = 'linear-gradient(135deg,' + meta.grad[0] + ',' + meta.grad[1] + ')'; ico.style.boxShadow = '0 12px 24px -10px ' + meta.grad[0] + '99'; }
+  var kk = $('gvHowKick'); if (kk) kk.textContent = th.kicker;
+  var ht = $('gvHowTitle'); if (ht) ht.textContent = th.title;
   var pc = $('gvHeroParticles');
   if (pc) {
     var part = GV_PARTS[g.shape] || GV_PARTS.dot;
@@ -6518,8 +6730,8 @@ function gvConfirm() {
       gvUpdateSendStep(2, 'Save gift record', 'done');
       gvUpdateSendStep(3, 'Fund vault on-chain', 'active');
 
-      var RPC_URL = GV.tok.chain === 'mon' ? 'https://rpc.testnet.monad.xyz' : 'https://rpc.bohr.life';
-      var CHAIN_ID = GV.tok.chain === 'mon' ? 10143 : 968;
+      var RPC_URL = GV.tok.chain === 'mon' ? 'https://rpc.testnet.monad.xyz' : 'https://rpc.botchain.ai';
+      var CHAIN_ID = GV.tok.chain === 'mon' ? 10143 : 677;
       var gasBuffer = GV.tok.type === 'erc20' ? 0.002 : 0.001;
 
       var fundP;
@@ -8025,7 +8237,7 @@ function cxWdAsGift() {
     if (idx >= 0 && typeof gvSelectTok === 'function') gvSelectTok(idx);
   }
   if (amt > 0 && typeof gvSetAmt === 'function') gvSetAmt(amt);
-  navigateTo('page-create-voucher');
+  gvOpenIntro(GV.type);
 }
 window.cxWdAsGift = cxWdAsGift;
 function scanQR() { cxToast('Paste the address below — camera scan coming soon', 'ok'); }
@@ -8105,8 +8317,23 @@ function doRefresh() {
    ═══════════════════════════════════════════════════════════════ */
 (function() {
   var LOGO = 'https://res.cloudinary.com/dguexkgjw/image/upload/v1785767640/DUVXWP_W_400x400_1_ruab5c.jpg';
-  var MAGIC = 'https://test-magiclink.cleanverse.com/';
-  var PROXY = 'http://localhost:8898/cv';
+  var MAGIC_DIRECT = 'https://test-magiclink.cleanverse.com/';
+  /* Same-origin reverse proxy (archon-server.js) keeps the KYC session
+     first-party so email / wallet steps actually advance inside the
+     embed. Falls back to the direct URL when the proxy is not running. */
+  var MAGIC = '/ml/';
+  try {
+    /* 200 = a same-origin proxy is live (archon-server.js locally — pure local
+       ping, never waits on Cleanverse — or Vercel rewrites when hosted).
+       404 = plain static hosting → fall back to the direct magic link. */
+    fetch('/archon-ping', { cache: 'no-store' }).then(function(r) {
+      if (!r.ok) MAGIC = MAGIC_DIRECT;
+    }).catch(function() { MAGIC = MAGIC_DIRECT; });
+  } catch (e) { MAGIC = MAGIC_DIRECT; }
+  /* CVI API proxy: local node server when running locally, same-origin
+     serverless (/cv → api/cv.js) when hosted on Vercel */
+  var PROXY = (location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:8898/cv' : '/cv';
   var ATOKEN = '0xaC0893567D43C3E7e6e35a72803df05416C1f20D'; /* aUSDC on Monad (sandbox) */
   var CHAIN = 'monad';
   var K_STATE = 'archon_cvi', K_OPENS = 'archon_cv_opens';
@@ -8226,29 +8453,36 @@ function doRefresh() {
       '<button class="cv-btn ghost" onclick="CV.retry()">Retry check</button>' +
       foot() + '</div>';
   }
-  /* always-on A-Pass mark on the wallet page */
-  function renderWalletMark() {
-    var slot = document.getElementById('cvWalletMark');
+  /* home-page illustrated verify banner (unverified only) */
+  function renderBanner() {
+    var slot = document.getElementById('cvBannerSlot');
     if (!slot) return;
-    if (!addr()) { slot.innerHTML = ''; return; }
-    var chev = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted2);flex:none"><path d="M9 6l6 6-6 6"/></svg>';
-    if (S.verified) {
-      slot.innerHTML = '<div class="cv-mark ok press" onclick="cvOpenVerify()">' +
-        '<span class="cv-mark-ico"><img src="' + LOGO + '" alt="Cleanverse"/></span>' +
-        '<span class="cv-mark-txt">A-Pass Verified<small>' + tierLabel() + ' · Cleanverse CVI · Monad</small></span>' +
-        '<span class="cv-mark-badge">&#10003; Compliant</span>' + chev + '</div>';
-    } else if (S.checking || S.offline) {
-      slot.innerHTML = '';
-    } else {
-      slot.innerHTML = '<div class="cv-mark warn press" onclick="cvOpenVerify()">' +
-        '<span class="cv-mark-ico"><img src="' + LOGO + '" alt="Cleanverse"/></span>' +
-        '<span class="cv-mark-txt">A-Pass not verified<small>Verify once to unlock compliant transfers</small></span>' +
-        '<span class="cv-mark-badge">Verify &rarr;</span></div>';
-    }
+    if (!addr() || S.verified || S.checking) { slot.innerHTML = ''; return; }
+    slot.innerHTML =
+      '<div class="cv-banner press" onclick="cvOpenVerify()">' +
+        '<svg class="cv-banner-art" viewBox="0 0 120 110" fill="none">' +
+          '<circle cx="62" cy="54" r="46" fill="#C5F032" fill-opacity=".2"/>' +
+          '<circle cx="20" cy="24" r="7" fill="#C5F032" fill-opacity=".5"/>' +
+          '<circle cx="104" cy="86" r="5" fill="#fbbf24" fill-opacity=".55"/>' +
+          '<path d="M62 12l32 12.5v21c0 20.5-13.5 36.5-32 44-18.5-7.5-32-23.5-32-44v-21L62 12z" fill="#ffffff" stroke="#84cc16" stroke-width="2.6"/>' +
+          '<path d="M62 24l21 8.2v14.3c0 13.2-8.7 23.6-21 28.7-12.3-5.1-21-15.5-21-28.7V32.2L62 24z" stroke="#84cc16" stroke-opacity=".35" stroke-width="1.6"/>' +
+          '<path d="M49.5 53.5l9 9 17-18.5" stroke="#4d7c0f" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<circle cx="99" cy="22" r="12.5" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>' +
+          '<text x="99" y="27.5" text-anchor="middle" font-size="13" font-weight="800" fill="#7c4a03">$</text>' +
+          '<circle cx="24" cy="92" r="11" fill="#C5F032" stroke="#84cc16" stroke-width="2"/>' +
+          '<text x="24" y="96.8" text-anchor="middle" font-size="11.5" font-weight="800" fill="#3f6212">M</text>' +
+          '<path d="M40 100c6-6 10 3 16-3s10 2 16-4" stroke="#84cc16" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/>' +
+        '</svg>' +
+        '<div class="cv-banner-body">' +
+          '<div class="cv-banner-t"><img src="' + LOGO + '" alt="Cleanverse"/> Verify your A-Pass</div>' +
+          '<div class="cv-banner-s">One quick Cleanverse KYC unlocks compliant, trusted transfers on Monad.</div>' +
+          '<button class="cv-btn">Verify now ' + IC_ARROW + '</button>' +
+        '</div>' +
+      '</div>';
   }
 
   function renderCard() {
-    renderWalletMark();
+    renderBanner();
     var slot = document.getElementById('cvCardSlot');
     if (!slot) return;
     if (!addr()) { slot.innerHTML = ''; return; }
@@ -8293,39 +8527,153 @@ function doRefresh() {
   function openVerifyPage() {
     try { _cvFrom = currentPage || 'page-account'; } catch (e) {}
     try { navigateTo('page-cv-verify'); } catch (e) { try { showPage('page-cv-verify'); } catch (e2) {} }
-    cvvRender();
+    if (S.verified) { cvvRenderOk(); return; }
+    /* SAFE PATH: open Cleanverse in a REAL browser tab (no iframe / no
+       third-party-cookie issues — works locally, from file:// and hosted),
+       then auto-detect KYC completion by polling verify_apass. */
+    var opened = false;
+    try { opened = !!window.open(MAGIC_DIRECT, '_blank'); } catch (e) {}
+    cvvRenderWait(opened);
   }
+
+  /* ── waiting room: Cleanverse runs in the new tab, Archon watches ── */
+  var _cvPoll = null, _cvPollCount = 0;
+  function cvwStopPoll() { if (_cvPoll) { clearInterval(_cvPoll); _cvPoll = null; } }
+  function cvvRenderWait(opened) {
+    var z = zone(); if (!z) return;
+    cvwStopPoll(); _cvPollCount = 0;
+    z.innerHTML =
+      '<div class="cvw-wrap">' +
+        '<div class="cvw-card">' +
+          '<div class="cvw-radar"><span class="cvw-r1"></span><span class="cvw-r2"></span><span class="cvw-r3"></span>' +
+            '<span class="cvw-core"><img src="' + LOGO + '" alt="Cleanverse"/></span></div>' +
+          '<div class="cvw-kicker">CLEANVERSE CVI &middot; A-PASS</div>' +
+          '<h2 class="cvw-title">' + (opened ? 'Verification opened in a new tab' : 'Continue verification in Cleanverse') + '</h2>' +
+          '<p class="cvw-sub">Finish the A-Pass steps over there &mdash; email code, then your ID. Archon keeps watching this wallet and flips you to verified automatically the second KYC completes.</p>' +
+          '<ol class="cvw-steps">' +
+            '<li class="on"><i>1</i>Complete KYC in the Cleanverse tab</li>' +
+            '<li><i>2</i>Archon detects your active A-Pass automatically</li>' +
+            '<li><i>3</i>Congrats + A-Pass card on your wallet</li>' +
+          '</ol>' +
+          '<div class="cvw-status" id="cvwStatus">' + (opened ? '<span class="cvw-spin"></span>Waiting for Cleanverse&hellip; checking every few seconds' : 'Tab was blocked &mdash; tap &ldquo;Open Cleanverse tab&rdquo; below') + '</div>' +
+          '<div class="cvw-actions">' +
+            '<button class="cv-btn press" style="width:auto;flex:1;margin-top:0" onclick="cvwCheckNow()">' + IC_SHIELD + 'Check my status now</button>' +
+            '<button class="cv-btn ghost press" style="width:auto;flex:1;margin-top:0" onclick="cvwReopen()">' + IC_ARROW + 'Open Cleanverse tab</button>' +
+          '</div>' +
+          '<div class="cvw-foot">' +
+            '<button class="cv-btn amber press" style="margin-top:0" onclick="cvwDone()">' + IC_WALLET + 'Done &mdash; go back to wallet</button>' +
+            '<a class="cvw-embed" onclick="cvvRender()">Prefer staying inside Archon? Use the embedded browser</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    cvwPollStart();
+  }
+  function cvwSetStatus(t) { var el = document.getElementById('cvwStatus'); if (el) el.innerHTML = t; }
+  function cvwPollStart() {
+    cvwStopPoll();
+    /* every 5s for ~15 min — KYC with email code + ID takes minutes */
+    _cvPoll = setInterval(function() {
+      _cvPollCount++;
+      if (_cvPollCount > 180) { cvwStopPoll(); cvwSetStatus('Still waiting? Tap <b>Check my status now</b> any time.'); return; }
+      check(function(ok) { if (ok) { cvwStopPoll(); cvvRenderOk(); } });
+    }, 5000);
+  }
+  function cvwCheckNow() {
+    cvwSetStatus('<span class="cvw-spin"></span> Checking your A-Pass on Monad&hellip;');
+    check(function(ok) {
+      if (ok) { cvwStopPoll(); cvvRenderOk(); return; }
+      cvwSetStatus(S.offline
+        ? 'Cleanverse unreachable right now &mdash; keep trying, we&rsquo;ll catch it.'
+        : 'Not verified yet &mdash; finish the steps in the Cleanverse tab, we keep checking.');
+    });
+  }
+  function cvwReopen() {
+    try { window.open(MAGIC_DIRECT, '_blank'); cvwSetStatus('<span class="cvw-spin"></span>Cleanverse tab reopened &mdash; watching for your A-Pass&hellip;'); } catch (e) {}
+  }
+  function cvwDone() { cvwStopPoll(); leaveEmbed('page-wallet'); }
+  window.cvwCheckNow = cvwCheckNow;
+  window.cvwReopen = cvwReopen;
+  window.cvwDone = cvwDone;
 
   function cvvRender() {
     var z = zone(); if (!z) return;
     if (S.verified) { cvvRenderOk(); return; }
-    /* full-screen embedded Cleanverse magic link — nothing else on the page */
+    /* full-screen Cleanverse KYC — behaves like an in-app browser:
+       chrome bar (back / refresh / address pill) + progress bar + frame */
     z.innerHTML =
-      '<div class="cv-frame">' +
-        '<div class="cv-fload" id="cvFload"><div class="cv-ring"></div><span>Loading Cleanverse…</span></div>' +
-        '<iframe id="cvKycFrame" src="' + MAGIC + '" title="Cleanverse A-Pass KYC" referrerpolicy="no-referrer" allow="camera; clipboard-write"></iframe>' +
-      '</div>' +
-      '<button class="cv-fback press" onclick="cvvBack()" title="Cancel">' +
-        '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>' +
-      '</button>' +
-      '<button class="cv-fwallet press" onclick="cvvToWallet()">' +
-        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>' +
-        ' Done — go back to wallet' +
-      '</button>';
+      '<div class="cv-zone-browser">' +
+        '<div class="cv-bchrome">' +
+          '<button class="cv-bnav press" onclick="cvvFrameBack()" title="Back">' +
+            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>' +
+          '</button>' +
+          '<button class="cv-bnav press" onclick="cvvFrameReload()" title="Refresh">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 6.3M20 5v6h-6"/></svg>' +
+          '</button>' +
+          '<div class="cv-baddr">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>' +
+            '<span id="cvBaddr">test-magiclink.cleanverse.com</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cv-bprog"><div class="cv-bprog-bar" id="cvBprog"></div></div>' +
+        (MAGIC === MAGIC_DIRECT ?
+          '<div class="cv-bnote">Heads-up: the local proxy isn&#39;t running, so the KYC session may reset after the email code. Run <b>node archon-server.js</b> and open <b>http://127.0.0.1:8899</b> for the full flow.</div>' : '') +
+        '<div class="cv-frame">' +
+          '<div class="cv-fload" id="cvFload"><div class="cv-ring"></div><span>Loading Cleanverse…</span></div>' +
+          '<iframe id="cvKycFrame" src="' + MAGIC + '" title="Cleanverse A-Pass KYC" loading="eager" allow="camera; microphone; geolocation; clipboard-write; clipboard-read; payment; fullscreen; display-capture" allowfullscreen></iframe>' +
+        '</div>' +
+        '<button class="cv-fwallet press" onclick="cvvToWallet()">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>' +
+          ' Done — go back to wallet' +
+        '</button>' +
+      '</div>';
+    var bar = document.getElementById('cvBprog');
+    if (bar) { requestAnimationFrame(function() { bar.classList.add('run'); }); }
     var f = document.getElementById('cvKycFrame');
-    if (f) f.addEventListener('load', function() { var l = document.getElementById('cvFload'); if (l) l.classList.add('off'); });
+    if (f) f.addEventListener('load', function() {
+      var l = document.getElementById('cvFload'); if (l) l.classList.add('off');
+      var b = document.getElementById('cvBprog');
+      if (b) { b.classList.remove('run'); b.classList.add('done'); setTimeout(function() { b.classList.add('hide'); }, 1100); }
+    });
   }
 
-  /* leave the embed → run a live sandbox check so the mark/card updates */
+  /* in-app browser controls */
+  function cvvFrameBack() {
+    var f = document.getElementById('cvKycFrame');
+    if (!f) return;
+    try { f.contentWindow.history.back(); }
+    catch (e) { f.src = MAGIC; }
+    var b = document.getElementById('cvBprog');
+    if (b) { b.classList.remove('done', 'hide'); b.classList.add('run'); }
+  }
+  function cvvFrameReload() {
+    var f = document.getElementById('cvKycFrame');
+    if (!f) return;
+    var l = document.getElementById('cvFload'); if (l) l.classList.remove('off');
+    var b = document.getElementById('cvBprog');
+    if (b) { b.classList.remove('done', 'hide'); b.classList.add('run'); }
+    try { f.contentWindow.location.reload(); }
+    catch (e) { f.src = MAGIC; }
+  }
+
+  /* leave the embed → live sandbox check → show a status element on the wallet */
+  function leaveEmbed(dest) {
+    try { navigateTo(dest); } catch (e) { try { showPage(dest); } catch (e2) {} }
+    check(function(ok) { showResult(ok, S.offline); });
+  }
   function cvvBack() {
-    check(); /* silent live re-check; result lands on the mark/card behind */
+    cvwStopPoll();
     var to = _cvFrom;
     if (to === 'page-cv-verify' || to === 'page-splash' || !to) to = 'page-account';
-    try { navigateTo(to); } catch (e) { try { showPage(to); } catch (e2) {} }
+    leaveEmbed(to);
   }
-  function cvvToWallet() {
-    check();
-    try { navigateTo('page-wallet'); } catch (e) { try { showPage('page-wallet'); } catch (e2) {} }
+  function cvvToWallet() { leaveEmbed('page-wallet'); }
+
+  /* lightweight status toast after leaving the KYC browser */
+  function showResult(ok, offline) {
+    if (typeof cxToast !== 'function') return;
+    if (offline) { cxToast('Cleanverse unreachable — try again shortly', 'err'); return; }
+    if (ok) { cxToast('Congratulations — A-Pass verified!', 'ok'); return; }
+    cxToast('You didn\u2019t verify yet — tap the banner to try again', 'err');
   }
 
   /* verified — congratulations + clean A-Pass card */
@@ -8405,6 +8753,10 @@ function doRefresh() {
   window.cvCloseModal = closeOv;
   window.cvvBack = cvvBack;
   window.cvvToWallet = cvvToWallet;
+  window.cvvFrameBack = cvvFrameBack;
+  window.cvvFrameReload = cvvFrameReload;
+  window.cvvShowResult = showResult;
+  window.cvvCheck = check;
   window.cvAnnounceGo = function() { closeOv(); setTimeout(openVerifyPage, 280); };
 
   window.CV = {
